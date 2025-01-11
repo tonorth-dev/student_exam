@@ -1,7 +1,7 @@
-import 'package:admin_flutter/component/form/form_data.dart';
-import 'package:admin_flutter/component/form/view.dart';
-import 'package:admin_flutter/ex/ex_btn.dart';
-import 'package:admin_flutter/theme/ui_theme.dart';
+import 'package:hongshi_admin/component/form/form_data.dart';
+import 'package:hongshi_admin/component/form/view.dart';
+import 'package:hongshi_admin/ex/ex_btn.dart';
+import 'package:hongshi_admin/theme/ui_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';

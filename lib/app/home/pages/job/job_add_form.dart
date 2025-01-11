@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:admin_flutter/api/job_api.dart'; // 导入 job_api.dart
+import 'package:hongshi_admin/api/job_api.dart'; // 导入 job_api.dart
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import '../../../../component/widget.dart';

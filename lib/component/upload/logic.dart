@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
-import 'package:admin_flutter/common/http_util.dart';
-import 'package:admin_flutter/common/image_util.dart';
-import 'package:admin_flutter/ex/ex_hint.dart';
+import 'package:hongshi_admin/common/http_util.dart';
+import 'package:hongshi_admin/common/image_util.dart';
+import 'package:hongshi_admin/ex/ex_hint.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';

@@ -1,4 +1,4 @@
-import 'package:admin_flutter/common/http_util.dart';
+import 'package:hongshi_admin/common/http_util.dart';
 
 class UserApi {
 

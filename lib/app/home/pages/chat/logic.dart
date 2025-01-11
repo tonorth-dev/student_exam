@@ -1,5 +1,5 @@
-import 'package:admin_flutter/app/home/pages/chat/chat_info.dart';
-import 'package:admin_flutter/ex/ex_int.dart';
+import 'package:hongshi_admin/app/home/pages/chat/chat_info.dart';
+import 'package:hongshi_admin/ex/ex_int.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';

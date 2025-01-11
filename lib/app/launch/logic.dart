@@ -1,6 +1,6 @@
-import 'package:admin_flutter/app/home/view.dart';
-import 'package:admin_flutter/app/login/view.dart';
-import 'package:admin_flutter/common/app_data.dart';
+import 'package:hongshi_admin/app/home/view.dart';
+import 'package:hongshi_admin/app/login/view.dart';
+import 'package:hongshi_admin/common/app_data.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 

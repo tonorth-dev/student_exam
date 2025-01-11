@@ -1,8 +1,8 @@
-import 'package:admin_flutter/component/table/table_data.dart';
-import 'package:admin_flutter/component/ui_edit.dart';
-import 'package:admin_flutter/ex/ex_btn.dart';
-import 'package:admin_flutter/ex/ex_widget.dart';
-import 'package:admin_flutter/theme/theme_util.dart';
+import 'package:hongshi_admin/component/table/table_data.dart';
+import 'package:hongshi_admin/component/ui_edit.dart';
+import 'package:hongshi_admin/ex/ex_btn.dart';
+import 'package:hongshi_admin/ex/ex_widget.dart';
+import 'package:hongshi_admin/theme/theme_util.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

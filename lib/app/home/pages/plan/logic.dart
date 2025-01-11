@@ -1,14 +1,14 @@
-import 'package:admin_flutter/ex/ex_hint.dart';
-import 'package:admin_flutter/ex/ex_list.dart';
+import 'package:hongshi_admin/ex/ex_hint.dart';
+import 'package:hongshi_admin/ex/ex_list.dart';
 import 'package:get/get.dart';
-import 'package:admin_flutter/component/table/table_data.dart';
-import 'package:admin_flutter/api/plan_api.dart';
+import 'package:hongshi_admin/component/table/table_data.dart';
+import 'package:hongshi_admin/api/plan_api.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:csv/csv.dart';
-import 'package:admin_flutter/component/form/enum.dart';
-import 'package:admin_flutter/component/form/form_data.dart';
+import 'package:hongshi_admin/component/form/enum.dart';
+import 'package:hongshi_admin/component/form/form_data.dart';
 
 class PlanLogic extends GetxController {
   var list = <Map<String, dynamic>>[].obs;

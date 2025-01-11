@@ -1,6 +1,6 @@
-import 'package:admin_flutter/app/home/sidebar/logic.dart';
-import 'package:admin_flutter/common/assets_util.dart';
-import 'package:admin_flutter/component/upload/view.dart';
+import 'package:hongshi_admin/app/home/sidebar/logic.dart';
+import 'package:hongshi_admin/common/assets_util.dart';
+import 'package:hongshi_admin/component/upload/view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

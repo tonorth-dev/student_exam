@@ -1,7 +1,7 @@
-import 'package:admin_flutter/app/home/sidebar/logic.dart';
-import 'package:admin_flutter/ex/ex_anim.dart';
-import 'package:admin_flutter/ex/ex_list.dart';
-import 'package:admin_flutter/theme/ui_theme.dart';
+import 'package:hongshi_admin/app/home/sidebar/logic.dart';
+import 'package:hongshi_admin/ex/ex_anim.dart';
+import 'package:hongshi_admin/ex/ex_list.dart';
+import 'package:hongshi_admin/theme/ui_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

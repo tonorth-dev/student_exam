@@ -1,12 +1,12 @@
-import 'package:admin_flutter/ex/ex_list.dart';
+import 'package:hongshi_admin/ex/ex_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:admin_flutter/api/major_api.dart';
-import 'package:admin_flutter/ex/ex_hint.dart';
+import 'package:hongshi_admin/api/major_api.dart';
+import 'package:hongshi_admin/ex/ex_hint.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-import 'package:admin_flutter/component/dialog.dart';
+import 'package:hongshi_admin/component/dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../api/major_api.dart';

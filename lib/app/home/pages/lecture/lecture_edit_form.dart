@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:admin_flutter/api/lecture_api.dart';
+import 'package:hongshi_admin/api/lecture_api.dart';
 import 'package:get/get.dart';
 import '../../../../component/widget.dart';
 import 'logic.dart';

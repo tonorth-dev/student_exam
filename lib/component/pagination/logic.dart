@@ -1,4 +1,4 @@
-import 'package:admin_flutter/ex/ex_hint.dart';
+import 'package:hongshi_admin/ex/ex_hint.dart';
 import 'package:get/get.dart';
 
 class PaginationLogic extends GetxController {

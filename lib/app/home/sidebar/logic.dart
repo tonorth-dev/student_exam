@@ -1,31 +1,31 @@
-import 'package:admin_flutter/app/home/pages/admin/view.dart';
-import 'package:admin_flutter/app/home/pages/demo/view.dart';
-import 'package:admin_flutter/app/home/pages/demo2/view.dart';
-import 'package:admin_flutter/app/home/pages/demo3/view.dart';
-import 'package:admin_flutter/app/home/pages/empty/view.dart';
-import 'package:admin_flutter/app/home/pages/play/view.dart';
-import 'package:admin_flutter/app/home/pages/question/view.dart';
-import 'package:admin_flutter/app/home/pages/user/view.dart';
-import 'package:admin_flutter/app/home/system/settings/view.dart';
-import 'package:admin_flutter/ex/ex_int.dart';
+import 'package:hongshi_admin/app/home/pages/admin/view.dart';
+import 'package:hongshi_admin/app/home/pages/demo/view.dart';
+import 'package:hongshi_admin/app/home/pages/demo2/view.dart';
+import 'package:hongshi_admin/app/home/pages/demo3/view.dart';
+import 'package:hongshi_admin/app/home/pages/empty/view.dart';
+import 'package:hongshi_admin/app/home/pages/play/view.dart';
+import 'package:hongshi_admin/app/home/pages/question/view.dart';
+import 'package:hongshi_admin/app/home/pages/user/view.dart';
+import 'package:hongshi_admin/app/home/system/settings/view.dart';
+import 'package:hongshi_admin/ex/ex_int.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'package:admin_flutter/app/home/pages/job/view.dart';
-import 'package:admin_flutter/app/home/pages/major/view.dart';
-import 'package:admin_flutter/app/home/pages/corres/view.dart';
+import 'package:hongshi_admin/app/home/pages/job/view.dart';
+import 'package:hongshi_admin/app/home/pages/major/view.dart';
+import 'package:hongshi_admin/app/home/pages/corres/view.dart';
 
-import 'package:admin_flutter/app/home/pages/class/view.dart';
-import 'package:admin_flutter/app/home/pages/institution/view.dart';
-import 'package:admin_flutter/app/home/pages/student/view.dart';
+import 'package:hongshi_admin/app/home/pages/class/view.dart';
+import 'package:hongshi_admin/app/home/pages/institution/view.dart';
+import 'package:hongshi_admin/app/home/pages/student/view.dart';
 
-import 'package:admin_flutter/app/home/pages/book/book.dart';
-import 'package:admin_flutter/app/home/pages/exam/exam_view.dart';
-import 'package:admin_flutter/app/home/pages/lecture/view.dart';
-import 'package:admin_flutter/app/home/pages/note/view.dart';
-import 'package:admin_flutter/app/home/pages/student_lecture/view.dart';
-import 'package:admin_flutter/app/home/pages/student_question/view.dart';
-import 'package:admin_flutter/app/home/pages/topic/view.dart';
+import 'package:hongshi_admin/app/home/pages/book/book.dart';
+import 'package:hongshi_admin/app/home/pages/exam/exam_view.dart';
+import 'package:hongshi_admin/app/home/pages/lecture/view.dart';
+import 'package:hongshi_admin/app/home/pages/note/view.dart';
+import 'package:hongshi_admin/app/home/pages/student_lecture/view.dart';
+import 'package:hongshi_admin/app/home/pages/student_question/view.dart';
+import 'package:hongshi_admin/app/home/pages/topic/view.dart';
 
 class SidebarLogic extends GetxController {
   static var selectName = "".obs;

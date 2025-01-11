@@ -1,4 +1,4 @@
-import 'package:admin_flutter/component/ui_edit.dart';
+import 'package:hongshi_admin/component/ui_edit.dart';
 import 'package:flutter/material.dart';
 
 import 'enum.dart';

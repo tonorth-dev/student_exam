@@ -1,5 +1,5 @@
-import 'package:admin_flutter/theme/dark_theme.dart';
-import 'package:admin_flutter/theme/light_theme.dart';
+import 'package:hongshi_admin/theme/dark_theme.dart';
+import 'package:hongshi_admin/theme/light_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

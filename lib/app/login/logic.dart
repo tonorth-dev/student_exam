@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:admin_flutter/ex/ex_hint.dart';
+import 'package:hongshi_admin/ex/ex_hint.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;

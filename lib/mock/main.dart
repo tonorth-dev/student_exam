@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:admin_flutter/mock/middleware/cors.dart';
-import 'package:admin_flutter/mock/user_api.dart';
+import 'package:hongshi_admin/mock/middleware/cors.dart';
+import 'package:hongshi_admin/mock/user_api.dart';
 
 void main() async {
   var userApi = UserApi();

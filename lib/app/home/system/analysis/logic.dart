@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:admin_flutter/theme/ui_theme.dart';
+import 'package:hongshi_admin/theme/ui_theme.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:get/get.dart';
 

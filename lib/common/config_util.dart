@@ -1,6 +1,6 @@
 import 'dart:typed_data';
-import 'package:admin_flutter/common/app_data.dart';
-import 'package:admin_flutter/ex/ex_hint.dart';
+import 'package:hongshi_admin/common/app_data.dart';
+import 'package:hongshi_admin/ex/ex_hint.dart';
 import 'package:dio/dio.dart';
 
 class ConfigUtil {

@@ -1,9 +1,9 @@
-import 'package:admin_flutter/app/home/head/logic.dart';
-import 'package:admin_flutter/app/home/pages/chat/view.dart';
-import 'package:admin_flutter/app/home/sidebar/logic.dart';
-import 'package:admin_flutter/component/video/view.dart';
-import 'package:admin_flutter/ex/ex_btn.dart';
-import 'package:admin_flutter/theme/ui_theme.dart';
+import 'package:hongshi_admin/app/home/head/logic.dart';
+import 'package:hongshi_admin/app/home/pages/chat/view.dart';
+import 'package:hongshi_admin/app/home/sidebar/logic.dart';
+import 'package:hongshi_admin/component/video/view.dart';
+import 'package:hongshi_admin/ex/ex_btn.dart';
+import 'package:hongshi_admin/theme/ui_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

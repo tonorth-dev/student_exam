@@ -1,10 +1,10 @@
-import 'package:admin_flutter/ex/ex_list.dart';
-import 'package:admin_flutter/ex/ex_string.dart';
+import 'package:hongshi_admin/ex/ex_list.dart';
+import 'package:hongshi_admin/ex/ex_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:admin_flutter/api/lecture_api.dart';
-import 'package:admin_flutter/ex/ex_hint.dart';
+import 'package:hongshi_admin/api/lecture_api.dart';
+import 'package:hongshi_admin/ex/ex_hint.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:csv/csv.dart';

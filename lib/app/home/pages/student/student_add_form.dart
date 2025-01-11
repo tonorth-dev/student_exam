@@ -1,9 +1,9 @@
-import 'package:admin_flutter/app/home/head/logic.dart';
-import 'package:admin_flutter/ex/ex_hint.dart';
+import 'package:hongshi_admin/app/home/head/logic.dart';
+import 'package:hongshi_admin/ex/ex_hint.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:admin_flutter/api/student_api.dart'; // 导入 student_api.dart
+import 'package:hongshi_admin/api/student_api.dart'; // 导入 student_api.dart
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import '../../../../component/widget.dart';

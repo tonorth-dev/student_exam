@@ -1,7 +1,7 @@
-import 'package:admin_flutter/component/table/table_data.dart';
-import 'package:admin_flutter/ex/ex_list.dart';
-import 'package:admin_flutter/theme/theme_util.dart';
-import 'package:admin_flutter/theme/ui_theme.dart';
+import 'package:hongshi_admin/component/table/table_data.dart';
+import 'package:hongshi_admin/ex/ex_list.dart';
+import 'package:hongshi_admin/theme/theme_util.dart';
+import 'package:hongshi_admin/theme/ui_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

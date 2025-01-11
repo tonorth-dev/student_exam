@@ -1,5 +1,5 @@
-import 'package:admin_flutter/component/ui_edit.dart';
-import 'package:admin_flutter/ex/ex_hint.dart';
+import 'package:hongshi_admin/component/ui_edit.dart';
+import 'package:hongshi_admin/ex/ex_hint.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';

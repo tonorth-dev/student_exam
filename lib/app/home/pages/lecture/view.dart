@@ -1,4 +1,4 @@
-import 'package:admin_flutter/app/home/pages/lecture/pdf_pre_view.dart';
+import 'package:hongshi_admin/app/home/pages/lecture/pdf_pre_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

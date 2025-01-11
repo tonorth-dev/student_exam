@@ -1,13 +1,13 @@
-import 'package:admin_flutter/app/home/head/logic.dart';
-import 'package:admin_flutter/app/home/head/view.dart';
-import 'package:admin_flutter/app/home/sidebar/logic.dart';
-import 'package:admin_flutter/app/home/sidebar/view.dart';
-import 'package:admin_flutter/app/home/tab_bar/view.dart';
-import 'package:admin_flutter/component/watermark.dart';
-import 'package:admin_flutter/ex/ex_anim.dart';
-import 'package:admin_flutter/main.dart';
-import 'package:admin_flutter/state.dart';
-import 'package:admin_flutter/theme/theme_util.dart';
+import 'package:hongshi_admin/app/home/head/logic.dart';
+import 'package:hongshi_admin/app/home/head/view.dart';
+import 'package:hongshi_admin/app/home/sidebar/logic.dart';
+import 'package:hongshi_admin/app/home/sidebar/view.dart';
+import 'package:hongshi_admin/app/home/tab_bar/view.dart';
+import 'package:hongshi_admin/component/watermark.dart';
+import 'package:hongshi_admin/ex/ex_anim.dart';
+import 'package:hongshi_admin/main.dart';
+import 'package:hongshi_admin/state.dart';
+import 'package:hongshi_admin/theme/theme_util.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

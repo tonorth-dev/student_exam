@@ -1,7 +1,7 @@
-import 'package:admin_flutter/app/home/sidebar/logic.dart';
-import 'package:admin_flutter/component/table/ex.dart';
-import 'package:admin_flutter/ex/ex_btn.dart';
-import 'package:admin_flutter/theme/theme_util.dart';
+import 'package:hongshi_admin/app/home/sidebar/logic.dart';
+import 'package:hongshi_admin/component/table/ex.dart';
+import 'package:hongshi_admin/ex/ex_btn.dart';
+import 'package:hongshi_admin/theme/theme_util.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';

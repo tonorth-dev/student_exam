@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
-import 'package:admin_flutter/component/pagination/view.dart';
-import 'package:admin_flutter/component/table/ex.dart';
-import 'package:admin_flutter/app/home/sidebar/logic.dart';
-import 'package:admin_flutter/app/home/pages/class/c_logic.dart';
-import 'package:admin_flutter/app/home/pages/class/s_logic.dart';
-import 'package:admin_flutter/theme/theme_util.dart';
+import 'package:hongshi_admin/component/pagination/view.dart';
+import 'package:hongshi_admin/component/table/ex.dart';
+import 'package:hongshi_admin/app/home/sidebar/logic.dart';
+import 'package:hongshi_admin/app/home/pages/class/c_logic.dart';
+import 'package:hongshi_admin/app/home/pages/class/s_logic.dart';
+import 'package:hongshi_admin/theme/theme_util.dart';
 import '../../../../component/widget.dart';
 
 class ClassesPage extends StatelessWidget {
