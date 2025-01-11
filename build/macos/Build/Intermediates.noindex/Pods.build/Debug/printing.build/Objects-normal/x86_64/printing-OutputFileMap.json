@@ -1,0 +1,28 @@
+{
+  "" : {
+    "diagnostics" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/printing-master.dia",
+    "emit-module-dependencies" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/printing-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/printing-master-emit-module.dia",
+    "swift-dependencies" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/printing-master.swiftdeps"
+  },
+  "/Users/didi/.pub-cache/hosted/pub.dev/printing-5.13.4/macos/Classes/PrintingPlugin.swift" : {
+    "const-values" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintingPlugin-8e963203795cd99aafca02695c9c4adc.swiftconstvalues",
+    "dependencies" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintingPlugin-8e963203795cd99aafca02695c9c4adc.d",
+    "diagnostics" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintingPlugin-8e963203795cd99aafca02695c9c4adc.dia",
+    "index-unit-output-path" : "/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintingPlugin-8e963203795cd99aafca02695c9c4adc.o",
+    "llvm-bc" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintingPlugin-8e963203795cd99aafca02695c9c4adc.bc",
+    "object" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintingPlugin-8e963203795cd99aafca02695c9c4adc.o",
+    "swift-dependencies" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintingPlugin-8e963203795cd99aafca02695c9c4adc.swiftdeps",
+    "swiftmodule" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintingPlugin-8e963203795cd99aafca02695c9c4adc~partial.swiftmodule"
+  },
+  "/Users/didi/.pub-cache/hosted/pub.dev/printing-5.13.4/macos/Classes/PrintJob.swift" : {
+    "const-values" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintJob.swiftconstvalues",
+    "dependencies" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintJob.d",
+    "diagnostics" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintJob.dia",
+    "index-unit-output-path" : "/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintJob.o",
+    "llvm-bc" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintJob.bc",
+    "object" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintJob.o",
+    "swift-dependencies" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintJob.swiftdeps",
+    "swiftmodule" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/printing.build/Objects-normal/x86_64/PrintJob~partial.swiftmodule"
+  }
+}

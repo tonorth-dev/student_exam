@@ -1,0 +1,18 @@
+{
+  "" : {
+    "diagnostics" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/open_file_mac.build/Objects-normal/x86_64/open_file_mac-master.dia",
+    "emit-module-dependencies" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/open_file_mac.build/Objects-normal/x86_64/open_file_mac-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/open_file_mac.build/Objects-normal/x86_64/open_file_mac-master-emit-module.dia",
+    "swift-dependencies" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/open_file_mac.build/Objects-normal/x86_64/open_file_mac-master.swiftdeps"
+  },
+  "/Users/didi/.pub-cache/hosted/pub.dev/open_file_mac-1.0.3/macos/Classes/OpenFilePlugin.swift" : {
+    "const-values" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/open_file_mac.build/Objects-normal/x86_64/OpenFilePlugin.swiftconstvalues",
+    "dependencies" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/open_file_mac.build/Objects-normal/x86_64/OpenFilePlugin.d",
+    "diagnostics" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/open_file_mac.build/Objects-normal/x86_64/OpenFilePlugin.dia",
+    "index-unit-output-path" : "/Pods.build/Debug/open_file_mac.build/Objects-normal/x86_64/OpenFilePlugin.o",
+    "llvm-bc" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/open_file_mac.build/Objects-normal/x86_64/OpenFilePlugin.bc",
+    "object" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/open_file_mac.build/Objects-normal/x86_64/OpenFilePlugin.o",
+    "swift-dependencies" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/open_file_mac.build/Objects-normal/x86_64/OpenFilePlugin.swiftdeps",
+    "swiftmodule" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/open_file_mac.build/Objects-normal/x86_64/OpenFilePlugin~partial.swiftmodule"
+  }
+}

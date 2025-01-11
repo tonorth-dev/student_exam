@@ -1,0 +1,18 @@
+{
+  "" : {
+    "diagnostics" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/pdf_render.build/Objects-normal/x86_64/pdf_render-master.dia",
+    "emit-module-dependencies" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/pdf_render.build/Objects-normal/x86_64/pdf_render-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/pdf_render.build/Objects-normal/x86_64/pdf_render-master-emit-module.dia",
+    "swift-dependencies" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/pdf_render.build/Objects-normal/x86_64/pdf_render-master.swiftdeps"
+  },
+  "/Users/didi/.pub-cache/hosted/pub.dev/pdf_render-1.4.12/macos/Classes/SwiftPdfRenderPlugin.swift" : {
+    "const-values" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/pdf_render.build/Objects-normal/x86_64/SwiftPdfRenderPlugin.swiftconstvalues",
+    "dependencies" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/pdf_render.build/Objects-normal/x86_64/SwiftPdfRenderPlugin.d",
+    "diagnostics" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/pdf_render.build/Objects-normal/x86_64/SwiftPdfRenderPlugin.dia",
+    "index-unit-output-path" : "/Pods.build/Debug/pdf_render.build/Objects-normal/x86_64/SwiftPdfRenderPlugin.o",
+    "llvm-bc" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/pdf_render.build/Objects-normal/x86_64/SwiftPdfRenderPlugin.bc",
+    "object" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/pdf_render.build/Objects-normal/x86_64/SwiftPdfRenderPlugin.o",
+    "swift-dependencies" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/pdf_render.build/Objects-normal/x86_64/SwiftPdfRenderPlugin.swiftdeps",
+    "swiftmodule" : "/Users/didi/object/flutter/admin-base/build/macos/Build/Intermediates.noindex/Pods.build/Debug/pdf_render.build/Objects-normal/x86_64/SwiftPdfRenderPlugin~partial.swiftmodule"
+  }
+}

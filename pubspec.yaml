@@ -1,0 +1,86 @@
+name: admin_flutter
+description: "App项目模板"
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+version: 1.0.0+1
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  # 默认依赖
+  cupertino_icons: ^1.0.2
+  # 第三方依赖
+  get: ^4.6.6 # 状态管理
+  csv: ^6.0.0
+  file_picker: ^8.1.3
+  syncfusion_flutter_xlsio: ^27.1.57
+  path_provider: ^2.0.11
+  shared_preferences: ^2.2.2 # 本地存储
+  dio: ^5.4.0 # Http请求
+  bot_toast: ^4.1.3 # 提示库
+  url_launcher: ^6.2.2 # 跳转第三方应用
+  file_selector: ^1.0.1 # 文件选择器
+  easy_image_viewer: ^1.3.2 # 图片预览功能
+  fleather: ^1.14.5+1 # 富文本
+  image_picker: ^1.0.7 # 图片选择
+  flutter_animate: ^4.5.0 # 动画库
+  fl_chart: ^0.69.0 # 图表库
+  infinite_scroll_pagination: ^4.0.0 # 无限加载
+  city_pickers: ^1.3.0 # 城市选择
+  # 下面两个库是为了解决所有平台都能播放视频
+  video_player: ^2.9.1 # 视频播放
+  video_player_win: ^3.1.0 # Windows视频播放
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  syncfusion_flutter_datagrid: ^27.1.56
+  syncfusion_flutter_core: ^27.1.57
+  syncfusion_flutter_sliders: ^27.1.56
+  syncfusion_flutter_gauges: ^27.1.56
+  syncfusion_flutter_charts: ^27.1.56
+  flutter_pdfview: ^1.3.4
+  syncfusion_flutter_pdfviewer: ^27.1.57
+  syncfusion_flutter_pdf: ^27.1.57
+  open_file: ^3.5.10
+  provider: ^6.1.2
+  pdf_render: ^1.4.12
+  pdf: ^3.11.1
+  flutter_dialogs: ^3.0.0
+  flutter_form_builder: ^9.5.0
+  form_builder_validators: ^11.0.0
+  flutter_quill: ^10.0.0
+  html: ^0.15.0
+  flutter_typeahead: ^4.0.0
+  flutter_styled_toast: ^2.2.1
+  flutter_material_pickers: ^3.7.0
+  number_pagination: ^1.1.6
+  printing: ^5.13.4
+  field_suggestion: ^0.2.6
+  flutter_fancy_tree_view: ^1.6.0
+  searchfield: ^1.0.0
+  omni_datetime_picker: ^2.0.5
+  window_manager: ^0.4.3
+  encrypt: ^5.0.3
+  pointycastle: ^3.9.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  msix: ^3.16.7 # Windows安装包 dart run msix:create 打包
+
+flutter:
+  uses-material-design: true
+  # 资源目录
+  assets:
+    - assets/images/
+    - assets/messages/
+  fonts:
+    - family: OPPOSans
+      fonts:
+        - asset: assets/fonts/OPPOSans-Bold.ttf
+        - asset: assets/fonts/OPPOSans-Medium.ttf
+        - asset: assets/fonts/OPPOSans-Regular.ttf
+    - family: Arial Unicode MS.TTF
+      fonts:
+        - asset: assets/fonts/Arial Unicode MS.TTF
