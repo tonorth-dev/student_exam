@@ -1,0 +1,138 @@
+重要，加密原始文件
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:encrypt/encrypt.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../api/config_api.dart';
+
+class EncryptionUtil {
+  static const String _k1 = "C0EmZ/HCluK188v3mH1anKurLsheOzDl0nGdCY1lWLA=";
+  static const int defaultCacheDurationInMinutes = 10080;
+
+  static final EncryptionUtil _instance = EncryptionUtil._internal();
+
+  factory EncryptionUtil() {
+    return _instance;
+  }
+
+  EncryptionUtil._internal();
+
+  /// 从服务端获取 K2
+  Future<String> fetchK2FromServer() async {
+    try {
+      final data = await ConfigApi.configEncr();
+      final serverKey = data["server_key"];
+      if (serverKey != null && serverKey is String) {
+        return serverKey;
+      } else {
+        throw Exception('Failed to fetch K2: Invalid response format');
+      }
+    } catch (e) {
+      throw Exception('Error fetching K2: $e');
+    }
+  }
+
+  Future<void> cacheK2(String k2, {int cacheDurationInMinutes = defaultCacheDurationInMinutes}) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('cachedK2', k2);
+    final expirationTimestamp = DateTime.now().millisecondsSinceEpoch + cacheDurationInMinutes * 60 * 1000;
+    await prefs.setInt('k2CacheExpirationTimestamp', expirationTimestamp);
+  }
+
+  /// 从缓存中获取 K2
+  Future<String?> getCachedK2() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cachedK2 = prefs.getString('cachedK2');
+    final cacheExpirationTimestamp = prefs.getInt('k2CacheExpirationTimestamp');
+
+    if (cachedK2 != null && cacheExpirationTimestamp != null) {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      if (now <= cacheExpirationTimestamp) {
+        return cachedK2;
+      }
+    }
+
+    return null; // 缓存过期或不存在
+  }
+
+  Future<String> getK2({int cacheDurationInMinutes = defaultCacheDurationInMinutes}) async {
+    final cachedK2 = await getCachedK2();
+
+    if (cachedK2 != null) {
+      print('Using cached K2');
+      return cachedK2;
+    }
+
+    print('Fetching K2 from server');
+    final k2 = await fetchK2FromServer();
+    await cacheK2(k2, cacheDurationInMinutes: cacheDurationInMinutes);
+    return k2;
+  }
+
+  Uint8List xor(Uint8List a, Uint8List b) {
+    if (a.length != b.length) {
+      throw ArgumentError('Lists must have the same length for XOR');
+    }
+    final result = Uint8List(a.length);
+    for (int i = 0; i < a.length; i++) {
+      result[i] = a[i] ^ b[i];
+    }
+    return result;
+  }
+
+  /// 通过 K1 和 K2 组合密钥
+  Uint8List combineKey(String base64K1, String base64K2) {
+    final k1Bytes = base64Decode(base64K1);
+    final k2Bytes = base64Decode(base64K2);
+    return xor(k1Bytes, k2Bytes);
+  }
+
+  /// AES-256 加密
+  static Future<String> encryptAES256(String plainText) async {
+    final encryptionUtil = EncryptionUtil();
+    final k2 = await encryptionUtil.getK2();
+    final combinedKey = encryptionUtil.combineKey(_k1, k2);
+    final keyBytes = combinedKey;
+    final key = Key(keyBytes);
+    final iv = IV.fromLength(16); // 随机生成 IV
+    final encrypter = Encrypter(AES(key, mode: AESMode.cbc));
+
+    final encrypted = encrypter.encrypt(plainText, iv: iv);
+    final ivAndCipherText = iv.bytes + encrypted.bytes; // 拼接 IV 和密文
+    return base64Encode(ivAndCipherText); // Base64 编码
+  }
+
+  /// AES-256 解密
+  static Future<String> decryptAES256(String cipherTextBase64) async {
+    final encryptionUtil = EncryptionUtil();
+    final k2 = await encryptionUtil.getK2();
+    final combinedKey = encryptionUtil.combineKey(_k1, k2);
+    final keyBytes = combinedKey;
+    final key = Key(keyBytes);
+    final ivAndCipherText = base64Decode(cipherTextBase64);
+
+    if (ivAndCipherText.length < 16) {
+      throw ArgumentError('Cipher text is too short');
+    }
+
+    final iv = IV(ivAndCipherText.sublist(0, 16)); // 提取 IV
+    final cipherText = ivAndCipherText.sublist(16); // 提取密文
+
+    final encrypter = Encrypter(AES(key, mode: AESMode.cbc));
+    return encrypter.decrypt(Encrypted(cipherText), iv: iv);
+  }
+}
+
+void main() async {
+  try {
+    // 加密解密示例
+    final plainText = 'Hello, secure world!';
+    final cipherText = await EncryptionUtil.encryptAES256(plainText);
+    print('Encrypted: $cipherText');
+    final decryptedText = await EncryptionUtil.decryptAES256(cipherText);
+    print('Decrypted: $decryptedText');
+  } catch (e) {
+    print('Error: $e');
+  }
+}

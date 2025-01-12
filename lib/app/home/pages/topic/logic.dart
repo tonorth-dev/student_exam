@@ -15,9 +15,12 @@ import 'package:hongshi_admin/component/form/form_data.dart';
 import 'package:hongshi_admin/component/dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
+import 'package:pinyin/pinyin.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../api/config_api.dart';
 import '../../../../api/major_api.dart';
+import '../../../../common/config_util.dart';
+import '../../../../common/encr_util.dart';
 import '../../../../component/pagination/logic.dart';
 import '../../../../component/table/table_data.dart';
 import '../../../../component/widget.dart';
@@ -35,13 +38,13 @@ class TopicLogic extends GetxController {
   final searchText = ''.obs;
 
   final GlobalKey<CascadingDropdownFieldState> majorDropdownKey =
-      GlobalKey<CascadingDropdownFieldState>();
+  GlobalKey<CascadingDropdownFieldState>();
   final GlobalKey<DropdownFieldState> cateDropdownKey =
-      GlobalKey<DropdownFieldState>();
+  GlobalKey<DropdownFieldState>();
   final GlobalKey<DropdownFieldState> levelDropdownKey =
-      GlobalKey<DropdownFieldState>();
+  GlobalKey<DropdownFieldState>();
   final GlobalKey<DropdownFieldState> statusDropdownKey =
-      GlobalKey<DropdownFieldState>();
+  GlobalKey<DropdownFieldState>();
 
   // 当前编辑的题目数据
   var currentEditTopic = RxMap<String, dynamic>({}).obs;
@@ -74,9 +77,9 @@ class TopicLogic extends GetxController {
 
   final topicTitle = ''.obs;
   ValueNotifier<String?> topicSelectedQuestionCate =
-      ValueNotifier<String?>(null);
+  ValueNotifier<String?>(null);
   ValueNotifier<String?> topicSelectedQuestionLevel =
-      ValueNotifier<String?>(null);
+  ValueNotifier<String?>(null);
   final topicSelectedMajorId = "".obs;
   final topicAnswer = "".obs;
   final topicAuthor = "".obs;
@@ -98,7 +101,7 @@ class TopicLogic extends GetxController {
       if (configData != null && configData.containsKey("list")) {
         final list = configData["list"] as List<dynamic>;
         final questionCateItem = list.firstWhere(
-          (item) => item["name"] == "question_cate",
+              (item) => item["name"] == "question_cate",
           orElse: () => null,
         );
 
@@ -112,7 +115,7 @@ class TopicLogic extends GetxController {
         }
 
         final questionLevelItem = list.firstWhere(
-          (item) => item["name"] == "question_level",
+              (item) => item["name"] == "question_level",
           orElse: () => null,
         );
 
@@ -141,7 +144,7 @@ class TopicLogic extends GetxController {
   Future<void> fetchMajors() async {
     try {
       var response =
-          await MajorApi.majorList(params: {'pageSize': 3000, 'page': 1});
+      await MajorApi.majorList(params: {'pageSize': 3000, 'page': 1});
       if (response != null && response["total"] > 0) {
         var dataList = response["list"] as List<dynamic>;
 
@@ -180,7 +183,7 @@ class TopicLogic extends GetxController {
 
           // Add second-level category if it doesn't exist under this first-level category
           if (subMajorMap[firstLevelId]
-                  ?.any((m) => m['name'] == secondLevelName) !=
+              ?.any((m) => m['name'] == secondLevelName) !=
               true) {
             subMajorMap[firstLevelId]!
                 .add({'id': secondLevelId, 'name': secondLevelName});
@@ -194,7 +197,7 @@ class TopicLogic extends GetxController {
 
           // Add third-level major if it doesn't exist under this second-level category
           if (subSubMajorMap[secondLevelId]
-                  ?.any((m) => m['name'] == thirdLevelName) !=
+              ?.any((m) => m['name'] == thirdLevelName) !=
               true) {
             subSubMajorMap[secondLevelId]!
                 .add({'id': thirdLevelId, 'name': thirdLevelName});
@@ -275,7 +278,7 @@ class TopicLogic extends GetxController {
     fetchConfigs();
     ever(
       questionCate,
-      (value) {
+          (value) {
         if (questionCate.isNotEmpty) {
           // 当 questionCate 被赋值后再执行表单加载逻辑
           super.onInit();
@@ -417,11 +420,13 @@ class TopicLogic extends GetxController {
 
     if (isValid) {
       try {
+        String encrAnswer = await EncryptionUtil.encryptAES256(topicAnswerSubmit);
         Map<String, dynamic> params = {
           "title": topicTitleSubmit,
           "cate": topicSelectedQuestionCateSubmit,
           "level": topicSelectedQuestionLevelSubmit,
-          "answer": topicAnswerSubmit,
+          "answer_encr": encrAnswer,
+          "answer_py": PinyinHelper.getShortPinyin(topicAnswerSubmit),
           "author": "杜立东",
           "major_id": topicSelectedMajorIdSubmit,
           "tag": topicTagSubmit,
@@ -494,11 +499,13 @@ class TopicLogic extends GetxController {
 
     if (isValid) {
       try {
+        String encrAnswer = await EncryptionUtil.encryptAES256(topicAnswerSubmit);
         Map<String, dynamic> params = {
           "title": topicTitleSubmit,
           "cate": topicSelectedQuestionCateSubmit,
           "level": topicSelectedQuestionLevelSubmit,
-          "answer": topicAnswerSubmit,
+          "answer_encr": encrAnswer,
+          "answer_py": PinyinHelper.getShortPinyin(topicAnswerSubmit),
           "author": "杜立东",
           "major_id": topicSelectedMajorIdSubmit,
           "tag": topicTagSubmit,
@@ -542,10 +549,10 @@ class TopicLogic extends GetxController {
     }
   }
 
-  void generateAndOpenLink(
-      BuildContext context, Map<String, dynamic> item) async {
+  void generateAndOpenLink(BuildContext context,
+      Map<String, dynamic> item) async {
     final url =
-        Uri.parse('http://127.0.0.1:8888/static/h5/?topicId=${item['id']}');
+    Uri.parse("${ConfigUtil.fullUrl}/static/h5/?topicId=${item['id']}");
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
@@ -589,7 +596,10 @@ class TopicLogic extends GetxController {
       for (int colIndex = 0; colIndex < columns.length; colIndex++) {
         final column = columns[colIndex];
         sheet.getRangeByIndex(1, colIndex + 1).setText(column.title);
-        sheet.getRangeByIndex(1, colIndex + 1).cellStyle.bold = true;
+        sheet
+            .getRangeByIndex(1, colIndex + 1)
+            .cellStyle
+            .bold = true;
       }
 
       // 添加选中行的数据
@@ -681,7 +691,10 @@ class TopicLogic extends GetxController {
       for (int colIndex = 0; colIndex < columns.length; colIndex++) {
         final column = columns[colIndex];
         sheet.getRangeByIndex(1, colIndex + 1).setText(column.title);
-        sheet.getRangeByIndex(1, colIndex + 1).cellStyle.bold = true;
+        sheet
+            .getRangeByIndex(1, colIndex + 1)
+            .cellStyle
+            .bold = true;
       }
 
       // 添加所有行数据
@@ -709,13 +722,15 @@ class TopicLogic extends GetxController {
   }
 
   // 辅助方法：设置单元格的值
-  void _setCellValue(xlsio.Worksheet sheet, int rowIndex, int colIndex, dynamic value) {
+  void _setCellValue(xlsio.Worksheet sheet, int rowIndex, int colIndex,
+      dynamic value) {
     if (value is int || value is double) {
       sheet.getRangeByIndex(rowIndex, colIndex).setNumber(value.toDouble());
     } else if (value is DateTime) {
       sheet.getRangeByIndex(rowIndex, colIndex).setDateTime(value);
     } else {
-      sheet.getRangeByIndex(rowIndex, colIndex).setText(value?.toString() ?? '');
+      sheet.getRangeByIndex(rowIndex, colIndex).setText(
+          value?.toString() ?? '');
     }
   }
 

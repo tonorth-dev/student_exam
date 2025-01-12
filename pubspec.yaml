@@ -62,6 +62,7 @@ dependencies:
   window_manager: ^0.4.3
   encrypt: ^5.0.3
   pointycastle: ^3.9.1
+  pinyin: ^3.3.0
 
 dev_dependencies:
   flutter_test:

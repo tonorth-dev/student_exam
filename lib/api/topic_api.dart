@@ -46,7 +46,7 @@ class TopicApi {
   static Future<dynamic> topicCreate(Map<String, dynamic> params) async {
     try {
       // 必传字段校验
-      List<String> requiredFields = ['title', 'author', 'answer', 'cate', 'level', 'major_id', 'status'];
+      List<String> requiredFields = ['title', 'author', 'answer_encr', 'cate', 'level', 'major_id', 'status'];
       for (var field in requiredFields) {
         if (!params.containsKey(field) || params[field] == null) {
           throw ArgumentError('Missing required field: $field');

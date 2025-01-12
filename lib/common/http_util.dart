@@ -12,7 +12,7 @@ class HttpUtil {
   static const authorization = "X-Token";
 
   static final dio = Dio(BaseOptions(
-    baseUrl: ConfigUtil.httpPort == "" ? ConfigUtil.baseUrl : "${ConfigUtil.baseUrl}:${ConfigUtil.httpPort}",
+    baseUrl: ConfigUtil.fullUrl,
     connectTimeout: const Duration(seconds: 40),
     receiveTimeout: const Duration(seconds: 40),
   ))
