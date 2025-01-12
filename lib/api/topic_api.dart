@@ -147,7 +147,7 @@ class TopicApi {
 
   static Future<dynamic> auditTopic(int topicId, int status) async {
     try {
-      return await  HttpUtil.put('/admin/topic/topic/$topicId/audit_ret/$status');
+      return await  HttpUtil.put('/admin/topic/topic/$topicId/audit_ret/$status?key=${EncryptionUtil.k1}');
     } catch (e) {
       throw Exception('审核请求失败: $e');
     }

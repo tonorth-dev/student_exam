@@ -257,13 +257,13 @@ class TopicLogic extends GetxController {
               (value["list"] as List<dynamic>).toListMap();
           List<Map<String, dynamic>> processedList =
               await Future.wait(rawList.map((item) async {
-            if (item['answer_encr'] != null && item['answer_encr'] != "") {
-              item['answer'] =
-                  await EncryptionUtil.decryptAES256(item['answer_encr']);
+            if (item['answer_draft'] != null && item['answer_draft'] != "") {
+              item['answer'] = item['answer_draft'];
+            } else if (item['answer_encr'] != null && item['answer_encr'] != "") {
+              item['answer'] = await EncryptionUtil.decryptAES256(item['answer_encr']);
             }
             if (item['title_encr'] != null && item['title_encr'] != "") {
-              item['title'] =
-              await EncryptionUtil.decryptAES256(item['title_encr']);
+              item['title'] =await EncryptionUtil.decryptAES256(item['title_encr']);
             }
             return item;
           }));
@@ -516,12 +516,15 @@ class TopicLogic extends GetxController {
 
     if (isValid) {
       try {
-        String encrAnswer =
-            await EncryptionUtil.encryptAES256(topicAnswerSubmit);
+        String titleAnswer = await EncryptionUtil.encryptAES256(topicTitleSubmit);
+        String encrAnswer = await EncryptionUtil.encryptAES256(topicAnswerSubmit);
         Map<String, dynamic> params = {
-          "title": topicTitleSubmit,
+          "title": "",
+          "title_encr": titleAnswer,
+          "title_py": PinyinHelper.getShortPinyin(topicTitleSubmit),
           "cate": topicSelectedQuestionCateSubmit,
           "level": topicSelectedQuestionLevelSubmit,
+          "answer": "",
           "answer_encr": encrAnswer,
           "answer_py": PinyinHelper.getShortPinyin(topicAnswerSubmit),
           "author": "杜立东",
@@ -569,8 +572,9 @@ class TopicLogic extends GetxController {
 
   void generateAndOpenLink(
       BuildContext context, Map<String, dynamic> item) async {
-    final url =
-        Uri.parse("${ConfigUtil.fullUrl}/static/h5/?topicId=${item['id']}");
+    final key = EncryptionUtil.k1;
+    final encodedKey = base64Encode(utf8.encode(key));
+    final url = Uri.parse("${ConfigUtil.fullUrl}/static/h5/?topicId=${item['id']}&key=$encodedKey");
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
