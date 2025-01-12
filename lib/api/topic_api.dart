@@ -4,6 +4,8 @@ import 'package:hongshi_admin/common/http_util.dart';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart';
 
+import '../common/encr_util.dart';
+
 class TopicApi {
 
   static Dio dio = Dio(BaseOptions(
@@ -109,6 +111,7 @@ class TopicApi {
       // 构造 FormData
       FormData formData = FormData.fromMap({
         'file': multipartFile, // 'file' 对应后端接收的字段名
+        'key': EncryptionUtil.k1,
       });
 
       // 调用上传接口

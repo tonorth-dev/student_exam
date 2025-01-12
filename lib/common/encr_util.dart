@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../api/config_api.dart';
 
 class EncryptionUtil {
-  static const String _k1 = "C0EmZ/HCluK188v3mH1anKurLsheOzDl0nGdCY1lWLA=";
+  static const String k1 = "C0EmZ/HCluK188v3mH1anKurLsheOzDl0nGdCY1lWLA=";
   static const int defaultCacheDurationInMinutes = 10080;
 
   static final EncryptionUtil _instance = EncryptionUtil._internal();
@@ -90,7 +90,7 @@ class EncryptionUtil {
   static Future<String> encryptAES256(String plainText) async {
     final encryptionUtil = EncryptionUtil();
     final k2 = await encryptionUtil.getK2();
-    final combinedKey = encryptionUtil.combineKey(_k1, k2);
+    final combinedKey = encryptionUtil.combineKey(k1, k2);
     final keyBytes = combinedKey;
     final key = Key(keyBytes);
     final iv = IV.fromLength(16); // 随机生成 IV
@@ -105,7 +105,7 @@ class EncryptionUtil {
   static Future<String> decryptAES256(String cipherTextBase64) async {
     final encryptionUtil = EncryptionUtil();
     final k2 = await encryptionUtil.getK2();
-    final combinedKey = encryptionUtil.combineKey(_k1, k2);
+    final combinedKey = encryptionUtil.combineKey(k1, k2);
     final keyBytes = combinedKey;
     final key = Key(keyBytes);
     final ivAndCipherText = base64Decode(cipherTextBase64);

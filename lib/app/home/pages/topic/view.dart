@@ -48,13 +48,6 @@ class TopicPage extends StatelessWidget {
                   ),
                   SizedBox(width: 8),
                   CustomButton(
-                    onPressed: logic.exportAllToXLSX,
-                    text: '导出全部',
-                    width: 90,
-                    height: 32,
-                  ),
-                  SizedBox(width: 8),
-                  CustomButton(
                     onPressed: logic.importFromXLSX,
                     text: '从Excel导入',
                     width: 110,
@@ -62,7 +55,7 @@ class TopicPage extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(width: 20), // ### 添加换行间距 ###
+              SizedBox(width: 60), // ### 添加换行间距 ###
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -348,7 +341,7 @@ class TopicDataSource extends DataGridSource {
               ),
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  final isOverflowing = value.length > 340; // 判断是否溢出
+                  final isOverflowing = value.length > 150; // 判断是否溢出
                   return Row(
                     children: [
                       Expanded(

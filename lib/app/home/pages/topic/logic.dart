@@ -1,3 +1,4 @@
+import 'package:excel/excel.dart';
 import 'package:hongshi_admin/app/home/pages/book/book.dart';
 import 'package:hongshi_admin/ex/ex_list.dart';
 import 'package:hongshi_admin/ex/ex_string.dart';
@@ -15,6 +16,7 @@ import 'package:hongshi_admin/component/form/form_data.dart';
 import 'package:hongshi_admin/component/dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pinyin/pinyin.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../api/config_api.dart';
@@ -38,13 +40,13 @@ class TopicLogic extends GetxController {
   final searchText = ''.obs;
 
   final GlobalKey<CascadingDropdownFieldState> majorDropdownKey =
-  GlobalKey<CascadingDropdownFieldState>();
+      GlobalKey<CascadingDropdownFieldState>();
   final GlobalKey<DropdownFieldState> cateDropdownKey =
-  GlobalKey<DropdownFieldState>();
+      GlobalKey<DropdownFieldState>();
   final GlobalKey<DropdownFieldState> levelDropdownKey =
-  GlobalKey<DropdownFieldState>();
+      GlobalKey<DropdownFieldState>();
   final GlobalKey<DropdownFieldState> statusDropdownKey =
-  GlobalKey<DropdownFieldState>();
+      GlobalKey<DropdownFieldState>();
 
   // 当前编辑的题目数据
   var currentEditTopic = RxMap<String, dynamic>({}).obs;
@@ -77,9 +79,9 @@ class TopicLogic extends GetxController {
 
   final topicTitle = ''.obs;
   ValueNotifier<String?> topicSelectedQuestionCate =
-  ValueNotifier<String?>(null);
+      ValueNotifier<String?>(null);
   ValueNotifier<String?> topicSelectedQuestionLevel =
-  ValueNotifier<String?>(null);
+      ValueNotifier<String?>(null);
   final topicSelectedMajorId = "".obs;
   final topicAnswer = "".obs;
   final topicAuthor = "".obs;
@@ -101,7 +103,7 @@ class TopicLogic extends GetxController {
       if (configData != null && configData.containsKey("list")) {
         final list = configData["list"] as List<dynamic>;
         final questionCateItem = list.firstWhere(
-              (item) => item["name"] == "question_cate",
+          (item) => item["name"] == "question_cate",
           orElse: () => null,
         );
 
@@ -115,7 +117,7 @@ class TopicLogic extends GetxController {
         }
 
         final questionLevelItem = list.firstWhere(
-              (item) => item["name"] == "question_level",
+          (item) => item["name"] == "question_level",
           orElse: () => null,
         );
 
@@ -144,7 +146,7 @@ class TopicLogic extends GetxController {
   Future<void> fetchMajors() async {
     try {
       var response =
-      await MajorApi.majorList(params: {'pageSize': 3000, 'page': 1});
+          await MajorApi.majorList(params: {'pageSize': 3000, 'page': 1});
       if (response != null && response["total"] > 0) {
         var dataList = response["list"] as List<dynamic>;
 
@@ -183,7 +185,7 @@ class TopicLogic extends GetxController {
 
           // Add second-level category if it doesn't exist under this first-level category
           if (subMajorMap[firstLevelId]
-              ?.any((m) => m['name'] == secondLevelName) !=
+                  ?.any((m) => m['name'] == secondLevelName) !=
               true) {
             subMajorMap[firstLevelId]!
                 .add({'id': secondLevelId, 'name': secondLevelName});
@@ -197,7 +199,7 @@ class TopicLogic extends GetxController {
 
           // Add third-level major if it doesn't exist under this second-level category
           if (subSubMajorMap[secondLevelId]
-              ?.any((m) => m['name'] == thirdLevelName) !=
+                  ?.any((m) => m['name'] == thirdLevelName) !=
               true) {
             subSubMajorMap[secondLevelId]!
                 .add({'id': thirdLevelId, 'name': thirdLevelName});
@@ -251,16 +253,20 @@ class TopicLogic extends GetxController {
       }).then((value) async {
         if (value != null && value["list"] != null) {
           total.value = value["total"] ?? 0;
-          List<Map<String, dynamic>> rawList = (value["list"] as List<dynamic>)
-              .toListMap();
-          List<Map<String, dynamic>> processedList = await Future.wait(
-              rawList.map((item) async {
-                if (item['answer_encr'] != null && item['answer_encr'] != "") {
-                  item['answer'] =
+          List<Map<String, dynamic>> rawList =
+              (value["list"] as List<dynamic>).toListMap();
+          List<Map<String, dynamic>> processedList =
+              await Future.wait(rawList.map((item) async {
+            if (item['answer_encr'] != null && item['answer_encr'] != "") {
+              item['answer'] =
                   await EncryptionUtil.decryptAES256(item['answer_encr']);
-                }
-                return item;
-              }));
+            }
+            if (item['title_encr'] != null && item['title_encr'] != "") {
+              item['title'] =
+              await EncryptionUtil.decryptAES256(item['title_encr']);
+            }
+            return item;
+          }));
           list.assignAll(processedList);
           await Future.delayed(const Duration(milliseconds: 300));
           loading.value = false;
@@ -287,7 +293,7 @@ class TopicLogic extends GetxController {
     fetchConfigs();
     ever(
       questionCate,
-          (value) {
+      (value) {
         if (questionCate.isNotEmpty) {
           // 当 questionCate 被赋值后再执行表单加载逻辑
           super.onInit();
@@ -429,10 +435,11 @@ class TopicLogic extends GetxController {
 
     if (isValid) {
       try {
-        String encrAnswer = await EncryptionUtil.encryptAES256(
-            topicAnswerSubmit);
+        String encrTitle = await EncryptionUtil.encryptAES256(topicTitleSubmit);
+        String encrAnswer = await EncryptionUtil.encryptAES256(topicAnswerSubmit);
         Map<String, dynamic> params = {
-          "title": topicTitleSubmit,
+          "title_encr": encrTitle,
+          "title_py": PinyinHelper.getShortPinyin(topicTitleSubmit),
           "cate": topicSelectedQuestionCateSubmit,
           "level": topicSelectedQuestionLevelSubmit,
           "answer_encr": encrAnswer,
@@ -509,8 +516,8 @@ class TopicLogic extends GetxController {
 
     if (isValid) {
       try {
-        String encrAnswer = await EncryptionUtil.encryptAES256(
-            topicAnswerSubmit);
+        String encrAnswer =
+            await EncryptionUtil.encryptAES256(topicAnswerSubmit);
         Map<String, dynamic> params = {
           "title": topicTitleSubmit,
           "cate": topicSelectedQuestionCateSubmit,
@@ -560,10 +567,10 @@ class TopicLogic extends GetxController {
     }
   }
 
-  void generateAndOpenLink(BuildContext context,
-      Map<String, dynamic> item) async {
+  void generateAndOpenLink(
+      BuildContext context, Map<String, dynamic> item) async {
     final url =
-    Uri.parse("${ConfigUtil.fullUrl}/static/h5/?topicId=${item['id']}");
+        Uri.parse("${ConfigUtil.fullUrl}/static/h5/?topicId=${item['id']}");
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
@@ -607,10 +614,7 @@ class TopicLogic extends GetxController {
       for (int colIndex = 0; colIndex < columns.length; colIndex++) {
         final column = columns[colIndex];
         sheet.getRangeByIndex(1, colIndex + 1).setText(column.title);
-        sheet
-            .getRangeByIndex(1, colIndex + 1)
-            .cellStyle
-            .bold = true;
+        sheet.getRangeByIndex(1, colIndex + 1).cellStyle.bold = true;
       }
 
       // 添加选中行的数据
@@ -653,42 +657,8 @@ class TopicLogic extends GetxController {
             return;
           }
 
-          // Here you would typically use another library to read the XLSX file since Syncfusion does not support reading from bytes directly.
-          // For this example, assume we've read the data into a list of lists or another structure:
-          List<List<String>> data =
-              []; // This would be where you process the file content
-
-          // Create a new workbook with Syncfusion XLSIO
-          final workbook = xlsio.Workbook();
-          final worksheet = workbook.worksheets[0];
-
-          // Populate the worksheet with data (this is just an example)
-          for (int i = 0; i < data.length; i++) {
-            for (int j = 0; j < data[i].length; j++) {
-              worksheet.getRangeByIndex(i + 1, j + 1).setText(data[i][j]);
-            }
-          }
-
-          // Modify D column (assuming data has been correctly parsed into the sheet)
-          for (int rowIndex = 1;
-              rowIndex <= worksheet.getLastRow();
-              rowIndex++) {
-            final cell = worksheet.getRangeByIndex(rowIndex, 4); // D column
-            if (cell.text != null && cell.text!.isNotEmpty) {
-              cell.text = "${cell.text}_modified";
-            }
-          }
-
-          // Save the new workbook
-          final updatedBytes = workbook.saveAsStream();
-          workbook.dispose();
-
-          final updatedFilePath = "${file.path!}_updated.xlsx";
-          // 验证一下 updated file
-          await File(updatedFilePath).writeAsBytes(updatedBytes);
-
-          // Continue with uploading as in your original code
-          await TopicApi.topicBatchImport(File(updatedFilePath)).then((value) {
+          // 调用 API 执行导入
+          await TopicApi.topicBatchImport(File(file.path!)).then((value) {
             "导入成功!".toHint();
             refresh();
           }).catchError((error) {
@@ -706,147 +676,145 @@ class TopicLogic extends GetxController {
   }
 
   // 导出全部到 XLSX 文件
-    Future<void> exportAllToXLSX() async {
-      try {
-        final directory = await FilePicker.platform.getDirectoryPath();
-        if (directory == null) return;
+  Future<void> exportAllToXLSX() async {
+    try {
+      final directory = await FilePicker.platform.getDirectoryPath();
+      if (directory == null) return;
 
-        final xlsio.Workbook workbook = xlsio.Workbook();
-        final xlsio.Worksheet sheet = workbook.worksheets[0];
-        sheet.name = "Sheet1";
+      final xlsio.Workbook workbook = xlsio.Workbook();
+      final xlsio.Worksheet sheet = workbook.worksheets[0];
+      sheet.name = "Sheet1";
 
-        // 获取所有数据
-        List<Map<String, dynamic>> allItems = [];
-        int currentPage = 1;
-        int pageSize = 100;
+      // 获取所有数据
+      List<Map<String, dynamic>> allItems = [];
+      int currentPage = 1;
+      int pageSize = 100;
 
-        while (true) {
-          var response = await TopicApi.topicList({
-            "size": pageSize.toString(),
-            "page": currentPage.toString(),
-          });
+      while (true) {
+        var response = await TopicApi.topicList({
+          "size": pageSize.toString(),
+          "page": currentPage.toString(),
+        });
 
-          allItems.addAll((response["list"] as List<dynamic>).toListMap());
-          if (allItems.length >= response["total"]) break;
-          currentPage++;
-        }
+        allItems.addAll((response["list"] as List<dynamic>).toListMap());
+        if (allItems.length >= response["total"]) break;
+        currentPage++;
+      }
 
-        // 添加表头
+      // 添加表头
+      for (int colIndex = 0; colIndex < columns.length; colIndex++) {
+        final column = columns[colIndex];
+        sheet.getRangeByIndex(1, colIndex + 1).setText(column.title);
+        sheet.getRangeByIndex(1, colIndex + 1).cellStyle.bold = true;
+      }
+
+      // 添加所有行数据
+      int rowIndex = 2;
+      for (var item in allItems) {
         for (int colIndex = 0; colIndex < columns.length; colIndex++) {
           final column = columns[colIndex];
-          sheet.getRangeByIndex(1, colIndex + 1).setText(column.title);
-          sheet
-              .getRangeByIndex(1, colIndex + 1)
-              .cellStyle
-              .bold = true;
+          final value = item[column.key];
+          _setCellValue(sheet, rowIndex, colIndex + 1, value);
         }
-
-        // 添加所有行数据
-        int rowIndex = 2;
-        for (var item in allItems) {
-          for (int colIndex = 0; colIndex < columns.length; colIndex++) {
-            final column = columns[colIndex];
-            final value = item[column.key];
-            _setCellValue(sheet, rowIndex, colIndex + 1, value);
-          }
-          rowIndex++;
-        }
-
-        // 保存文件
-        final now = DateTime.now();
-        final formattedDate = DateFormat('yyyyMMdd_HHmm').format(now);
-        final file = File('$directory/topics_all_pages_$formattedDate.xlsx');
-        await file.writeAsBytes(workbook.saveAsStream());
-        workbook.dispose();
-
-        "导出全部成功!".toHint();
-      } catch (e) {
-        "导出全部失败: $e".toHint();
+        rowIndex++;
       }
-    }
 
-    // 辅助方法：设置单元格的值
-    void _setCellValue(xlsio.Worksheet sheet, int rowIndex, int colIndex,
-        dynamic value) {
-      if (value is int || value is double) {
-        sheet.getRangeByIndex(rowIndex, colIndex).setNumber(value.toDouble());
-      } else if (value is DateTime) {
-        sheet.getRangeByIndex(rowIndex, colIndex).setDateTime(value);
-      } else {
-        sheet.getRangeByIndex(rowIndex, colIndex).setText(
-            value?.toString() ?? '');
-      }
-    }
+      // 保存文件
+      final now = DateTime.now();
+      final formattedDate = DateFormat('yyyyMMdd_HHmm').format(now);
+      final file = File('$directory/topics_all_pages_$formattedDate.xlsx');
+      await file.writeAsBytes(workbook.saveAsStream());
+      workbook.dispose();
 
-    void batchDelete(List<int> ids) {
-      try {
-        List<String> idsStr = ids.map((id) => id.toString()).toList();
-        if (idsStr.isEmpty) {
-          "请先选择要删除的试题".toHint();
-          return;
-        }
-        TopicApi.topicDelete(idsStr.join(",")).then((value) {
-          "批量删除成功!".toHint();
-          selectedRows.clear();
-          refresh();
-        }).catchError((error) {
-          "批量删除失败: $error".toHint();
-        });
-      } catch (e) {
-        "批量删除失败: $e".toHint();
-      }
-    }
-
-    void toggleSelectAll() {
-      if (selectedRows.length == list.length) {
-        // 当前所有行都被选中，清空选中状态
-        selectedRows.clear();
-      } else {
-        // 当前不是所有行都被选中，选择所有行
-        selectedRows.assignAll(list.map((item) => item['id']));
-      }
-    }
-
-    void toggleSelect(int id) {
-      if (selectedRows.contains(id)) {
-        // 当前行已被选中，取消选中
-        selectedRows.remove(id);
-      } else {
-        // 当前行未被选中，选中
-        selectedRows.add(id);
-      }
-    }
-
-    String? getSelectedCateId() {
-      if (selectedQuestionCate.value == '全部题型') {
-        return "";
-      }
-      return selectedQuestionCate.value?.toString() ?? "";
-    }
-
-    String? getSelectedLevelId() {
-      if (selectedQuestionLevel.value == '全部难度') {
-        return "";
-      }
-      return selectedQuestionLevel.value?.toString() ?? "";
-    }
-
-    void applyFilters() {
-      // 这里可以添加应用过滤逻辑
-      // print('Selected Major: ${selectedMajor.value}');
-      // print('Selected Sub Major: ${selectedSubMajor.value}');
-      // print('Selected Sub Sub Major: ${selectedSubSubMajor.value}');
-    }
-
-    void reset() {
-      majorDropdownKey.currentState?.reset();
-      cateDropdownKey.currentState?.reset();
-      levelDropdownKey.currentState?.reset();
-      statusDropdownKey.currentState?.reset();
-      searchText.value = '';
-      selectedRows.clear();
-
-      // 重新初始化数据
-      find(size.value, page.value);
+      "导出全部成功!".toHint();
+    } catch (e) {
+      "导出全部失败: $e".toHint();
     }
   }
+
+  // 辅助方法：设置单元格的值
+  void _setCellValue(
+      xlsio.Worksheet sheet, int rowIndex, int colIndex, dynamic value) {
+    if (value is int || value is double) {
+      sheet.getRangeByIndex(rowIndex, colIndex).setNumber(value.toDouble());
+    } else if (value is DateTime) {
+      sheet.getRangeByIndex(rowIndex, colIndex).setDateTime(value);
+    } else {
+      sheet
+          .getRangeByIndex(rowIndex, colIndex)
+          .setText(value?.toString() ?? '');
+    }
+  }
+
+  void batchDelete(List<int> ids) {
+    try {
+      List<String> idsStr = ids.map((id) => id.toString()).toList();
+      if (idsStr.isEmpty) {
+        "请先选择要删除的试题".toHint();
+        return;
+      }
+      TopicApi.topicDelete(idsStr.join(",")).then((value) {
+        "批量删除成功!".toHint();
+        selectedRows.clear();
+        refresh();
+      }).catchError((error) {
+        "批量删除失败: $error".toHint();
+      });
+    } catch (e) {
+      "批量删除失败: $e".toHint();
+    }
+  }
+
+  void toggleSelectAll() {
+    if (selectedRows.length == list.length) {
+      // 当前所有行都被选中，清空选中状态
+      selectedRows.clear();
+    } else {
+      // 当前不是所有行都被选中，选择所有行
+      selectedRows.assignAll(list.map((item) => item['id']));
+    }
+  }
+
+  void toggleSelect(int id) {
+    if (selectedRows.contains(id)) {
+      // 当前行已被选中，取消选中
+      selectedRows.remove(id);
+    } else {
+      // 当前行未被选中，选中
+      selectedRows.add(id);
+    }
+  }
+
+  String? getSelectedCateId() {
+    if (selectedQuestionCate.value == '全部题型') {
+      return "";
+    }
+    return selectedQuestionCate.value?.toString() ?? "";
+  }
+
+  String? getSelectedLevelId() {
+    if (selectedQuestionLevel.value == '全部难度') {
+      return "";
+    }
+    return selectedQuestionLevel.value?.toString() ?? "";
+  }
+
+  void applyFilters() {
+    // 这里可以添加应用过滤逻辑
+    // print('Selected Major: ${selectedMajor.value}');
+    // print('Selected Sub Major: ${selectedSubMajor.value}');
+    // print('Selected Sub Sub Major: ${selectedSubSubMajor.value}');
+  }
+
+  void reset() {
+    majorDropdownKey.currentState?.reset();
+    cateDropdownKey.currentState?.reset();
+    levelDropdownKey.currentState?.reset();
+    statusDropdownKey.currentState?.reset();
+    searchText.value = '';
+    selectedRows.clear();
+
+    // 重新初始化数据
+    find(size.value, page.value);
+  }
+}

@@ -142,7 +142,6 @@ class ExamTopicDataSource extends DataGridSource {
 
   @override
   List<DataGridRow> get rows => _rows;
-
   DataGridRowAdapter buildRow(DataGridRow row) {
     final index = _rows.indexOf(row);
     final isUnitRow = logic.unitList.any((unit) => unit.id == row.getCells()[0].value);
@@ -186,26 +185,31 @@ class ExamTopicDataSource extends DataGridSource {
       // 普通行
       return DataGridRowAdapter(
         color: index.isEven ? Color(0x50F1FDFC) : Colors.white,
-        cells: row.getCells().map((cell) {
+        cells: row.getCells().asMap().entries.map((entry) {
+          final cellIndex = entry.key;
+          final cell = entry.value;
           if (cell.columnName == '操作') {
             // Topic-specific operations
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                HoverTextButton(
-                  text: "重置试题",
-                  onTap: () async {
-                    // Reset topic logic
-                  },
-                ),
-                SizedBox(width: 5),
-              ],
+            return Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(left: indentation * 20.0, right: 8.0, top: 8.0, bottom: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  HoverTextButton(
+                    text: "重置试题",
+                    onTap: () async {
+                      // Reset topic logic
+                    },
+                  ),
+                  SizedBox(width: 5),
+                ],
+              ),
             );
           } else {
             return Container(
               alignment: Alignment.centerLeft,
-              padding: EdgeInsets.only(
-                  left: indentation * 20.0, right: 8.0, top: 8.0, bottom: 8.0),
+              padding: EdgeInsets.only(left: indentation * 20.0, right: 8.0, top: 8.0, bottom: 8.0),
               child: Text(
                 cell.value?.toString() ?? '',
                 style: TextStyle(fontSize: 14),
