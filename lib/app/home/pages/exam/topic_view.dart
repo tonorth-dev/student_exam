@@ -149,45 +149,43 @@ class ExamTopicDataSource extends DataGridSource {
     int indentation = isUnitRow ? 0 : 1; // Indentation for topics
 
     if (isUnitRow) {
-      // Unit Row
+      // Unit Row - Merge all columns into one cell displaying the unit name
       final unit = logic.unitList.firstWhere((unit) => unit.id == row.getCells()[0].value);
       return DataGridRowAdapter(
-        cells: List<Widget>.generate(logic.columns.value.length, (index) {
-          if (index == 0) { // Assuming 'ID' is first column
-            return Container(
-              alignment: Alignment.centerLeft,
-              padding: EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      _expandedUnits[unit.id] ?? false ? Icons.expand_less : Icons.expand_more,
-                    ),
-                    onPressed: () => _toggleUnit(unit),
+        color: index.isEven ? Color(0x50F1FDFC) : Colors.white,
+        cells: [
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    _expandedUnits[unit.id] ?? false ? Icons.expand_less : Icons.expand_more,
                   ),
-                  Expanded(
-                    child: Text(
-                      "${unit.examName} - ${unit.className} - ${unit.studentName}",
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  onPressed: () => _toggleUnit(unit),
+                ),
+                Expanded(
+                  child: Text(
+                    unit.examName, // Assuming 'examName' is the name field to display
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
-            );
-          } else {
-            // Return empty containers for other columns
-            return Container();
-          }
-        }),
+                ),
+              ],
+            ),
+          ),
+          // Return empty containers for other columns in unit row
+          ...List<Container>.generate(logic.columns.value.length - 1, (_) => Container()),
+        ],
       );
     } else {
-      // Topic Row
+      // Topic Row - Keep as it was
       return DataGridRowAdapter(
         color: index.isEven ? Color(0x50F1FDFC) : Colors.white,
         cells: row.getCells().asMap().entries.map((entry) {
-          int index = entry.key;
+          int cellIndex = entry.key;
           final cell = entry.value;
           if (cell.columnName == '操作') {
             return Row(
