@@ -1,6 +1,6 @@
-import 'package:hongshi_admin/app/home/view.dart';
-import 'package:hongshi_admin/app/login/view.dart';
-import 'package:hongshi_admin/common/app_data.dart';
+import 'package:student_exam/app/home/view.dart';
+import 'package:student_exam/app/login/view.dart';
+import 'package:student_exam/common/app_data.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 

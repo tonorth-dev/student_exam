@@ -1,7 +1,7 @@
-import 'package:hongshi_admin/common/assets_util.dart';
-import 'package:hongshi_admin/common/image_util.dart';
-import 'package:hongshi_admin/theme/theme_util.dart';
-import 'package:hongshi_admin/theme/ui_theme.dart';
+import 'package:student_exam/common/assets_util.dart';
+import 'package:student_exam/common/image_util.dart';
+import 'package:student_exam/theme/theme_util.dart';
+import 'package:student_exam/theme/ui_theme.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

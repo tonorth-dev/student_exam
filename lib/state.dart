@@ -1,5 +1,5 @@
-import 'package:hongshi_admin/component/messages.dart';
-import 'package:hongshi_admin/theme/light_theme.dart';
+import 'package:student_exam/component/messages.dart';
+import 'package:student_exam/theme/light_theme.dart';
 import 'package:get/get.dart';
 
 /// 全局状态

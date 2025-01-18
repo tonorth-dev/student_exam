@@ -1,4 +1,4 @@
-name: hongshi_admin
+name: student_exam
 description: "App项目模板"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
@@ -62,7 +62,10 @@ dependencies:
   window_manager: ^0.4.3
   encrypt: ^5.0.3
   pointycastle: ^3.9.1
-  pinyin: ^3.3.0
+  super_sliver_list: ^0.4.1
+  timer_count_down: ^2.2.2
+  web_socket_channel: ^3.0.1
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:

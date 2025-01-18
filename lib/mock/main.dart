@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:hongshi_admin/mock/middleware/cors.dart';
-import 'package:hongshi_admin/mock/user_api.dart';
+import 'package:student_exam/mock/middleware/cors.dart';
+import 'package:student_exam/mock/user_api.dart';
 
 void main() async {
   var userApi = UserApi();

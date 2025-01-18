@@ -1,5 +1,5 @@
-import 'package:hongshi_admin/ex/ex_string.dart';
-import 'package:hongshi_admin/theme/my_theme.dart';
+import 'package:student_exam/ex/ex_string.dart';
+import 'package:student_exam/theme/my_theme.dart';
 import 'package:flutter/material.dart';
 
 abstract class MyDark extends MyTheme{

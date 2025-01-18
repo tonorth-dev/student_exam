@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:hongshi_admin/common/http_util.dart';
+import 'package:student_exam/common/http_util.dart';
 import 'package:dio/dio.dart';
 
 class BookTemplateApi {

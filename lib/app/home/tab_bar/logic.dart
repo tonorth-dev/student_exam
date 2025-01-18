@@ -1,7 +1,7 @@
 
-import 'package:hongshi_admin/app/home/sidebar/logic.dart';
-import 'package:hongshi_admin/app/home/system/analysis/view.dart';
-import 'package:hongshi_admin/theme/ui_theme.dart';
+import 'package:student_exam/app/home/sidebar/logic.dart';
+import 'package:student_exam/app/home/system/analysis/view.dart';
+import 'package:student_exam/theme/ui_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

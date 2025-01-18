@@ -1,8 +1,4 @@
 import 'dart:convert';
-
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
@@ -11,6 +7,8 @@ class LoginData {
   String themeName = "";
   String role = "";
   String user = "";
+  String code = "";
+  int id = 0;
   DateTime? expiryDate;
 
   // toJson
@@ -18,8 +16,12 @@ class LoginData {
     return jsonEncode({
       "token": token,
       "user": user,
+      "id": id,
       "themeName": themeName,
-      "expiryDate": expiryDate != null ? DateFormat('yyyy-MM-dd HH:mm:ss').format(expiryDate!) : null,
+      "examCode": code,
+      "expiryDate": expiryDate != null
+          ? DateFormat('yyyy-MM-dd HH:mm:ss').format(expiryDate!)
+          : null,
     });
   }
 
@@ -29,13 +31,16 @@ class LoginData {
     data.token = map["token"] ?? "";
     data.themeName = map["themeName"] ?? "";
     data.user = map["user"] ?? "";
+    data.code = map["examCode"] ?? "";
+    data.id = map["id"] ?? 0;
     if (map["expiryDate"] != null) {
-      data.expiryDate = DateFormat('yyyy-MM-dd HH:mm:ss').parse(map["expiryDate"]);
+      data.expiryDate =
+          DateFormat('yyyy-MM-dd HH:mm:ss').parse(map["expiryDate"]);
     }
     return data;
   }
 
-  static String saveKey = "app_data";
+  static String saveKey = "student_data";
 
   static Future<LoginData> read() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -68,7 +73,7 @@ class LoginData {
 
   // 设置过期时间为一天后
   void setExpiryToTomorrow() {
-    expiryDate = DateTime.now().add(Duration(days: 7));
+    expiryDate = DateTime.now().add(Duration(days: 1));
   }
 
   // 保存数据
@@ -89,7 +94,7 @@ class LoginData {
   // 新增 clear 方法：清除保存的数据
   static Future<void> clear() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.remove(saveKey);  // 删除保存的登录数据
+    prefs.remove(saveKey); // 删除保存的登录数据
     print("Login data cleared.");
   }
 }

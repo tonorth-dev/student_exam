@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:hongshi_admin/ex/ex_hint.dart';
+import 'package:student_exam/ex/ex_hint.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -15,7 +15,6 @@ class LoginLogic extends GetxController {
   var accountText = TextEditingController();
   var passwordText = TextEditingController();
   var captchaText = TextEditingController();
-  var selectedRole = '超级管理员'.obs;
   var captchaImageUrl = ''.obs;
   var captchaId = ''.obs;
 
@@ -45,7 +44,6 @@ class LoginLogic extends GetxController {
       if (data['captchaId'].isNotEmpty) {
         captchaId.value = data['captchaId'];
         captchaImageUrl.value = data['picPath'];
-        print(data);
       } else {
         '获取验证码失败'.toHint();
       }
@@ -55,10 +53,6 @@ class LoginLogic extends GetxController {
   }
 
   void login() async {
-    if (accountText.text.isEmpty) {
-      '账号不能为空'.toHint();
-      return;
-    }
     if (passwordText.text.isEmpty) {
       '密码不能为空'.toHint();
       return;
@@ -70,7 +64,6 @@ class LoginLogic extends GetxController {
 
     try {
       var data = await UserApi.login({
-        'username': accountText.text,
         'password': passwordText.text,
         'captcha': captchaText.text,
         'captchaId': captchaId.value
@@ -79,8 +72,9 @@ class LoginLogic extends GetxController {
       if (data['token'].isNotEmpty) {
         await LoginData.easySave((dg) {
           dg.token = data['token'];
-          dg.role = selectedRole.value;
-          dg.user = data['user']['nickName'];
+          dg.user = data['user']['userName'];
+          dg.code = data['user']['phone'];
+          dg.id = int.parse(data['user']['email']);
         });
         // 登录成功后保存账号信息
         saveAccountInfo(accountText.text);

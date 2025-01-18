@@ -1,8 +1,8 @@
-import 'package:hongshi_admin/app/home/tab_bar/logic.dart';
-import 'package:hongshi_admin/ex/ex_anim.dart';
-import 'package:hongshi_admin/ex/ex_list.dart';
-import 'package:hongshi_admin/theme/theme_util.dart';
-import 'package:hongshi_admin/theme/ui_theme.dart';
+import 'package:student_exam/app/home/tab_bar/logic.dart';
+import 'package:student_exam/ex/ex_anim.dart';
+import 'package:student_exam/ex/ex_list.dart';
+import 'package:student_exam/theme/theme_util.dart';
+import 'package:student_exam/theme/ui_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

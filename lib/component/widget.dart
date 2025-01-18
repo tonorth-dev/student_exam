@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:hongshi_admin/app/home/head/logic.dart';
-import 'package:hongshi_admin/ex/ex_hint.dart';
+import 'package:student_exam/app/home/head/logic.dart';
+import 'package:student_exam/ex/ex_hint.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

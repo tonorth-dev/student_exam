@@ -1,7 +1,7 @@
-import 'package:hongshi_admin/app/launch/view.dart';
-import 'package:hongshi_admin/common/app_data.dart';
-import 'package:hongshi_admin/state.dart';
-import 'package:hongshi_admin/theme/my_theme.dart';
+import 'package:student_exam/app/launch/view.dart';
+import 'package:student_exam/common/app_data.dart';
+import 'package:student_exam/state.dart';
+import 'package:student_exam/theme/my_theme.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

@@ -1,13 +1,13 @@
-import 'package:hongshi_admin/app/home/head/logic.dart';
-import 'package:hongshi_admin/app/home/head/view.dart';
-import 'package:hongshi_admin/app/home/sidebar/logic.dart';
-import 'package:hongshi_admin/app/home/sidebar/view.dart';
-import 'package:hongshi_admin/app/home/tab_bar/view.dart';
-import 'package:hongshi_admin/component/watermark.dart';
-import 'package:hongshi_admin/ex/ex_anim.dart';
-import 'package:hongshi_admin/main.dart';
-import 'package:hongshi_admin/state.dart';
-import 'package:hongshi_admin/theme/theme_util.dart';
+import 'package:student_exam/app/home/head/logic.dart';
+import 'package:student_exam/app/home/head/view.dart';
+import 'package:student_exam/app/home/sidebar/logic.dart';
+import 'package:student_exam/app/home/sidebar/view.dart';
+import 'package:student_exam/app/home/tab_bar/view.dart';
+import 'package:student_exam/component/watermark.dart';
+import 'package:student_exam/ex/ex_anim.dart';
+import 'package:student_exam/main.dart';
+import 'package:student_exam/state.dart';
+import 'package:student_exam/theme/theme_util.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -39,7 +39,7 @@ class HomePage extends StatelessWidget {
                 return Visibility(
                   visible: waterMark.value,
                   child: CustomPaint(
-                    painter: WatermarkPainter(),
+                    painter: null,
                   ),
                 );
               }),
@@ -66,7 +66,7 @@ class HomePage extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                HeadPage(),
+                // HeadPage(),
                 Expanded(child: TabBarPage()),
               ],
             ),

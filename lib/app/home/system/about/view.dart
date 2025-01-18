@@ -1,4 +1,4 @@
-import 'package:hongshi_admin/app/home/sidebar/logic.dart';
+import 'package:student_exam/app/home/sidebar/logic.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

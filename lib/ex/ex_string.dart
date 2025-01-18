@@ -1,6 +1,6 @@
 
-import 'package:hongshi_admin/common/image_util.dart';
-import 'package:hongshi_admin/ex/ex_int.dart';
+import 'package:student_exam/common/image_util.dart';
+import 'package:student_exam/ex/ex_int.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 

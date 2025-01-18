@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'package:get/get.dart' as get_c;
 import 'package:get/get_core/src/get_main.dart';
-import 'package:hongshi_admin/common/app_data.dart';
-import 'package:hongshi_admin/ex/ex_hint.dart';
+import 'package:student_exam/common/app_data.dart';
+import 'package:student_exam/ex/ex_hint.dart';
 import 'package:dio/dio.dart';
 
 import '../app/login/view.dart';

@@ -1,4 +1,4 @@
-import 'package:hongshi_admin/common/http_util.dart';
+import 'package:student_exam/common/http_util.dart';
 
 class QuestionApi {
 

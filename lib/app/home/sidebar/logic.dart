@@ -1,31 +1,8 @@
-import 'package:hongshi_admin/app/home/pages/admin/view.dart';
-import 'package:hongshi_admin/app/home/pages/demo/view.dart';
-import 'package:hongshi_admin/app/home/pages/demo2/view.dart';
-import 'package:hongshi_admin/app/home/pages/demo3/view.dart';
-import 'package:hongshi_admin/app/home/pages/empty/view.dart';
-import 'package:hongshi_admin/app/home/pages/play/view.dart';
-import 'package:hongshi_admin/app/home/pages/question/view.dart';
-import 'package:hongshi_admin/app/home/pages/user/view.dart';
-import 'package:hongshi_admin/app/home/system/settings/view.dart';
-import 'package:hongshi_admin/ex/ex_int.dart';
+import 'package:student_exam/app/home/pages/empty/view.dart';
+import 'package:student_exam/ex/ex_int.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import 'package:hongshi_admin/app/home/pages/job/view.dart';
-import 'package:hongshi_admin/app/home/pages/major/view.dart';
-import 'package:hongshi_admin/app/home/pages/corres/view.dart';
-
-import 'package:hongshi_admin/app/home/pages/class/view.dart';
-import 'package:hongshi_admin/app/home/pages/institution/view.dart';
-import 'package:hongshi_admin/app/home/pages/student/view.dart';
-
-import 'package:hongshi_admin/app/home/pages/book/book.dart';
-import 'package:hongshi_admin/app/home/pages/exam/exam_view.dart';
-import 'package:hongshi_admin/app/home/pages/lecture/view.dart';
-import 'package:hongshi_admin/app/home/pages/note/view.dart';
-import 'package:hongshi_admin/app/home/pages/student_lecture/view.dart';
-import 'package:hongshi_admin/app/home/pages/student_question/view.dart';
-import 'package:hongshi_admin/app/home/pages/topic/view.dart';
+import '../pages/exam/view.dart';
 
 class SidebarLogic extends GetxController {
   static var selectName = "".obs;
@@ -37,94 +14,23 @@ class SidebarLogic extends GetxController {
 
   static List<SidebarTree> treeList = [
     SidebarTree(
-      name: "岗位信息",
-      icon: Icons.work, // Apply color here
+      name: "面试模拟",
+      icon: Icons.meeting_room, // Apply color here
       color: Colors.orange[300], // Set desired color
-      children: jobList,
+      page: ExamPage(),
     ),
     SidebarTree(
-      name: "考生信息",
-      icon: Icons.person, // Apply color here
+      name: "讲义学习",
+      icon: Icons.book, // Apply color here
       color: Colors.green[400], // Set desired color
-      children: studentList,
-    ),
-    SidebarTree(
-      name: "试题试卷",
-      icon: Icons.assignment, // Apply color here
-      color: Colors.blue[400], // Set desired color
-      children: questionList,
+      page: ExamPage(),
     ),
     SidebarTree(
       name: "心理测试",
       icon: Icons.psychology, // Apply color here
-      color: Colors.purple[200], // Set desired color
-      // children: demoList,
-    ),
-    SidebarTree(
-      name: "讲义信息",
-      icon: Icons.book, // Apply color here
       color: Colors.blue[400], // Set desired color
-      children: lectureList,
-    ),
-    SidebarTree(
-      name: "总部题库",
-      icon: Icons.library_books, // Apply color here
-      color: Colors.brown[300], // Set desired color
-      children: topicList,
-    ),
-    SettingsPage.newThis(),
-  ];
-
-  static List<SidebarTree> jobList = [
-    JobPage.newThis(),
-    MajorPage.newThis(),
-    CorresPage.newThis(),
-  ];
-
-  static List<SidebarTree> studentList = [
-    InstitutionPage.newThis(),
-    ClassesPage.newThis(),
-    StudentPage.newThis(),
-    // BindPage.newThis(),
-  ];
-
-
-  static List<SidebarTree> questionList = [
-    QuestionPage.newThis(),
-    StudentQuestionPage.newThis(),
-    ExamPage.newThis(),
-  ];
-
-  static List<SidebarTree> lectureList = [
-    LecturePage.newThis(),
-    NotePage.newThis(),
-    StuLecPage.newThis(),
-  ];
-
-  static List<SidebarTree> topicList = [
-    TopicPage.newThis(),
-    BookPage.newThis(),
-  ];
-
-  static List<SidebarTree> demoList = [
-    AdminPage.newThis(),
-    DemoPage.newThis(),
-    Demo2Page.newThis(),
-    Demo3Page.newThis(),
-    UserPage.newThis(),
-    PlayPage.newThis(),
-    SidebarTree(
-      name: "嵌套页面",
-      icon: Icons.extension,
-      children: demo2List,
-    ),
-  ];
-
-  static List<SidebarTree> demo2List = [
-    newThis("示例1"),
-    newThis("示例2"),
-    newThis("示例3"),
-    newThis("示例4"),
+      page: ExamPage(),
+    )
   ];
 
   /// 面包屑和侧边栏联动

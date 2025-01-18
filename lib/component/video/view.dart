@@ -1,5 +1,5 @@
-import 'package:hongshi_admin/theme/theme_util.dart';
-import 'package:hongshi_admin/theme/ui_theme.dart';
+import 'package:student_exam/theme/theme_util.dart';
+import 'package:student_exam/theme/ui_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';

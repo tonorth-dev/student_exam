@@ -1,4 +1,4 @@
-import 'package:hongshi_admin/common/http_util.dart';
+import 'package:student_exam/common/http_util.dart';
 
 class UserApi {
 
@@ -6,7 +6,6 @@ class UserApi {
     try {
       // 必传字段校验
       List<String> requiredFields = [
-        'username',
         'password',
         'captcha',
         'captchaId',
@@ -18,7 +17,7 @@ class UserApi {
       }
 
       // 发送POST请求
-      dynamic response = await HttpUtil.post('/base/login', params: params);
+      dynamic response = await HttpUtil.post('/base/student/login', params: params);
 
       return response;
     } catch (e) {
@@ -38,18 +37,6 @@ class UserApi {
   }
 
   static Future<dynamic> userList({Map<String, dynamic>? params}) async {
-    return await HttpUtil.get("/user/list", params: params);
-  }
-
-  static Future<dynamic> userInsert({Map<String, dynamic>? params}) async {
-    return await HttpUtil.post("/user/insert", params: params);
-  }
-
-  static Future<dynamic> userDelete({Map<String, dynamic>? params}) async {
-    return await HttpUtil.post("/user/delete", params: params);
-  }
-
-  static Future<dynamic> userUpdate({Map<String, dynamic>? params}) async {
-    return await HttpUtil.post("/user/update", params: params);
+    return await HttpUtil.get("/user/student/info", params: params);
   }
 }
