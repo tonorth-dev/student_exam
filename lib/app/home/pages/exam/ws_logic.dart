@@ -129,14 +129,35 @@ class WSLogic extends GetxController {
             connStatusName.value = "教师端已连接";
             break;
           case 2:
-            connStatusName.value = "学生端已匹配成功";
+            connStatusName.value = "教师端断开";
+            break;
+          case 3:
+            connStatusName.value = "匹配成功";
             break;
           default:
             connStatusName.value = "状态异常，请联系技术人员"; // 处理未知状态
         }
         break;
+      case 'error':
+        final error = message['message'];
+        error.toString().toHint();
+      case 'exam_info':
       default:
         print('Unknown message type: $messageType');
+    }
+  }
+
+  void disconnect() {
+    try {
+      stopHeartbeat(); // 停止心跳
+      if (webSocketService.isConnected.value) {
+        webSocketService.disconnect(); // 调用 WebSocketService 的断开方法
+        connStatusName.value = "未连接";
+        print("Disconnected from WebSocket.");
+      }
+    } catch (e) {
+      print("Error while disconnecting: $e");
+      showErrorDialog('错误', '断开连接时发生错误，请稍后重试。');
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
@@ -46,14 +47,15 @@ class _ExamPageState extends State<ExamPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(95),
+        preferredSize: const Size.fromHeight(80),
         child: AppBar(
           title: const Text(''),
           centerTitle: true,
+          elevation: 0, // 设置 elevation 为 0
           flexibleSpace: FlexibleSpaceBar(
             background: Image.asset(
               'assets/images/exam_banner_logo.png',
-              fit: BoxFit.cover,
+              fit: BoxFit.fill,
             ),
           ),
           actions: [
@@ -76,503 +78,316 @@ class _ExamPageState extends State<ExamPage> {
           ],
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/exam_page_bg.png'),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.5),
-              BlendMode.dstATop,
-            ),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              const SizedBox(height: 0),
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _buildPanel(),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+      body: SafeArea(
+        child: Container(
+          child: _buildPanel(),
         ),
       ),
     );
-  }
-
-  Widget _buildConnect() {
-    return Obx(() => Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      width: 314,
-      height: 70,
-      decoration: BoxDecoration(
-        color: Colors.black87, // 设置背景颜色为深色
-        borderRadius: BorderRadius.circular(2),
-      ),
-      child: Center( // 使用 Center 小部件使内容垂直居中
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 第一行：学生端登录码和实际登录码
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, // 将元素左右对齐
-              children: [
-                const Text(
-                  "登录码：",
-                  style: TextStyle(fontSize: 14.0, color: Colors.white),
-                ),
-                Expanded(
-                  child: TextField(
-                    controller: TextEditingController(),
-                    onChanged: (value) {
-                      wsLogic.examCode.value = value;
-                    },
-                    style: const TextStyle(
-                      fontSize: 16.0,
-                      fontFamily: 'PingFang SC',
-                      color: Colors.orangeAccent, // 登录码颜色为绿色
-                      letterSpacing: 1.5,
-                    ),
-                    decoration: InputDecoration(
-                      border: InputBorder.none, // 去掉边框
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, // 将元素左右对齐
-              children: [
-                const Text(
-                  "连接状态：",
-                  style: TextStyle(fontSize: 14.0, color: Colors.white),
-                ),
-                Row(
-                  children: [
-                    // 连接状态文本
-                    Text(
-                      wsLogic.connStatusName.value,
-                      style: const TextStyle(
-                        fontSize: 14.0,
-                        fontFamily: 'PingFang SC',
-                        color: Colors.greenAccent, // 连接状态颜色
-                      ),
-                    ),
-                    const SizedBox(width: 25),
-                    // 根据连接状态决定按钮是否可用
-                    if (wsLogic.connStatusName.value == "未连接" || wsLogic.connStatusName.value == "连接失败")
-                      Container(
-                        width: 60,
-                        height: 25,
-                        child: TextButton(
-                          onPressed: () {
-                            // 点击按钮后调用wsLogic中的连接方法
-                            wsLogic.connectStudent(wsLogic.examCode.value);
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.blue, // 按钮文字颜色
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6), // 设置较小的圆角半径
-                            ),
-                          ),
-                          child: const Text("连接"),
-                        ),
-                      )
-                    else
-                      Container(
-                        width: 60,
-                        height: 25,
-                        child: TextButton(
-                          onPressed: null,
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.blueGrey,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6), // 设置较小的圆角半径
-                            ),
-                          ),
-                          child: const Text("连接"),
-                        ),
-                      )
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    ));
   }
 
   Widget _buildPanel() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildQuestionContent(),
-          ),
-          const SizedBox(width: 38),
-          Column(
-            children: [
-              _buildConnect(),
-              const SizedBox(height: 10),
-              _buildTimer(),
-            ],
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuestionContent() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0x70FFDBDB),
-        borderRadius: BorderRadius.circular(2),
-        image: DecorationImage(
-          image: AssetImage('assets/images/exam_questions_bg.jpg'), // 替换为你的背景图片路径
-          fit: BoxFit.fill, // 根据需要调整图片的填充方式
-        ),
-      ),
-      child: Column(
-        children: [
-          // 始终显示顶部图片
-          const SizedBox(height: 15),
-          Expanded(
-            child: Stack(
-              children: [
-                // 背景图片（当题目列表为空时显示）
-                Obx(
-                      () => examLogic.questions.isEmpty
-                      ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/images/no_questions_bg.jpg',
-                          width: 200,
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          '等待教师下发试题',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  )
-                      : const SizedBox.shrink(), // 当有数据时不显示背景图片
-                ),
-                // 题目列表内容
-                Obx(
-                      () => examLogic.questions.isEmpty
-                      ? const SizedBox.shrink() // 列表为空时不显示内容
-                      : Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 8.0),
-                    child: SuperListView.builder(
-                      listController: examLogic.listController,
-                      controller: examLogic.scrollController,
-                      itemCount: examLogic.questions.length,
-                      itemBuilder: (context, index) {
-                        final question = examLogic.questions[index];
-                        return _buildQuestion(
-                            index: index, question: question);
-                      },
-                    ),
-                  ),
-                ),
-              ],
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.yellow,
+            image: DecorationImage(
+              image: AssetImage('assets/images/exam_page_bg.png'),
+              fit: BoxFit.fill,
+              colorFilter: ColorFilter.mode(
+                Colors.black.withOpacity(1),
+                BlendMode.dstATop,
+              ),
             ),
           ),
-        ],
-      ),
+          width: 1440,
+          height: 702,
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              _buildMainContent(),
+              _buildInfoPanel(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-
-  Widget _buildQuestion({required int index, required Question question}) {
-    bool isHighlighted = examLogic.highlightedItems.contains(index);
-    Color? backgroundColor = isHighlighted ? Color(0xFFEAF7FE) : Colors.white;
-
-    // Scroll to the item after building, but only if it's highlighted and the frame has been laid out
-    if (isHighlighted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        examLogic.listController.animateToItem(
-          index: index,
-          scrollController: examLogic.scrollController,
-          alignment: 0.5,
-          duration: (estimatedDistance) => Duration(milliseconds: 500),
-          curve: (estimatedDistance) => Curves.easeInOut,
-        );
-      });
-    }
-
-    return InkWell(
-      onTap: () {
-        setState(() {
-          examLogic.currentQuestionIndex.value = index;
-          examLogic.animateToItem(index);
-        });
-      },
+  Widget _buildMainContent() {
+    return Positioned(
+      left: 31.76,
+      top: 116,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(2),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                color: Colors.grey[50],
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Image.asset(
-                      'assets/images/question_icon.png',
-                      width: 24,
-                      height: 24,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        question.title,
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                color: Colors.grey[50],
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Image.asset(
-                      'assets/images/answer_icon.png',
-                      width: 24,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        question.answer,
-                        style: TextStyle(
-                          color: Colors.black.withOpacity(0.7),
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+        width: 1050,
+        height: 590,
+        decoration: ShapeDecoration(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              bottomLeft: Radius.circular(20),
+            ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTimer() {
-    return Container(
-      width: 340,
-      height: 800, // Adjusted height for better layout
-      decoration: BoxDecoration(
-        color: Colors.red[400],
-        borderRadius:
-        BorderRadius.circular(2), // Increased border radius for aesthetics
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            // Timer header image
-            Container(
-              width: double.infinity, // Make it stretch horizontally
-              padding:
-              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Image.asset(
-                'assets/images/timer_header.png',
-                height: 46,
-              ),
-            ),
-            Expanded(
-              child: Column(
-                children: [
-                  // White container with time display and button inside
-                  Container(
-                    width: double.infinity,
-                    height: 550, // Adjusted height for better layout
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(
-                          2), // Match with parent container
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          // Time display at the top of the white container
-                          Center(
-                            child: RichText(
-                              text: TextSpan(
-                                style: TextStyle(
-                                  fontSize: 54,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red,
-                                  fontFamily: 'Anton-Regular',
-                                ),
-                                children: [
-                                  TextSpan(
-                                      text:
-                                      (countdownLogic.currentSeconds ~/ 60)
-                                          .toString()
-                                          .padLeft(2, '0')[0]),
-                                  TextSpan(
-                                    text: ' ',
-                                    // Increase space between digits of minutes
-                                    style: TextStyle(
-                                        color: Colors.transparent,
-                                        fontSize: 54),
-                                  ),
-                                  TextSpan(
-                                      text:
-                                      (countdownLogic.currentSeconds ~/ 60)
-                                          .toString()
-                                          .padLeft(2, '0')[1]),
-                                  TextSpan(text: ' : '),
-                                  // Increase space around colon
-                                  TextSpan(
-                                      text: (countdownLogic.currentSeconds % 60)
-                                          .toString()
-                                          .padLeft(2, '0')[0]),
-                                  TextSpan(
-                                    text: ' ',
-                                    // Increase space between digits of seconds
-                                    style: TextStyle(
-                                        color: Colors.transparent,
-                                        fontSize: 54),
-                                  ),
-                                  TextSpan(
-                                      text: (countdownLogic.currentSeconds % 60)
-                                          .toString()
-                                          .padLeft(2, '0')[1]),
-                                ],
-                              ),
-                            ),
-                          ),
-                          if (countdownLogic.showElapsedTime)
-                            Center(
-                              child: Text(
-                                '本次共用时${(countdownLogic.totalDuration - countdownLogic.currentSeconds) ~/ 60}分${(countdownLogic.totalDuration - countdownLogic.currentSeconds) % 60}秒',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.orange,
-                                  fontFamily: 'PingFang SC',
-                                ),
-                              ),
-                            ),
-                          const SizedBox(height: 20),
-                          // Space between time and button
-                          // Custom button directly below the time display
-                          _buildCustomButton(),
-                          const SizedBox(height: 20),
-                          // Display segments using ListView
-                          Expanded(
-                            child: StreamBuilder<List<String>>(
-                              stream: countdownLogic.segmentsStream,
-                              initialData: [],
-                              builder: (context, snapshot) {
-                                final segments = snapshot.data ?? [];
-                                return ListView.builder(
-                                  itemCount: segments.length,
-                                  itemBuilder: (context, index) {
-                                    return ListTile(
-                                      leading: Text(
-                                        '第${index + 1}段用时：',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w400,
-                                          fontFamily: 'PingFang SC',
-                                        ),
-                                      ),
-                                      title: Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Text(
-                                          segments[index],
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            color: Colors.redAccent,
-                                            fontFamily: 'OPPOSans',
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildWaitingRoom(),
           ],
         ),
       ),
     );
   }
 
-// The custom button widget remains unchanged
-  Widget _buildCustomButton() {
-    return Container(
-      width: double.infinity, // Make the button stretch horizontally
-      height: 50, // Adjust based on design needs
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/timer_seg.png'),
-          fit: BoxFit.fill,
-        ),
-        borderRadius: BorderRadius.circular(2), // Match with parent container
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            countdownLogic.markSegment();
-          },
-          onHover: (isHovering) {
-            // Optional: Change state or appearance when hovered
-          },
-          child: Center(
-            child: Text(
-              '分段计时', // Button label
-              style: TextStyle(
-                color: Colors.white, // Label color
-                fontSize: 20, // Label size
-                fontWeight: FontWeight.bold, // Label weight
+  Widget _buildWaitingRoom() {
+    return Padding(
+      padding: EdgeInsets.only(top: 135.22),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 189.78,
+            height: 189.78,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/no_questions_bg.jpg'),
+                fit: BoxFit.fill,
               ),
             ),
           ),
+          SizedBox(height: 20),
+          Text(
+            '等待教师下发试题',
+            style: TextStyle(
+              color: Color(0xFF383838),
+              fontSize: 18,
+              fontFamily: 'PingFang SC',
+              fontWeight: FontWeight.w400,
+              height: 1.50,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoPanel() {
+    return Positioned(
+      left: 1113.33,
+      top: 139,
+      child: Container(
+        width: 300, // 添加固定宽度
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStudentInfo(),
+            SizedBox(height: 40),
+            _buildConnectionStatus(),
+            SizedBox(height: 40),
+            _buildTimerPanel(),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildStudentInfo() {
+    return _buildTextWithInput('登录码:', '请输入登录码', Color(0xFFFFFBC7), Color(0xFFFF0004));
+  }
+
+  Widget _buildTextWithInput(String label, String placeholder, Color labelColor, Color textColor) {
+    return Row(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: labelColor,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        SizedBox(width: 20),
+        Container(
+          width: 120, // 设置宽度
+          height: 35, // 设置高度
+          child: TextField(
+            keyboardType: TextInputType.number, // 设置输入类型为数字
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly, // 只允许输入数字
+              LengthLimitingTextInputFormatter(6), // 限制输入最大长度为6位
+            ],
+            decoration: InputDecoration(
+              filled: true, // 启用填充
+              fillColor: Colors.white, // 设置背景色
+              hintText: placeholder,
+              hintStyle: TextStyle(
+                color: Colors.grey,
+                fontFamily: 'PingFang SC',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+              ), // 设置提示文字颜色
+              contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15), // 内边距
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: textColor, width: 0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: textColor, width: 0.8),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            style: TextStyle(color: Colors.orange, fontSize: 16), // 输入文字颜色和样式
+          ),
+        ),
+        SizedBox(width: 20),
+        _buildConnectButton(),
+      ],
+    );
+  }
+
+  Widget _buildConnectionStatus() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('连接状态：', style: TextStyle(color: Color(0xFFFFFBC7), fontSize: 18, fontWeight: FontWeight.w600)),
+      ],
+    );
+  }
+
+  Widget _buildConnectButton() {
+    return TextButton(
+      onPressed: () {
+        print('连接按钮被点击');
+        HapticFeedback.lightImpact();
+      },
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+              (Set<MaterialState> states) {
+            if (states.contains(MaterialState.pressed)) {
+              return Colors.black.withOpacity(0.2);
+            }
+            return Colors.transparent;
+          },
+        ),
+        overlayColor: MaterialStateProperty.resolveWith<Color?>(
+              (Set<MaterialState> states) {
+            if (states.contains(MaterialState.hovered)) {
+              return Colors.black.withOpacity(0.1);
+            }
+            return null;
+          },
+        ),
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+        ),
+      ),
+      child: Container(
+        width: 70,
+        height: 35,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+            colors: [Color(0xFFFFD566), Colors.white],
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Center(
+          child: Text(
+            '连接',
+            style: TextStyle(color: Color(0xFFFF4F1A), fontSize: 16),
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildTimerPanel() {
+    return Container(
+      width: 275,
+      height: 466,
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            child: Container(
+              width: 275,
+              height: 375,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 22.44,
+            top: 92,
+            child: _buildTimerDetails(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimerDetails() {
+    return Column(
+      children: [
+        _buildTimerDisplay(),
+        SizedBox(height: 20),
+        Text('分段计时', style: TextStyle(color: Colors.white, fontSize: 20)),
+        SizedBox(height: 20),
+        _buildTimeSegments(),
+      ],
+    );
+  }
+
+  Widget _buildTimerDisplay() {
+    return Stack(
+      children: [
+        // You would need to implement the actual timer display here
+      ],
+    );
+  }
+
+  Widget _buildTimeSegments() {
+    return Stack(
+      children: [
+        // Implement time segment display here
+      ],
+    );
+  }
+
+  Widget _buildInputField(String placeholder, Color textColor) {
+    return Container(
+      width: 160,
+      height: 40,
+      decoration: ShapeDecoration(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(width: 1, color: Color(0xFFF92D37)),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        shadows: [
+          BoxShadow(
+            color: Color(0x19871B03),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          )
+        ],
+      ),
+      child: Center(
+        child: Text(placeholder, style: TextStyle(color: textColor, fontSize: 16)),
       ),
     );
   }
@@ -589,13 +404,5 @@ class _ExamPageState extends State<ExamPage> {
     countdownLogic.segmentsStream.listen((segments) {
       setState(() {});
     });
-  }
-
-  static SidebarTree newThis() {
-    return SidebarTree(
-      name: "机构管理",
-      icon: Icons.app_registration_outlined,
-      page: ExamPage(),
-    );
   }
 }

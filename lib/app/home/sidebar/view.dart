@@ -16,9 +16,9 @@ class SidebarPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-        width: 200,
+        width: 150,
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 200),
+          constraints: BoxConstraints(maxWidth: 150),
           child: _default(),
         ));
   }

@@ -16,10 +16,10 @@ class Assets {
   static const String imagesExamBtnBg3 = 'assets/images/exam_btn_bg3.png';
   static const String imagesExamBtnBg4 = 'assets/images/exam_btn_bg4.png';
   static const String imagesExamPageBack = 'assets/images/exam_page_back.png';
-  static const String imagesExamPageBg = 'assets/images/exam_page_bg.png';
   static const String imagesExamQuestionsBg = 'assets/images/exam_questions_bg.jpg';
   static const String imagesFollowHeaderBg = 'assets/images/follow_header_bg.jpg';
   static const String imagesFollowHeaderBgF = 'assets/images/follow_header_bg_f.jpg';
+  static const String imagesImg = 'assets/images/img.png';
   static const String imagesLogHeader = 'assets/images/log_header.png';
   static const String imagesLogo = 'assets/images/logo.jpg';
   static const String imagesNoQuestionsBg = 'assets/images/no_questions_bg.jpg';
