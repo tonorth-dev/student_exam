@@ -45,6 +45,7 @@ class LecturePage extends StatelessWidget {
           SizedBox(width: 30),
           SizedBox(
             width: 300,
+            height: MediaQuery.of(context).size.height * 0.9,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start, // Align children to the top
               crossAxisAlignment: CrossAxisAlignment.start, // Align children to the left
@@ -68,8 +69,8 @@ class LecturePage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                width: 800,
-                height: MediaQuery.of(context).size.height * 0.9,
+                width: 780,
+                height: MediaQuery.of(context).size.height * 0.95,
                 child: Container(
                   padding: const EdgeInsets.all(16.0),
                   child: PdfPreView(
