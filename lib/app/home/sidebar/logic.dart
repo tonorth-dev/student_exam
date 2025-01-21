@@ -3,6 +3,7 @@ import 'package:student_exam/ex/ex_int.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../pages/exam/view.dart';
+import '../pages/lecture/view.dart';
 
 class SidebarLogic extends GetxController {
   static var selectName = "".obs;
@@ -23,7 +24,7 @@ class SidebarLogic extends GetxController {
       name: "讲义学习",
       icon: Icons.book, // Apply color here
       color: Colors.green[400], // Set desired color
-      page: ExamPage(),
+      page: LecturePage(),
     ),
     SidebarTree(
       name: "心理测试",

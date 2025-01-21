@@ -641,16 +641,23 @@ class _SearchBoxWidgetState extends State<SearchBoxWidget> {
 
 class SearchButtonWidget extends StatelessWidget {
   final VoidCallback onPressed;
+  final double width;
+  final double height;
 
-  const SearchButtonWidget({super.key, required this.onPressed});
+  const SearchButtonWidget({
+    super.key,
+    required this.onPressed,
+    this.width = 80, // 默认宽度
+    this.height = 34, // 默认高度
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 80,
-      height: 34,
+      width: width, // 使用传入的宽度或默认值
+      height: height, // 使用传入的高度或默认值
       decoration: ShapeDecoration(
-        color: Color(0xFFD43030),
+        color: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
@@ -660,11 +667,11 @@ class SearchButtonWidget extends StatelessWidget {
         child: Text(
           '查询',
           style: TextStyle(
-            color: Colors.white,
+            color: Colors.blueGrey,
             fontSize: 14,
             fontFamily: 'PingFang SC',
             fontWeight: FontWeight.w400,
-            height: 0.09,
+            height: 1.5, // 调整行高到更合适的值
           ),
         ),
       ),

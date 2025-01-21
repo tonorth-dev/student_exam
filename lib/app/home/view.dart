@@ -57,10 +57,15 @@ class HomePage extends StatelessWidget {
           // 宽度扩大动画
           Obx(() {
             var show = sidebarShow.value;
-            return Visibility(visible: show, child: sidebarPage)
-                .toAccordionX(sidebarExpanded.value,onEnd: (){
-              sidebarShow.value = true;
-            });
+            return Visibility(
+              visible: show,
+              child: sidebarPage,
+            ).toAccordionX(
+              sidebarExpanded.value,
+              onEnd: () {
+                sidebarShow.value = true;
+              },
+            );
           }),
           ThemeUtil.lineV(),
           Expanded(

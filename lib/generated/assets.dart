@@ -3,6 +3,7 @@ class Assets {
   Assets._();
 
   static const String assetsImagesFollowHeaderBg = 'assets/images/follow_header_bg.png';
+  static const String fontsAntonRegular = 'assets/fonts/Anton-Regular.ttf';
   static const String fontsArial Unicode MS = 'assets/fonts/Arial Unicode MS.TTF';
   static const String fontsOPPOSansBold = 'assets/fonts/OPPOSans-Bold.ttf';
   static const String fontsOPPOSansMedium = 'assets/fonts/OPPOSans-Medium.ttf';
@@ -16,6 +17,7 @@ class Assets {
   static const String imagesExamBtnBg3 = 'assets/images/exam_btn_bg3.png';
   static const String imagesExamBtnBg4 = 'assets/images/exam_btn_bg4.png';
   static const String imagesExamPageBack = 'assets/images/exam_page_back.png';
+  static const String imagesExamPageBg = 'assets/images/exam_page_bg.png';
   static const String imagesExamQuestionsBg = 'assets/images/exam_questions_bg.jpg';
   static const String imagesFollowHeaderBg = 'assets/images/follow_header_bg.jpg';
   static const String imagesFollowHeaderBgF = 'assets/images/follow_header_bg_f.jpg';

@@ -27,39 +27,37 @@ class MainScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Container(
           width: double.infinity,
-          height: 810, // Fixed height to constrain the layout
+          height: MediaQuery.of(context).size.height, // Match screen height
           color: Colors.white,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Sidebar
+              // Sidebar with constraints
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start, // Align at the top
                 children: [
-                  _buildSidebar(),
-                  const SizedBox(width: 310), // Space for sidebar width
+                  _buildSidebar(context),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 40),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 40),
+                          _buildHeader(),
+                          const SizedBox(height: 9.73),
+                          _buildListItems(),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
 
-              // Main Content
-              Padding(
-                padding: const EdgeInsets.only(left: 40), // Assuming 350 - Sidebar width
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 40), // Equivalent to top: 40
-                    _buildHeader(),
-                    const SizedBox(height: 9.73),
-                    _buildListItems(),
-                  ],
-                ),
-              ),
-
-              // Space for bottom positioning
-              const Spacer(),
-
               // Bottom Navigation
+              const Spacer(),
               Padding(
-                padding: const EdgeInsets.only(left: 874.99 - 310), // Adjust based on sidebar width
+                padding: const EdgeInsets.only(left: 310), // Adjust based on sidebar width
                 child: _buildBottomNavigation(),
               ),
             ],
@@ -69,10 +67,10 @@ class MainScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSidebar() {
+  Widget _buildSidebar(BuildContext context) {
     return Container(
       width: 310,
-      height: double.infinity,
+      height: MediaQuery.of(context).size.height, // Fix for infinite height
       color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.only(left: 39.90, top: 38.18),

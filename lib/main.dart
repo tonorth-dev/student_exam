@@ -1,3 +1,4 @@
+import 'package:flutter_material_pickers/main.dart';
 import 'package:student_exam/app/launch/view.dart';
 import 'package:student_exam/common/app_data.dart';
 import 'package:student_exam/state.dart';
@@ -18,37 +19,24 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   var appData = await LoginData.read();
   var findTheme =
-      themeList.firstWhereOrNull((e) => e.name() == appData.themeName);
+  themeList.firstWhereOrNull((e) => e.name() == appData.themeName);
   theme = findTheme?.theme() ?? Light().theme();
-
-  // 自定义字体设置
-  final fontFamily = 'Microsoft YaHei UI'; // 确保已在 pubspec.yaml 中声明
-
-  // // 更新全局主题数据
-  // theme = theme.copyWith(
-  //   textTheme: theme.textTheme
-  //       .apply(
-  //         fontFamily: fontFamily,
-  //         displayColor: Colors.black87, // 如果需要的话，指定颜色
-  //         bodyColor: Colors.black87, // 如果需要的话，指定颜色
-  //       )
-  //       .copyWith(
-  //         bodyMedium: TextStyle(
-  //             fontSize: 14.0, // 根据需要调整大小
-  //             fontWeight: FontWeight.w500, // 加粗一号
-  //             color: Colors.black87),
-  //       ),
-  // );
 
   await message.init();
 
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
 
+  const initialWidth = 1600.0; // 初始宽度
+  const initialHeight = 810.0; // 初始高度
+
   WindowOptions windowOptions = WindowOptions(
-    size: Size(1600, 810),
+    size: const Size(initialWidth, initialHeight),
     skipTaskbar: false,
+    minimumSize: const Size(initialWidth, 810), // 设置最小高度，宽度与初始宽度相同
+    maximumSize: const Size(initialWidth, double.infinity), // 设置最大高度，宽度与初始宽度相同
   );
+
   await windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();
     await windowManager.focus();
