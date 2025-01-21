@@ -58,7 +58,6 @@ class EncryptionUtil {
     final cachedK2 = await getCachedK2();
 
     if (cachedK2 != null) {
-      print('Using cached K2');
       return cachedK2;
     }
 

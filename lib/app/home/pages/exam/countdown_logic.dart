@@ -1,6 +1,24 @@
 import 'dart:async';
 
 class Countdown {
+  // Private constructor to prevent direct instantiation
+  Countdown._internal({required this.totalDuration})
+      : currentSeconds = totalDuration,
+        lastSegmentTime = totalDuration {
+    _isRunningController.add(isRunning);
+    _segmentsController.add([]);
+  }
+
+  // Static field to hold the single instance of Countdown
+  static final Countdown _instance = Countdown._internal(totalDuration: 0);
+
+  // Factory constructor to return the instance
+  factory Countdown({required int totalDuration}) {
+    _instance.totalDuration = totalDuration;
+    _instance.reset(); // Reset to new total duration
+    return _instance;
+  }
+
   final StreamController<int> _tickController = StreamController<int>.broadcast();
   final StreamController<bool> _isRunningController = StreamController<bool>.broadcast();
   final StreamController<List<String>> _segmentsController = StreamController<List<String>>.broadcast();
@@ -13,13 +31,6 @@ class Countdown {
   int currentSeconds; // Track remaining time manually
   int lastSegmentTime; // Track time of the last segment
   List<int> segments = []; // Store segments in seconds
-
-  Countdown({required this.totalDuration})
-      : currentSeconds = totalDuration,
-        lastSegmentTime = totalDuration {
-    _isRunningController.add(isRunning);
-    _segmentsController.add([]);
-  }
 
   Stream<int> get tickStream => _tickController.stream;
   Stream<bool> get isRunningStream => _isRunningController.stream;

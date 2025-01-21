@@ -34,7 +34,7 @@ class ThemeUtil {
   static Widget lineH({double height = 1}) {
     return Divider(
       height: height,
-      color: UiTheme.border(),
+      color: Color(0x80ffffff),
     );
   }
 

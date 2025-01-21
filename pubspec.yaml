@@ -66,6 +66,7 @@ dependencies:
   timer_count_down: ^2.2.2
   web_socket_channel: ^3.0.1
   http: ^1.2.2
+  roulette: ^0.2.0
 
 dev_dependencies:
   flutter_test:
@@ -88,3 +89,6 @@ flutter:
     - family: Arial Unicode MS.TTF
       fonts:
         - asset: assets/fonts/Arial Unicode MS.TTF
+    - family: Anton-Regular
+      fonts:
+        - asset: assets/fonts/Anton-Regular.ttf
