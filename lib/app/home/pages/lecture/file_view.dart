@@ -29,6 +29,53 @@ class _LectureFileViewState extends State<LectureFileView> {
       roots: widget.logic.directoryTree,
       childrenProvider: (DirectoryNode node) => node.children.toList(),
     );
+
+    // 添加监听器，当目录树更新时选中第一个文件节点
+    ever(widget.logic.directoryTree, (_) {
+      _selectFirstFileNode();
+    });
+  }
+
+  // 选中第一个文件节点的方法
+  void _selectFirstFileNode() {
+    if (widget.logic.directoryTree.isEmpty) return;
+    
+    // 获取所有节点的平铺列表
+    final allNodes = widget.logic.getAllNodes(widget.logic.directoryTree);
+    
+    // 查找第一个包含文件路径的节点
+    final firstFileNode = allNodes.firstWhereOrNull(
+      (node) => node.filePath != null && node.filePath!.isNotEmpty
+    );
+    
+    // 如果找到了文件节点，就选中它并执行选中动作
+    if (firstFileNode != null) {
+      // 确保节点的父节点都被展开
+      var current = firstFileNode;
+      while (current.parentId != null) {
+        final parent = allNodes.firstWhereOrNull(
+          (node) => node.id == current.parentId
+        );
+        if (parent != null) {
+          treeController.expand(parent);
+          current = parent;
+        } else {
+          break;
+        }
+      }
+
+      // 执行选中动作
+      if (firstFileNode.filePath != null) {
+        widget.logic.updateSelectedFile(firstFileNode);
+        widget.logic.updatePdfUrl(firstFileNode.filePath!);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    treeController.dispose();
+    super.dispose();
   }
 
   @override
@@ -83,120 +130,49 @@ class _LectureFileViewState extends State<LectureFileView> {
     final bool isExpanded = entry.isExpanded;
 
     // 根据节点层级设置缩进
-    final double indentLevel = entry.level * 24.0; // 每一级增加24像素的缩进
+    final double indentLevel = entry.level * 24.0;
 
-    // 检查是否为选中状态
-    final bool isSelected = widget.logic.selectedNodeId == dirNode.id;
-
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: () {
-        if (isFileNode && isLeafNode) {
-          widget.logic.updatePdfUrl(dirNode.filePath!);
-          // 设置选中状态
-          setState(() {
-            widget.logic.selectedNodeId = dirNode.id;
-          });
-        } else {
-          treeController.toggleExpansion(entry.node);
-        }
-      },
-      child: Padding(
-        padding: EdgeInsets.only(left: indentLevel, top: 8.0, bottom: 8.0),
-        child: Row(
-          children: [
-            // 固定宽度容器，确保图标不会影响文本对齐
-            Container(
-              width: 24, // 固定宽度
-              alignment: Alignment.centerLeft,
-              child: (isFileNode && isLeafNode)
-                  ? Icon(Icons.insert_drive_file, size: 16, color: Colors.blueGrey) // 文件图标
-                  : Icon(isExpanded ? Icons.remove : Icons.add, size: 16, color: Colors.greenAccent), // 文件夹展开/折叠图标
-            ),
-            Expanded(
-              child: Text(
-                dirNode.name,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isSelected ? Colors.blueAccent : Colors.black, // 变色样式
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+    return Obx(() {
+      final bool isSelected = widget.logic.selectedNodeId.value == dirNode.id;
+      
+      return GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () {
+          if (isFileNode && isLeafNode) {
+            widget.logic.updateSelectedFile(dirNode);
+          } else {
+            treeController.toggleExpansion(entry.node);
+          }
+        },
+        child: Container(
+          color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+          child: Padding(
+            padding: EdgeInsets.only(left: indentLevel, top: 8.0, bottom: 8.0),
+            child: Row(
+              children: [
+                Container(
+                  width: 24,
+                  alignment: Alignment.centerLeft,
+                  child: (isFileNode && isLeafNode)
+                      ? Icon(Icons.insert_drive_file, size: 16, color: Colors.blueGrey)
+                      : Icon(isExpanded ? Icons.remove : Icons.add, size: 16, color: Colors.greenAccent),
                 ),
-              ),
-            ),
-            SizedBox(width: 16),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOperationButtons(BuildContext context, DirectoryNode dirNode) {
-    bool isFilePathEmpty =
-        dirNode.filePath == null || dirNode.filePath!.isEmpty;
-    bool isLeafNode = dirNode.children.isEmpty;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildIconButton(
-          Icons.add,
-          "添加",
-              () => _addSubdirectory(context, dirNode),
-          color: Colors.blueAccent,
-          isEnabled: isFilePathEmpty,
-        ),
-        SizedBox(width: 10,)
-      ],
-    );
-  }
-
-  Widget _buildIconButton(
-      IconData icon,
-      String tooltip,
-      VoidCallback onPressed, {
-        Color? color,
-        bool isEnabled = true,
-      }) {
-    return Tooltip(
-      message: tooltip,
-      child: MouseRegion(
-        cursor: isEnabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
-        child: GestureDetector(
-          onTap: isEnabled ? onPressed : null,
-          child: Container(
-            padding: const EdgeInsets.all(4.0),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4.0),
-              color: Colors.transparent,
-            ),
-            child: Icon(
-              icon,
-              size: 16,
-              color: isEnabled ? (color ?? Colors.black) : Colors.grey,
+                Expanded(
+                  child: Text(
+                    dirNode.name,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isSelected ? Colors.blueAccent : Colors.black,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 16),
+              ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  void _addSubdirectory(BuildContext context, DirectoryNode parent) {
-    String? newDirName;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("添加节点"),
-        content: TextField(
-          onChanged: (value) => newDirName = value,
-          decoration: InputDecoration(hintText: "目录名称"),
-        ),
-        actions: [
-          TextButton(
-            child: Text("取消"),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
-      ),
-    );
+      );
+    });
   }
 }

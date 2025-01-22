@@ -74,6 +74,9 @@ class LectureLogic extends GetxController {
   // 添加当前选中节点的索引
   final RxInt selectedNodeIndex = RxInt(0);
 
+  // 将 selectedNodeId 改为可观察变量
+  final RxInt selectedNodeId = 0.obs;
+
   void find(int newSize, int newPage) {
     size.value = newSize;
     page.value = newPage;
@@ -139,11 +142,9 @@ class LectureLogic extends GetxController {
     find(size.value, page.value);
   }
 
-  int selectedNodeId = 0;
-
   void loadDirectoryTree(String lectureId, bool isRefresh) async {
     if (selectedLectureId.value == lectureId && !isRefresh) {
-      return; // No need to reload if the selected lecture hasn't changed'
+      return; // No need to reload if the selected lecture hasn't changed
     }
 
     selectedLectureId.value = lectureId;
@@ -151,7 +152,6 @@ class LectureLogic extends GetxController {
       final treeData = await LectureApi.getLectureDirectoryTree(lectureId);
       print(treeData);
       directoryTree.value = _buildTreeFromAPIResponse(treeData);
-      updatePdfUrl("");
     } catch (e) {
       print("Failed to load directory tree: $e");
       // Handle error, possibly show to user or log
@@ -197,11 +197,24 @@ class LectureLogic extends GetxController {
     }
   }
 
+  // 将 _getAllNodes 改为公开方法
+  List<DirectoryNode> getAllNodes(List<DirectoryNode> nodes) {
+    List<DirectoryNode> result = [];
+    for (var node in nodes) {
+      result.add(node);
+      if (node.children.isNotEmpty) {
+        result.addAll(getAllNodes(node.children));
+      }
+    }
+    return result;
+  }
+
+  // 修改使用 getAllNodes 的地方
   void moveToNextChapter() {
     if (selectedPdfUrl.value == null || selectedPdfUrl.value!.isEmpty) return;
     
     final currentUrl = "${ConfigUtil.ossUrl}:${ConfigUtil.ossPort}${ConfigUtil.ossPrefix}";
-    final nodes = _getAllNodes(directoryTree);
+    final nodes = getAllNodes(directoryTree);
     final currentIndex = nodes.indexWhere((node) => 
       node.filePath != null && 
       selectedPdfUrl.value == "$currentUrl${node.filePath}"
@@ -210,10 +223,8 @@ class LectureLogic extends GetxController {
     if (currentIndex < nodes.length - 1) {
       final nextNode = nodes[currentIndex + 1];
       if (nextNode.filePath != null) {
-        // 更新选中节点索引
-        selectedNodeIndex.value = currentIndex + 1;
+        selectedNodeId.value = nextNode.id;  // 使用 .value 更新
         updateSelectedFile(nextNode);
-        // 触发文件列表视图更新
         update(['file_list']);
       }
     }
@@ -223,7 +234,7 @@ class LectureLogic extends GetxController {
     if (selectedPdfUrl.value == null || selectedPdfUrl.value!.isEmpty) return;
     
     final currentUrl = "${ConfigUtil.ossUrl}:${ConfigUtil.ossPort}${ConfigUtil.ossPrefix}";
-    final nodes = _getAllNodes(directoryTree);
+    final nodes = getAllNodes(directoryTree);
     final currentIndex = nodes.indexWhere((node) => 
       node.filePath != null && 
       selectedPdfUrl.value == "$currentUrl${node.filePath}"
@@ -232,31 +243,17 @@ class LectureLogic extends GetxController {
     if (currentIndex > 0) {
       final previousNode = nodes[currentIndex - 1];
       if (previousNode.filePath != null) {
-        // 更新选中节点索引
-        selectedNodeIndex.value = currentIndex - 1;
+        selectedNodeId.value = previousNode.id;  // 使用 .value 更新
         updateSelectedFile(previousNode);
-        // 触发文件列表视图更新
         update(['file_list']);
       }
     }
   }
 
-  // 辅助方法：获取所有节点的平铺列表
-  List<DirectoryNode> _getAllNodes(List<DirectoryNode> nodes) {
-    List<DirectoryNode> result = [];
-    for (var node in nodes) {
-      result.add(node);
-      if (node.children.isNotEmpty) {
-        result.addAll(_getAllNodes(node.children));
-      }
-    }
-    return result;
-  }
-
   // 更新选中的文件
   void updateSelectedFile(DirectoryNode node) {
     // 更新选中的节点
-    selectedNodeId = node.id;
+    selectedNodeId.value = node.id;  // 使用 .value 更新
     // 如果有文件路径，更新 PDF URL
     if (node.filePath != null) {
       updatePdfUrl(node.filePath!);

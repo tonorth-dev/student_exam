@@ -156,8 +156,8 @@ class _PdfPreViewState extends State<PdfPreView> {
           });
         }
       }
-      // 检测是否在第一页并且是向上滚动
-      else if (currentPage == 1 && isScrollingUp) {
+      // 检测是否在第一页并且是向上滚动，增加灵敏度
+      else if (currentPage <= 2 && isScrollingUp) {  // 修改这里，扩大检测范围到前两页
         setState(() {
           _isChangingPage = true;
         });
