@@ -14,6 +14,17 @@ import '../../../../common/config_util.dart';
 import '../../../../component/table/table_data.dart';
 import '../../../../component/widget.dart';
 
+class FileModel {
+  final String url;
+  final String name;
+  // 添加其他需要的属性
+  
+  FileModel({
+    required this.url,
+    required this.name,
+  });
+}
+
 class LectureLogic extends GetxController {
   var list = <Map<String, dynamic>>[].obs;
   var total = 0.obs;
@@ -54,6 +65,14 @@ class LectureLogic extends GetxController {
   // Maps for reverse lookup
   Map<String, String> level3IdToLevel2Id = {};
   Map<String, String> level2IdToLevel1Id = {};
+
+  // 添加文件列表
+  final RxList<FileModel> fileList = <FileModel>[].obs;
+  // 添加当前选中的文件
+  final Rx<FileModel?> selectedFile = Rx<FileModel?>(null);
+
+  // 添加当前选中节点的索引
+  final RxInt selectedNodeIndex = RxInt(0);
 
   void find(int newSize, int newPage) {
     size.value = newSize;
@@ -175,6 +194,72 @@ class LectureLogic extends GetxController {
       selectedPdfUrl.value =
       "${ConfigUtil.ossUrl}:${ConfigUtil.ossPort}${ConfigUtil.ossPrefix}$url";
       debugPrint('Selected PDF URL updated: ${selectedPdfUrl.value}');
+    }
+  }
+
+  void moveToNextChapter() {
+    if (selectedPdfUrl.value == null || selectedPdfUrl.value!.isEmpty) return;
+    
+    final currentUrl = "${ConfigUtil.ossUrl}:${ConfigUtil.ossPort}${ConfigUtil.ossPrefix}";
+    final nodes = _getAllNodes(directoryTree);
+    final currentIndex = nodes.indexWhere((node) => 
+      node.filePath != null && 
+      selectedPdfUrl.value == "$currentUrl${node.filePath}"
+    );
+    
+    if (currentIndex < nodes.length - 1) {
+      final nextNode = nodes[currentIndex + 1];
+      if (nextNode.filePath != null) {
+        // 更新选中节点索引
+        selectedNodeIndex.value = currentIndex + 1;
+        updateSelectedFile(nextNode);
+        // 触发文件列表视图更新
+        update(['file_list']);
+      }
+    }
+  }
+
+  void moveToPreviousChapter() {
+    if (selectedPdfUrl.value == null || selectedPdfUrl.value!.isEmpty) return;
+    
+    final currentUrl = "${ConfigUtil.ossUrl}:${ConfigUtil.ossPort}${ConfigUtil.ossPrefix}";
+    final nodes = _getAllNodes(directoryTree);
+    final currentIndex = nodes.indexWhere((node) => 
+      node.filePath != null && 
+      selectedPdfUrl.value == "$currentUrl${node.filePath}"
+    );
+    
+    if (currentIndex > 0) {
+      final previousNode = nodes[currentIndex - 1];
+      if (previousNode.filePath != null) {
+        // 更新选中节点索引
+        selectedNodeIndex.value = currentIndex - 1;
+        updateSelectedFile(previousNode);
+        // 触发文件列表视图更新
+        update(['file_list']);
+      }
+    }
+  }
+
+  // 辅助方法：获取所有节点的平铺列表
+  List<DirectoryNode> _getAllNodes(List<DirectoryNode> nodes) {
+    List<DirectoryNode> result = [];
+    for (var node in nodes) {
+      result.add(node);
+      if (node.children.isNotEmpty) {
+        result.addAll(_getAllNodes(node.children));
+      }
+    }
+    return result;
+  }
+
+  // 更新选中的文件
+  void updateSelectedFile(DirectoryNode node) {
+    // 更新选中的节点
+    selectedNodeId = node.id;
+    // 如果有文件路径，更新 PDF URL
+    if (node.filePath != null) {
+      updatePdfUrl(node.filePath!);
     }
   }
 }
