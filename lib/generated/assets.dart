@@ -21,7 +21,10 @@ class Assets {
   static const String imagesExamQuestionsBg = 'assets/images/exam_questions_bg.jpg';
   static const String imagesFollowHeaderBg = 'assets/images/follow_header_bg.jpg';
   static const String imagesFollowHeaderBgF = 'assets/images/follow_header_bg_f.jpg';
+  static const String imagesHomeExamPg = 'assets/images/home_exam_pg.png';
+  static const String imagesHomeLectureBg = 'assets/images/home_lecture_bg.png';
   static const String imagesImg = 'assets/images/img.png';
+  static const String imagesLecturePageBg = 'assets/images/lecture_page_bg.png';
   static const String imagesLogHeader = 'assets/images/log_header.png';
   static const String imagesLogo = 'assets/images/logo.jpg';
   static const String imagesNoQuestionsBg = 'assets/images/no_questions_bg.jpg';
