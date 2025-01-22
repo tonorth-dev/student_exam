@@ -99,14 +99,15 @@ class _LectureFileViewState extends State<LectureFileView> {
   Widget _buildEmptyState(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16.0),
-      decoration: BoxDecoration(color: Colors.grey.shade100),
+      decoration: BoxDecoration(color: Colors.grey.shade50),
       child: Center(
         child: Text(
           "请点击讲义进行学习",
           style: TextStyle(
-              fontSize: 16.0,
-              color: Colors.blue.shade700,
-              fontWeight: FontWeight.bold),
+            fontSize: 16.0,
+            color: Colors.red.shade700,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -145,7 +146,7 @@ class _LectureFileViewState extends State<LectureFileView> {
           }
         },
         child: Container(
-          color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? Colors.red.withOpacity(0.1) : Colors.transparent,
           child: Padding(
             padding: EdgeInsets.only(left: indentLevel, top: 8.0, bottom: 8.0),
             child: Row(
@@ -154,15 +155,23 @@ class _LectureFileViewState extends State<LectureFileView> {
                   width: 24,
                   alignment: Alignment.centerLeft,
                   child: (isFileNode && isLeafNode)
-                      ? Icon(Icons.insert_drive_file, size: 16, color: Colors.blueGrey)
-                      : Icon(isExpanded ? Icons.remove : Icons.add, size: 16, color: Colors.greenAccent),
+                      ? Icon(
+                          Icons.insert_drive_file,
+                          size: 16,
+                          color: Colors.red.shade400,
+                        )
+                      : Icon(
+                          isExpanded ? Icons.remove : Icons.add,
+                          size: 16,
+                          color: Colors.red.shade300,
+                        ),
                 ),
                 Expanded(
                   child: Text(
                     dirNode.name,
                     style: TextStyle(
                       fontSize: 14,
-                      color: isSelected ? Colors.blueAccent : Colors.black,
+                      color: isSelected ? Colors.red.shade700 : Colors.black87,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),

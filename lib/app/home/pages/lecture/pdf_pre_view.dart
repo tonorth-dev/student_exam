@@ -226,12 +226,12 @@ class _PdfPreViewState extends State<PdfPreView> {
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
                     "请点击要学习的章节",
                     style: TextStyle(
                       fontSize: 16.0,
-                      color: Color(0xFF004D40),
+                      color: Colors.red.shade700,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
