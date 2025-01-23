@@ -27,7 +27,7 @@ class WebSocketService {
       return; // 如果已连接，则直接返回
     }
 
-    final url = "${ConfigUtil.wsUrl}:${ConfigUtil.httpPort}/ws/dialogue?type=student&code=$code&class_id=$classId";
+    final url = "${ConfigUtil.wsUrl}:${ConfigUtil.wsPort}/ws/dialogue?type=student&code=$code&class_id=$classId";
     try {
       _channel = WebSocketChannel.connect(Uri.parse(url));
       isConnected.value = true;
