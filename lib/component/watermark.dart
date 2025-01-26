@@ -1,6 +1,18 @@
 import 'package:flutter/material.dart';
 
+import '../common/app_data.dart';
+
 class WatermarkPainter extends CustomPainter {
+  late LoginData loginData;
+
+  WatermarkPainter() {
+    _initLoginData();
+  }
+
+  Future<void> _initLoginData() async {
+    loginData = await LoginData.read();
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
@@ -9,9 +21,9 @@ class WatermarkPainter extends CustomPainter {
       ..strokeWidth = 1.0;
 
     TextSpan span = TextSpan(
-      text: '红师教育（81hongshi.com）',
+      text: '红师教育（${loginData.code}）',
       style: TextStyle(
-        fontSize: 28.0,
+        fontSize: 20.0,
         color: paint.color,
         fontFamily: 'OPPOSans',
       ),

@@ -3,6 +3,9 @@ class Assets {
   Assets._();
 
   static const String assetsImagesFollowHeaderBg = 'assets/images/follow_header_bg.png';
+  static const String assetsImagesHomeExamBg = 'assets/images/home_exam_bg.png';
+  static const String assetsImagesHomeLectureBg = 'assets/images/home_lecture_bg.png';
+  static const String assetsImagesHomePsychologyBg = 'assets/images/home_psychology_bg.png';
   static const String fontsAntonRegular = 'assets/fonts/Anton-Regular.ttf';
   static const String fontsArial Unicode MS = 'assets/fonts/Arial Unicode MS.TTF';
   static const String fontsOPPOSansBold = 'assets/fonts/OPPOSans-Bold.ttf';
@@ -21,8 +24,9 @@ class Assets {
   static const String imagesExamQuestionsBg = 'assets/images/exam_questions_bg.jpg';
   static const String imagesFollowHeaderBg = 'assets/images/follow_header_bg.jpg';
   static const String imagesFollowHeaderBgF = 'assets/images/follow_header_bg_f.jpg';
-  static const String imagesHomeExamPg = 'assets/images/home_exam_pg.png';
+  static const String imagesHomeExamBg = 'assets/images/home_exam_bg.png';
   static const String imagesHomeLectureBg = 'assets/images/home_lecture_bg.png';
+  static const String imagesHomePsychologyBg = 'assets/images/home_psychology_bg.png';
   static const String imagesImg = 'assets/images/img.png';
   static const String imagesLecturePageBg = 'assets/images/lecture_page_bg.png';
   static const String imagesLogHeader = 'assets/images/log_header.png';

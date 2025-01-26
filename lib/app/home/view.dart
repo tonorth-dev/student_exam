@@ -39,7 +39,7 @@ class HomePage extends StatelessWidget {
                 return Visibility(
                   visible: waterMark.value,
                   child: CustomPaint(
-                    painter: null,
+                    painter: WatermarkPainter(),
                   ),
                 );
               }),

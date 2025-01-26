@@ -189,10 +189,9 @@ class LectureLogic extends GetxController {
       return;
     }
     if (selectedPdfUrl.value !=
-        "${ConfigUtil.ossUrl}:${ConfigUtil.ossPort}${ConfigUtil
-            .ossPrefix}$url") {
+        "${ConfigUtil.ossUrl}$url") {
       selectedPdfUrl.value =
-      "${ConfigUtil.ossUrl}:${ConfigUtil.ossPort}${ConfigUtil.ossPrefix}$url";
+      "${ConfigUtil.ossUrl}$url";
       debugPrint('Selected PDF URL updated: ${selectedPdfUrl.value}');
     }
   }
@@ -213,7 +212,7 @@ class LectureLogic extends GetxController {
   void moveToNextChapter() {
     if (selectedPdfUrl.value == null || selectedPdfUrl.value!.isEmpty) return;
     
-    final currentUrl = "${ConfigUtil.ossUrl}:${ConfigUtil.ossPort}${ConfigUtil.ossPrefix}";
+    final currentUrl = ConfigUtil.ossUrl;
     final nodes = getAllNodes(directoryTree);
     final currentIndex = nodes.indexWhere((node) => 
       node.filePath != null && 
@@ -233,7 +232,7 @@ class LectureLogic extends GetxController {
   void moveToPreviousChapter() {
     if (selectedPdfUrl.value == null || selectedPdfUrl.value!.isEmpty) return;
     
-    final currentUrl = "${ConfigUtil.ossUrl}:${ConfigUtil.ossPort}${ConfigUtil.ossPrefix}";
+    final currentUrl = ConfigUtil.ossUrl;
     final nodes = getAllNodes(directoryTree);
     final currentIndex = nodes.indexWhere((node) => 
       node.filePath != null && 
