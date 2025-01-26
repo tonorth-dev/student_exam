@@ -55,27 +55,30 @@ class FeatureSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _buildFeatureCard(
-                '面试模拟', 
-                '智能模拟面试\n提升面试技巧', 
-                Colors.red,
-                Icons.person_outline,
-                () => sideLogic.tabList.toWidgetsWithIndex((_, index) => ExamPage()),
+                title: '面试模拟',
+                subtitle: '智能模拟面试\n提升面试技巧',
+                color: Colors.red,
+                icon: Icons.person_outline,
+                onTap: () => TabBarLogic.addPage(ExamPage.newThis()),
+                backgroundImage: 'assets/images/home_exam_bg.png',
               ),
               SizedBox(width: 30),
               _buildFeatureCard(
-                '讲义学习', 
-                '系统化学习\n提升专业能力', 
-                Colors.blue,
-                Icons.menu_book_outlined,
-                () => sideLogic.tabList.toWidgetsWithIndex((_, index) => LecturePage()),
+                title: '讲义学习',
+                subtitle: '系统化学习\n提升专业能力',
+                color: Colors.blue,
+                icon: Icons.menu_book_outlined,
+                onTap: () => sideLogic.addTab(LecturePage.newThis()),
+                backgroundImage: 'assets/images/home_lecture_bg.png',
               ),
               SizedBox(width: 30),
               _buildFeatureCard(
-                '心理测试', 
-                '了解自我\n职业规划指导', 
-                Colors.purple,
-                Icons.psychology_outlined,
-                () => sideLogic.tabList.toWidgetsWithIndex((_, index) => LecturePage()),
+                title: '心理测试',
+                subtitle: '了解自我\n职业规划指导',
+                color: Colors.purple,
+                icon: Icons.psychology_outlined,
+                onTap: () => sideLogic.tabList.toWidgetsWithIndex((_, index) => LecturePage()),
+                backgroundImage: 'assets/images/home_psychology_bg.png',
               ),
             ],
           ),
@@ -84,20 +87,14 @@ class FeatureSection extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureCard(
-    String title, 
-    String subtitle, 
-    Color color,
-    IconData icon,
-    VoidCallback onTap,
-  ) {
-    // 根据标题选择对应的背景图
-    String backgroundImage = title == '面试模拟' 
-        ? 'assets/images/home_exam_bg.png'
-        : title == '讲义学习'
-            ? 'assets/images/home_lecture_bg.png'
-            : 'assets/images/home_psychology_bg.png';
-
+  Widget _buildFeatureCard({
+    required String title,
+    required String subtitle,
+    required Color color,
+    required IconData icon,
+    required VoidCallback onTap,
+    required String backgroundImage,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
@@ -113,6 +110,9 @@ class FeatureSection extends StatelessWidget {
                 child: Image.asset(
                   backgroundImage,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Center(child: Text('Error loading image'));
+                  },
                 ),
               ),
             ),
