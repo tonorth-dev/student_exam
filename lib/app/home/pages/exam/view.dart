@@ -17,6 +17,14 @@ class ExamPage extends StatefulWidget {
 
   @override
   State<ExamPage> createState() => _ExamPageState();
+
+  static SidebarTree newThis() {
+    return SidebarTree(
+      name: "面试模拟",
+      icon: Icons.person_outline,
+      page: ExamPage(),
+    );
+  }
 }
 
 class _ExamPageState extends State<ExamPage> {

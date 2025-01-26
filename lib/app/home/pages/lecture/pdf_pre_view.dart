@@ -5,13 +5,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../../common/app_data.dart';
 import '../../../../component/table/ex.dart';
 import '../../../../theme/theme_util.dart';
 import 'logic.dart';
 
 class PdfPreView extends StatefulWidget {
   final String title;
-
   const PdfPreView({Key? key, required this.title}) : super(key: key);
 
   @override
@@ -26,12 +26,18 @@ class _PdfPreViewState extends State<PdfPreView> {
   int _lastPageNumber = 1;
   bool _isChangingPage = false;
   bool _isPdfLoaded = false;
+  late LoginData loginData;
   final _key = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     _pdfController = PdfViewerController();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    loginData = await LoginData.read();
     pdfLogic.selectedPdfUrl.listen((url) async {
       if (url != null) {
         setState(() {
@@ -191,22 +197,37 @@ class _PdfPreViewState extends State<PdfPreView> {
           return const SizedBox.shrink();
         }
 
-        return SizedBox(
-          width: constraints.maxWidth,
-          height: constraints.maxHeight,
-          child: SfPdfViewer.file(
-            File(filePath),
-            key: ValueKey(filePath), // 使用文件路径作为key以确保重新加载
-            controller: _pdfController,
-            onPageChanged: _handlePdfPageChanged,
-            onDocumentLoaded: _onDocumentLoaded,
-            scrollDirection: PdfScrollDirection.vertical,
-            pageSpacing: 0,
-            enableDoubleTapZooming: true,
-            canShowScrollHead: true,
-            enableTextSelection: true,
-            initialZoomLevel: 1.0,
-          ),
+        return Stack(
+          children: [
+            SizedBox(
+              width: constraints.maxWidth,
+              height: constraints.maxHeight,
+              child: SfPdfViewer.file(
+                File(filePath),
+                key: ValueKey(filePath),
+                controller: _pdfController,
+                onPageChanged: _handlePdfPageChanged,
+                onDocumentLoaded: _onDocumentLoaded,
+                scrollDirection: PdfScrollDirection.vertical,
+                pageSpacing: 0,
+                enableDoubleTapZooming: true,
+                canShowScrollHead: true,
+                enableTextSelection: true,
+                initialZoomLevel: 1.0,
+              ),
+            ),
+            // 水印层
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: WatermarkPainter(
+                    text: "红师教育（${loginData.code}）",
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
@@ -265,4 +286,58 @@ class _PdfPreViewState extends State<PdfPreView> {
       ],
     );
   }
+}
+
+// 添加水印绘制器
+class WatermarkPainter extends CustomPainter {
+  final String text;
+  final double fontSize;
+
+  WatermarkPainter({
+    required this.text,
+    required this.fontSize,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.black.withOpacity(0.1)
+      ..style = PaintingStyle.fill;
+
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          color: Colors.black.withOpacity(0.1),
+          fontSize: fontSize,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+
+    // 计算水印之间的间距
+    final double spacingX = textPainter.width * 3;
+    final double spacingY = textPainter.height * 3;
+
+    // 保存画布状态
+    canvas.save();
+    
+    // 旋转45度
+    canvas.rotate(45 * 3.1415926 / 180);
+
+    // 绘制重复的水印
+    for (double y = -size.height; y < size.height * 2; y += spacingY) {
+      for (double x = -size.width; x < size.width * 2; x += spacingX) {
+        textPainter.paint(canvas, Offset(x, y));
+      }
+    }
+
+    // 恢复画布状态
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

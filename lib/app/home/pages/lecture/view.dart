@@ -85,4 +85,12 @@ class LecturePage extends StatelessWidget {
       ),
     );
   }
+
+  static SidebarTree newThis() {
+    return SidebarTree(
+      name: "讲义学习",
+      icon: Icons.menu_book_outlined,
+      page: LecturePage(),
+    );
+  }
 }

@@ -16,19 +16,19 @@ class SidebarLogic extends GetxController {
   static List<SidebarTree> treeList = [
     SidebarTree(
       name: "面试模拟",
-      icon: Icons.meeting_room, // Apply color here
+      icon: Icons.person_outline, // Apply color here
       color: Colors.orange[300], // Set desired color
       page: ExamPage(),
     ),
     SidebarTree(
       name: "讲义学习",
-      icon: Icons.book, // Apply color here
+      icon: Icons.menu_book_outlined, // Apply color here
       color: Colors.green[400], // Set desired color
       page: LecturePage(),
     ),
     SidebarTree(
       name: "心理测试",
-      icon: Icons.psychology, // Apply color here
+      icon: Icons.psychology_outlined, // Apply color here
       color: Colors.blue[400], // Set desired color
       page: ExamPage(),
     )

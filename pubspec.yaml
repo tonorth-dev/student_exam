@@ -80,6 +80,9 @@ flutter:
   assets:
     - assets/images/
     - assets/messages/
+    - assets/images/home_exam_bg.png
+    - assets/images/home_lecture_bg.png
+    - assets/images/home_psychology_bg.png
   fonts:
     - family: OPPOSans
       fonts:
