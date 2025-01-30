@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../pages/exam/view.dart';
 import '../pages/lecture/view.dart';
+import '../pages/psyc/view.dart';
 
 class SidebarLogic extends GetxController {
   static var selectName = "".obs;
@@ -30,7 +31,7 @@ class SidebarLogic extends GetxController {
       name: "心理测试",
       icon: Icons.psychology_outlined, // Apply color here
       color: Colors.blue[400], // Set desired color
-      page: ExamPage(),
+      page: PsychologyPage(),
     )
   ];
 
