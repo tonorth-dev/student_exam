@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:student_exam/ex/ex_hint.dart';
 import '../../../../api/student_api.dart';
 
 class PsychologyLogic extends GetxController {
@@ -32,7 +33,21 @@ class PsychologyLogic extends GetxController {
       }
     } catch (e) {
       isLoading.value = false;
-      print("Error loading question: $e");
+      "服务出了点问题".toHint();
+    }
+  }
+
+  // 将 ABC 转换为 123
+  int _convertAnswerToNumber(String answer) {
+    switch (answer.toUpperCase()) {
+      case 'A':
+        return 1;
+      case 'B':
+        return 2;
+      case 'C':
+        return 3;
+      default:
+        return 1;
     }
   }
 
@@ -40,19 +55,23 @@ class PsychologyLogic extends GetxController {
   Future<void> submitAnswer(String answer) async {
     if (isLoading.value || currentQuestion.value == null) return;
 
-    isLoading.value = true;
-
     try {
       await StudentApi.submit({
-        "question_id": currentQuestion.value!['id'].toString(),
-        "answer": answer,
+        "question_id": currentQuestion.value!['id'],
+        "answer": _convertAnswerToNumber(answer),  // 使用转换后的数字
       });
 
       // 加载下一题
       loadNextQuestion();
     } catch (e) {
-      isLoading.value = false;
-      print("Error submitting answer: $e");
+      "服务出了点小问题".toHint();
     }
+  }
+
+  // 重置测试
+  void resetTest() {
+    isCompleted.value = false;
+    currentQuestion.value = null;
+    loadNextQuestion();
   }
 }

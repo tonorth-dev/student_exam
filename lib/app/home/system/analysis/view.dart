@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:student_exam/app/home/pages/psyc/view.dart';
 import 'package:student_exam/ex/ex_list.dart';
 import '../../../../theme/theme_util.dart';
 import '../../pages/exam/view.dart';
@@ -46,42 +47,50 @@ class FeatureSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          width: 885,
-          height: 310.81,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _buildFeatureCard(
-                title: '面试模拟',
-                subtitle: '智能模拟面试\n提升面试技巧',
-                color: Colors.red,
-                icon: Icons.person_outline,
-                onTap: () => TabBarLogic.addPage(ExamPage.newThis()),
-                backgroundImage: 'assets/images/home_exam_bg.png',
+        SizedBox(height:100),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                constraints: BoxConstraints(
+                  minWidth: constraints.maxWidth,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildFeatureCard(
+                      title: '面试模拟',
+                      subtitle: '智能模拟面试\n提升面试技巧',
+                      color: Colors.red,
+                      icon: Icons.person_outline,
+                      onTap: () => TabBarLogic.addPage(ExamPage.newThis()),
+                      backgroundImage: 'assets/images/home_exam_pg.png',
+                    ),
+                    const SizedBox(width: 100),
+                    _buildFeatureCard(
+                      title: '讲义学习',
+                      subtitle: '系统化学习\n提升专业能力',
+                      color: Colors.blue,
+                      icon: Icons.menu_book_outlined,
+                      onTap: () => TabBarLogic.addPage(LecturePage.newThis()),
+                      backgroundImage: 'assets/images/home_lecture_pg.png',
+                    ),
+                    const SizedBox(width: 100),
+                    _buildFeatureCard(
+                      title: '心理测试',
+                      subtitle: '了解自我\n职业规划指导',
+                      color: Colors.purple,
+                      icon: Icons.psychology_outlined,
+                      onTap: () => TabBarLogic.addPage(PsychologyPage.newThis()),
+                      backgroundImage: 'assets/images/home_psychology_pg.png',
+                    ),
+                  ],
+                ),
               ),
-              SizedBox(width: 30),
-              _buildFeatureCard(
-                title: '讲义学习',
-                subtitle: '系统化学习\n提升专业能力',
-                color: Colors.blue,
-                icon: Icons.menu_book_outlined,
-                onTap: () => sideLogic.addTab(LecturePage.newThis()),
-                backgroundImage: 'assets/images/home_lecture_bg.png',
-              ),
-              SizedBox(width: 30),
-              _buildFeatureCard(
-                title: '心理测试',
-                subtitle: '了解自我\n职业规划指导',
-                color: Colors.purple,
-                icon: Icons.psychology_outlined,
-                onTap: () => sideLogic.tabList.toWidgetsWithIndex((_, index) => LecturePage()),
-                backgroundImage: 'assets/images/home_psychology_bg.png',
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ],
     );
@@ -95,103 +104,113 @@ class FeatureSection extends StatelessWidget {
     required VoidCallback onTap,
     required String backgroundImage,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        width: 275,
-        height: 289.63,
-        child: Stack(
-          children: [
-            // Background image
-            Positioned.fill(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.asset(
-                  backgroundImage,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Center(child: Text('Error loading image'));
-                  },
-                ),
-              ),
-            ),
-            // Background gradient
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment(-0.73, -0.68),
-                    end: Alignment(0.73, 0.68),
-                    colors: [
-                      Colors.white.withOpacity(0.9),  // 增加不透明度以确保文字可读
-                      Colors.white.withOpacity(0.7),
-                    ],
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            width: 275,
+            height: 289.63,
+            child: Stack(
+              children: [
+                // 背景图片
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.asset(
+                      backgroundImage,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: Colors.grey[200],
+                        child: const Icon(Icons.broken_image),
+                      ),
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: color.withOpacity(0.1)),
                 ),
-              ),
-            ),
-            // Title and Subtitle
-            Positioned(
-              left: 25,
-              top: 112,
-              child: Container(
-                width: 162,
-                height: 102,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 30,
-                        fontFamily: 'PingFang SC',
-                        fontWeight: FontWeight.w600,
+                // 背景渐变
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: const Alignment(-0.73, -0.68),
+                        end: const Alignment(0.73, 0.68),
+                        colors: [
+                          Colors.white.withOpacity(0.3),
+                          Colors.white.withOpacity(0.1),
+                        ],
                       ),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    SizedBox(height: 10),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: Colors.black.withOpacity(0.6),
-                        fontSize: 18,
-                        fontFamily: 'PingFang SC',
-                        fontWeight: FontWeight.w300,
-                      ),
+                  ),
+                ),
+                // 标题和副标题
+                Positioned(
+                  left: 25,
+                  top: 112,
+                  child: Container(
+                    width: 225,
+                    height: 120,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 28,
+                            height: 1.2,
+                            fontFamily: 'PingFang SC',
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            color: Colors.black.withOpacity(0.6),
+                            fontSize: 16,
+                            height: 1.4,
+                            fontFamily: 'PingFang SC',
+                            fontWeight: FontWeight.w300,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            // Colored Bar
-            Positioned(
-              left: 24,
-              top: 70,
-              child: Container(
-                width: 97.86,
-                height: 6.75,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(3),
+                // 彩色条
+                Positioned(
+                  left: 24,
+                  top: 70,
+                  child: Container(
+                    width: 97.86,
+                    height: 6.75,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
                 ),
-              ),
+                // 左上角徽章
+                Positioned(
+                  left: 24,
+                  top: 0,
+                  child: _buildBadge(color),
+                ),
+                // 图标
+                Positioned(
+                  left: 81,
+                  top: 28,
+                  child: _buildIcon(icon, color),
+                ),
+              ],
             ),
-            // Top-left badge
-            Positioned(
-              left: 24,
-              top: 0,
-              child: _buildBadge(color),
-            ),
-            // Icon
-            Positioned(
-              left: 81,
-              top: 28,
-              child: _buildIcon(icon, color),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -203,8 +222,8 @@ class FeatureSection extends StatelessWidget {
       height: 59.26,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment(0.83, -0.56),
-          end: Alignment(-0.83, 0.56),
+          begin: const Alignment(0.83, -0.56),
+          end: const Alignment(-0.83, 0.56),
           colors: [color.withOpacity(0.8), color.withOpacity(0.4)],
         ),
         borderRadius: BorderRadius.circular(5),
@@ -223,7 +242,7 @@ class FeatureSection extends StatelessWidget {
           BoxShadow(
             color: color.withOpacity(0.2),
             blurRadius: 10,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),

@@ -19,7 +19,7 @@ class StudentApi {
       for (int attempt = 1; attempt <= maxRetries; attempt++) {
         try {
           // 发起请求
-          final response = await HttpUtil.get("student/psyc/pull", params: params);
+          final response = await HttpUtil.get("/student/psyc/pull", params: params);
           return response;
         } catch (e) {
           if (attempt < maxRetries) {
@@ -48,7 +48,7 @@ class StudentApi {
       for (int attempt = 1; attempt <= maxRetries; attempt++) {
         try {
           // 发起请求
-          final response = await HttpUtil.get("student/psyc/pull", params: params);
+          final response = await HttpUtil.get("/student/psyc/pull", params: params);
           return response;
         } catch (e) {
           if (attempt < maxRetries) {

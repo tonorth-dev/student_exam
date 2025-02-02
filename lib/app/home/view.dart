@@ -38,9 +38,7 @@ class HomePage extends StatelessWidget {
               child: Obx(() {
                 return Visibility(
                   visible: waterMark.value,
-                  child: CustomPaint(
-                    painter: WatermarkPainter(),
-                  ),
+                  child: const WatermarkWidget(),
                 );
               }),
             ),
