@@ -1,6 +1,6 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:roulette/roulette.dart';
 
 class SimpleRoulette extends StatefulWidget {
   final List<Map<String, dynamic>> options;
@@ -18,76 +18,49 @@ class SimpleRoulette extends StatefulWidget {
 
 class _SimpleRouletteState extends State<SimpleRoulette> {
   final _random = Random();
-  late final RouletteController _controller;
-  late final RouletteGroup _group;
-  bool _clockwise = true;
+  bool _isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = RouletteController();
-    _group = _createRouletteGroup();
-  }
+  Future<void> _startRandomSelection() async {
+    setState(() => _isLoading = true);
 
-  RouletteGroup _createRouletteGroup() {
-    return RouletteGroup.uniform(
-      widget.options.length,
-      // Use name for display
-      textBuilder: (index) => widget.options[index]['name'],
-      textStyleBuilder: (index) => const TextStyle(color: Colors.white),
-      colorBuilder: (index) => Color.lerp(
-          Colors.orange.shade300,
-          Colors.orange.shade900,
-          index / (widget.options.length - 1)
-      ) ?? Colors.orange,
+    // 模拟随机选择过程
+    await Future.delayed(const Duration(seconds: 2));
+
+    final result = widget.options[_random.nextInt(widget.options.length)];
+
+    setState(() => _isLoading = false);
+
+    widget.onSpinCompleted?.call(result['id']);
+
+    // 显示选择结果
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('已选择：${result['name']}'),
+        duration: const Duration(seconds: 2),
+      ),
     );
-  }
-
-  void _spin() async {
-    final index = _random.nextInt(widget.options.length);
-    final completed = await _controller.rollTo(
-      index,
-      clockwise: _clockwise,
-      offset: _random.nextDouble(),
-    );
-
-    if (completed) {
-      // Use id when spin completes
-      widget.onSpinCompleted?.call(widget.options[index]['id']);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          width: 260,
-          height: 260,
-          child: Roulette(
-            group: _group,
-            controller: _controller,
-            style: const RouletteStyle(
-              dividerThickness: 0.0,
-              dividerColor: Colors.black,
-              centerStickSizePercent: 0.05,
-              centerStickerColor: Colors.black,
-            ),
-          ),
+    return ElevatedButton.icon(
+      icon: _isLoading
+          ? SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: Colors.white,
         ),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: _spin,
-          child: const Text('随机选题'),
-        ),
-      ],
+      )
+          : const Icon(Icons.autorenew),
+      label: Text(_isLoading ? '正在随机选择...' : '开始随机选题'),
+      onPressed: _isLoading ? null : _startRandomSelection,
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        backgroundColor: Colors.orange,
+        foregroundColor: Colors.white,
+      ),
     );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 }
