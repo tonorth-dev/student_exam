@@ -14,25 +14,34 @@ class NotePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/note_page_bg.png'), // Replace with your background image path
+            fit: BoxFit.fill, // Set the image fill method
+          ),
+        ),
+    child: Row(
       children: [
+        SizedBox(width: 8),
         Expanded(
+          flex: 4,
           child: Container(
-            width: 400,
             padding: const EdgeInsets.all(16.0),
             child: NoteTableView(
-                key: const Key("noteT_table"), title: "题本列表", logic: logic),
+                key: const Key("note_table"), title: "题本列表", logic: logic),
           ),
         ),
         Expanded(
-          child: Padding(
+          flex: 5,
+          child: Container(
             padding: const EdgeInsets.all(16.0),
             child: PdfPreView(
                 key: const Key("pdf_review"), title: "文件预览"),
           ),
         ),
       ],
-    );
+    ));
   }
 
   static SidebarTree newThis() {

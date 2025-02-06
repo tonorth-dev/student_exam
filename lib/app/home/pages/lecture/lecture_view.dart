@@ -26,7 +26,7 @@ class LectureTableView extends StatelessWidget {
               SizedBox(width: 10),
               SearchBoxWidget(
                 key: Key('keywords'),
-                hint: '讲义名称、创建者',
+                hint: '输入讲义名称',
                 width: 170,
                 onTextChanged: (String value) {
                   logic.searchText.value = value;
@@ -106,6 +106,7 @@ class LectureDataSource extends DataGridSource {
   final LectureLogic logic;
   final BuildContext context;
   List<DataGridRow> _rows = [];
+  int? _selectedRowIndex;
 
   LectureDataSource({required this.logic, required this.context}) {
     _buildRows();
@@ -130,22 +131,29 @@ class LectureDataSource extends DataGridSource {
     final item = logic.list[rowIndex];
 
     return DataGridRowAdapter(
-      color: rowIndex.isEven ? const Color(0x50F1FDFC) : Color(0xA1FFFFFF),
+      color: _selectedRowIndex == rowIndex
+          ? const Color(0xFFE0F7FA)
+          : rowIndex.isEven
+              ? const Color(0x50F1FDFC)
+              : Color(0x70FFFFFF),
       cells: row.getCells().map((cell) {
         final value = cell.value.toString();
         return GestureDetector(
-          behavior: HitTestBehavior.translucent, // 确保点击事件可以传递
+          behavior: HitTestBehavior.translucent,
           onTap: () {
+            _selectedRowIndex = rowIndex;
             logic.loadDirectoryTree(item['id'].toString(), false);
+            notifyListeners();
           },
-          child: MouseRegion( // 添加鼠标悬停效果
-            cursor: SystemMouseCursors.click, // 设置鼠标样式为小手
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
             child: Container(
               alignment: Alignment.center,
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 value,
-                style: const TextStyle(color: Colors.black87, fontSize: 14),
+                style: const TextStyle(color: Color(0xff26395f), fontWeight: FontWeight.w500
+                    , fontSize: 14),
               ),
             ),
           ),

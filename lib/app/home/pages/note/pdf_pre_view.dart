@@ -84,77 +84,64 @@ class _PdfPreViewState extends State<PdfPreView> {
           });
         } else {
           debugPrint('Failed to download PDF. Status code: ${response.statusCode}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to load PDF: ${response.statusCode}')),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to load PDF: ${response.statusCode}')),
+            );
+          }
         }
       }
     } catch (e) {
       debugPrint('Error initializing PDF: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading PDF: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading PDF: $e')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       children: [
-        TableEx.actions(
-          children: [
-            SizedBox(width: 30), // 添加一些间距
-            Container(
-              height: 50,
-              width: 100,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue.shade700, Colors.blue.shade300],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                borderRadius: BorderRadius.circular(8),
+        // 在这里放置你想要在左边显示的内容
+        SizedBox(width:25),
+        Expanded(
+          child: Column(
+            children: [
+              SizedBox(height: 8),
+              ThemeUtil.lineH(),
+              ThemeUtil.height(),
+              Expanded(
+                child: Obx(() {
+                  final selectedPdfUrl = pdfLogic.selectedPdfUrl.value;
+                  if (selectedPdfUrl == null || selectedPdfUrl.isEmpty) {
+                    return Container(
+                      padding: EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                      ),
+                      child: Center(
+                        child: Text(
+                          "请选择一个文件",
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            color: Colors.blue.shade700,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  return _localFilePath != null
+                      ? SfPdfViewer.file(File(_localFilePath!))
+                      : Center(child: CircularProgressIndicator());
+                }),
               ),
-              child: Center(
-                child: Text(
-                  "文件预览",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        ThemeUtil.lineH(),
-        ThemeUtil.height(),
-        Expanded( // 使用 Expanded 包裹 Obx 部分
-          child: Obx(() {
-            final selectedPdfUrl = pdfLogic.selectedPdfUrl.value;
-            if (selectedPdfUrl == null || selectedPdfUrl.isEmpty) {
-              return Container(
-                padding: EdgeInsets.all(16.0), // 设置内边距
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100, // 设置背景色
-                ),
-                child: Center(
-                  child: Text(
-                    "请选择一个文件",
-                    style: TextStyle(
-                      fontSize: 16.0, // 设置字体大小
-                      color: Colors.blue.shade700, // 设置字体颜色
-                      fontWeight: FontWeight.bold, // 设置字体粗细
-                    ),
-                  ),
-                ),
-              );
-            }
-            return _localFilePath != null
-                ? SfPdfViewer.file(File(_localFilePath!))
-                : Center(child: CircularProgressIndicator());
-          }),
+              SizedBox(height: 10),
+            ],
+          ),
         ),
       ],
     );

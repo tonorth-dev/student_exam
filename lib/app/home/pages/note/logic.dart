@@ -84,11 +84,10 @@ class NoteLogic extends GetxController {
 
     columns = [
       ColumnData(title: "ID", key: "id", width: 80),
-      ColumnData(title: "题本名称", key: "name", width: 120),
-      ColumnData(title: "专业", key: "major_name", width: 150),
-      ColumnData(title: "难度", key: "level_name", width: 80),
+      ColumnData(title: "题本名称", key: "name", width: 240),
+      ColumnData(title: "专业", key: "major_name", width: 120),
+      ColumnData(title: "难度", key: "level_name", width: 100),
       ColumnData(title: "试题数量", key: "questions_number", width: 60),
-      ColumnData(title: "创建时间", key: "create_time", width: 120),
     ];
 
     // 初始化数据

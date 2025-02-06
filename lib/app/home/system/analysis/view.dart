@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:student_exam/app/home/pages/note/view.dart';
 import 'package:student_exam/app/home/pages/psyc/view.dart';
 import 'package:student_exam/ex/ex_list.dart';
 import '../../../../theme/theme_util.dart';
@@ -62,22 +63,37 @@ class FeatureSection extends StatelessWidget {
                   children: [
                     _buildFeatureCard(
                       title: '面试模拟',
-                      subtitle: '智能模拟面试\n提升面试技巧',
+                      subtitle: '智能模拟面试\n锻炼面试技巧',
                       color: Colors.red,
                       icon: Icons.person_outline,
                       onTap: () => TabBarLogic.addPage(ExamPage.newThis()),
                       backgroundImage: 'assets/images/home_exam_pg.png',
+                      width: 260,
+                      height: 260,
                     ),
-                    const SizedBox(width: 100),
+                    const SizedBox(width: 30),
                     _buildFeatureCard(
                       title: '讲义学习',
-                      subtitle: '系统化学习\n提升专业能力',
+                      subtitle: '系统化学习\n提高专业能力',
                       color: Colors.blue,
                       icon: Icons.menu_book_outlined,
                       onTap: () => TabBarLogic.addPage(LecturePage.newThis()),
                       backgroundImage: 'assets/images/home_lecture_pg.png',
+                      width: 260,
+                      height: 260,
                     ),
-                    const SizedBox(width: 100),
+                    const SizedBox(width: 30),
+                    _buildFeatureCard(
+                      title: '题本学习',
+                      subtitle: '针对性学习\n提高答题水平',
+                      color: Colors.blue,
+                      icon: Icons.app_registration_outlined,
+                      onTap: () => TabBarLogic.addPage(NotePage.newThis()),
+                      backgroundImage: 'assets/images/home_note_pg.png',
+                      width: 260,
+                      height: 260,
+                    ),
+                    const SizedBox(width: 30),
                     _buildFeatureCard(
                       title: '心理测试',
                       subtitle: '了解自我\n职业规划指导',
@@ -85,6 +101,8 @@ class FeatureSection extends StatelessWidget {
                       icon: Icons.psychology_outlined,
                       onTap: () => TabBarLogic.addPage(PsychologyPage.newThis()),
                       backgroundImage: 'assets/images/home_psychology_pg.png',
+                      width: 260,
+                      height: 260,
                     ),
                   ],
                 ),
@@ -103,6 +121,8 @@ class FeatureSection extends StatelessWidget {
     required IconData icon,
     required VoidCallback onTap,
     required String backgroundImage,
+    double width = 300,
+    double height = 225,
   }) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -112,8 +132,8 @@ class FeatureSection extends StatelessWidget {
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           child: Container(
-            width: 275,
-            height: 289.63,
+            width: width,
+            height: height,
             child: Stack(
               children: [
                 // 背景图片
@@ -122,7 +142,7 @@ class FeatureSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                     child: Image.asset(
                       backgroundImage,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.fill,
                       errorBuilder: (_, __, ___) => Container(
                         color: Colors.grey[200],
                         child: const Icon(Icons.broken_image),
@@ -131,21 +151,6 @@ class FeatureSection extends StatelessWidget {
                   ),
                 ),
                 // 背景渐变
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: const Alignment(-0.73, -0.68),
-                        end: const Alignment(0.73, 0.68),
-                        colors: [
-                          Colors.white.withOpacity(0.3),
-                          Colors.white.withOpacity(0.1),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
                 // 标题和副标题
                 Positioned(
                   left: 25,
@@ -195,18 +200,6 @@ class FeatureSection extends StatelessWidget {
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
-                ),
-                // 左上角徽章
-                Positioned(
-                  left: 24,
-                  top: 0,
-                  child: _buildBadge(color),
-                ),
-                // 图标
-                Positioned(
-                  left: 81,
-                  top: 28,
-                  child: _buildIcon(icon, color),
                 ),
               ],
             ),
