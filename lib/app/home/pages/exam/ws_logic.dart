@@ -147,9 +147,6 @@ class WSLogic extends GetxController {
           case 'stop':
             countdownLogic.stop();
             break;
-          case 'segment':
-            countdownLogic.markSegment();
-            break;
           case 'reset':
             countdownLogic.reset();
             break;

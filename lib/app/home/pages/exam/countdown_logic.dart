@@ -46,6 +46,8 @@ class Countdown {
   }
 
   void startTimer() {
+    if (isRunning) return;
+    
     isRunning = true;
     showElapsedTime = false;
     _isRunningController.add(isRunning);
@@ -62,6 +64,7 @@ class Countdown {
   }
 
   void pause() {
+    if (!isRunning) return;
     isRunning = false;
     showElapsedTime = false;
     _isRunningController.add(isRunning);

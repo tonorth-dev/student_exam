@@ -174,6 +174,7 @@ class _ExamPageState extends State<ExamPage> {
               wsLogic.sendStudentSelect(id);
               wsLogic.unitsList.value = [];
             },
+            countdown: countdownLogic,
           ),
         ),
       );

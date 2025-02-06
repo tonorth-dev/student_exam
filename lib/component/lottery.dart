@@ -2,14 +2,18 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../app/home/pages/exam/countdown_logic.dart';
+
 class SimpleRoulette extends StatefulWidget {
   final List<Map<String, dynamic>> options;
   final Function(dynamic)? onSpinCompleted;
+  final Countdown countdown;
 
   const SimpleRoulette({
     Key? key,
     required this.options,
     this.onSpinCompleted,
+    required this.countdown,
   }) : super(key: key);
 
   @override
@@ -32,32 +36,38 @@ class _SimpleRouletteState extends State<SimpleRoulette> {
 
     widget.onSpinCompleted?.call(result['id']);
 
-    // 显示选择结果
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('已选择：${result['name']}'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
       icon: _isLoading
-          ? SizedBox(
-        width: 20,
-        height: 20,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: Colors.white,
-        ),
-      )
-          : const Icon(Icons.autorenew),
-      label: Text(_isLoading ? '正在随机选择...' : '开始随机选题'),
-      onPressed: _isLoading ? null : _startRandomSelection,
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            )
+          : const Icon(
+              Icons.autorenew,
+              size: 28,
+            ),
+      label: Text(
+        _isLoading ? '正在随机选择...' : '开始随机选题',
+        style: const TextStyle(fontSize: 18),
+      ),
+      onPressed: _isLoading
+          ? null
+          : () {
+              _startRandomSelection();
+              widget.countdown.stop();
+              widget.countdown.reset();
+            },
       style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+        minimumSize: const Size(200, 56),
         backgroundColor: Colors.orange,
         foregroundColor: Colors.white,
       ),
