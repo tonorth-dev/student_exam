@@ -19,11 +19,9 @@ class BookApi {
         'page': params['page'] ?? '1', // 默认值为 '1'
         'pageSize': params['size'] ?? '15', // 重命名并设置默认值
         'keyword': handleNullOrEmpty(params['keyword']),
-        'level': handleNullOrEmpty(params['level']),
-        'major_id': handleNullOrEmpty(params['major_id']),
       };
 
-      return await HttpUtil.get("/admin/book/book/list", params: finalParams);
+      return await HttpUtil.get("/student/book/book", params: finalParams);
     } catch (e) {
       print('Error in bookList: $e');
       rethrow; // 重新抛出异常以便调用者处理

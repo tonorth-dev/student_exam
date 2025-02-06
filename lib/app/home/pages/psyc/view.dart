@@ -188,7 +188,7 @@ class _PsychologyPageState extends State<PsychologyPage> {
               color: Colors.grey,
             ),
           ),
-          SizedBox(height: 40),
+          SizedBox(height: 180),
           ElevatedButton(
             onPressed: () => logic.resetTest(),
             style: ElevatedButton.styleFrom(

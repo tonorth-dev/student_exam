@@ -1,4 +1,5 @@
 import 'package:student_exam/app/home/pages/empty/view.dart';
+import 'package:student_exam/app/home/pages/note/view.dart';
 import 'package:student_exam/ex/ex_int.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -28,9 +29,15 @@ class SidebarLogic extends GetxController {
       page: LecturePage(),
     ),
     SidebarTree(
+      name: "题本学习",
+      icon: Icons.app_registration_outlined, // Apply color here
+      color: Colors.blue[400], // Set desired color
+      page: NotePage(),
+    ),
+    SidebarTree(
       name: "心理测试",
       icon: Icons.psychology_outlined, // Apply color here
-      color: Colors.blue[400], // Set desired color
+      color: Colors.purple[400], // Set desired color
       page: PsychologyPage(),
     )
   ];

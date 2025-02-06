@@ -46,7 +46,7 @@ class LectureApi {
         'job_code': handleNullOrEmpty(params['job_code']),
       };
 
-      return await HttpUtil.get("/admin/lecture/lecture", params: finalParams);
+      return await HttpUtil.get("/student/lecture/lecture", params: finalParams);
     } catch (e) {
       print('Error in getLectureList: $e');
       rethrow; // 重新抛出异常以便调用者处理
