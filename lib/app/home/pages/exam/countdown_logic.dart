@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:student_exam/ex/ex_hint.dart';
+
 class Countdown {
   // Private constructor to prevent direct instantiation
   Countdown._internal({required this.totalDuration})
@@ -54,6 +56,9 @@ class Countdown {
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (currentSeconds > 0) {
         currentSeconds--;
+        if (currentSeconds == 60) {
+          "答题时间还有1分钟".toHint();
+        }
         _tickController.add(currentSeconds);
       } else {
         timer.cancel();
