@@ -28,4 +28,13 @@ class ConfigApi {
       rethrow; // 重新抛出异常以便调用者处理
     }
   }
+
+  static Future<dynamic> configProto() async {
+    try {
+      return await HttpUtil.get("/admin/config/config/proto");
+    } catch (e) {
+      print('Error in configList: $e');
+      rethrow; // 重新抛出异常以便调用者处理
+    }
+  }
 }
