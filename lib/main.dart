@@ -10,6 +10,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'common/config_util.dart';
 import 'theme/light_theme.dart';
 
 // 定义全局变量 theme 以便在 main 函数外也可以访问
@@ -35,12 +36,14 @@ void main() async {
     skipTaskbar: false,
     minimumSize: const Size(initialWidth, 810), // 设置最小高度，宽度与初始宽度相同
     maximumSize: const Size(initialWidth, double.infinity), // 设置最大高度，宽度与初始宽度相同
+    center: true,
   );
 
   await windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();
     await windowManager.focus();
   });
+  ConfigUtil.initialize();
 
   runApp(const MyApp());
 }
