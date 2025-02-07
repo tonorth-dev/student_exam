@@ -11,9 +11,9 @@ class ConfigUtil {
   }
 
   // 默认值，在成功获取服务端配置前使用
-  static String _ossUrl = "https://oss.81hongshi.com";
-  static String _wsUrl = "ws://47.94.139.86";
-  static String _wsPort = "13921";
+  static String _ossUrl = "";
+  static String _wsUrl = "";
+  static String _wsPort = "";
 
   static String get ossUrl => _ossUrl;
   static String get wsUrl => _wsUrl;
