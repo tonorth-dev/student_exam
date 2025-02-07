@@ -9,6 +9,7 @@ import 'package:student_exam/ex/ex_hint.dart';
 
 import '../../../../api/ws_api.dart';
 import '../../../../common/app_data.dart';
+import '../../../login/view.dart';
 import 'countdown_logic.dart';
 import 'exam_logic.dart';
 
@@ -173,6 +174,12 @@ class WSLogic extends GetxController {
         break;
       case 'error':
         final error = message['message'];
+        if (error.contains('登录')) {
+          "登录已失效，需重新登录".toHint();
+          LoginData.clear();
+          Future.delayed(Duration(milliseconds: 1000));
+          Get.offAll(() => LoginPage());
+        }
         error.toString().toHint();
       case 'select_start':
         // 提取 units 字段
