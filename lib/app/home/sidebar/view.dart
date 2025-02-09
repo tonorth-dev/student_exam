@@ -37,7 +37,6 @@ class SidebarPage extends StatelessWidget {
                 sidebarExpanded.value = !sidebarExpanded.value;
                 sidebarShow.value = false;
               },
-
               child: Container(
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
@@ -52,8 +51,8 @@ class SidebarPage extends StatelessWidget {
                   ],
                 ),
                 child: Obx(() => Icon(
-                  sidebarExpanded.value 
-                      ? Icons.chevron_left 
+                  sidebarExpanded.value
+                      ? Icons.chevron_left
                       : Icons.chevron_right,
                   size: 20,
                   color: Theme.of(context).iconTheme.color,
@@ -81,13 +80,8 @@ class SidebarPage extends StatelessWidget {
 
   Widget _text(SidebarTree item, {double left = leftSpace}) {
     return MouseRegion(
-      // 鼠标悬停
-      onEnter: (event) {
-        logic.animName.value = item.name;
-      },
-      onExit: (event) {
-        logic.animName.value = "";
-      },
+      onEnter: (event) => logic.animName.value = item.name,
+      onExit: (event) => logic.animName.value = "",
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: InkWell(
@@ -103,43 +97,55 @@ class SidebarPage extends StatelessWidget {
             TabBarLogic.addPage(item);
           },
           child: Obx(() {
-            var selected = SidebarLogic.selectName.value == item.name;
+            final bool expanded = sidebarExpanded.value;
+            final bool selected = SidebarLogic.selectName.value == item.name;
             return Container(
-                width: double.infinity,
-                decoration: ThemeUtil.boxDecoration(
-                    color: selected ? UiTheme.primary() : null, radius: 12),
-                height: 50,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(width: left),
-                    Icon(
-                      item.icon,
-                      color: selected
-                          ? UiTheme.getOnPrimary(selected)
-                          : item.color,
-                    ).toJump(logic.animName.value == item.name),
-                    if (!sidebarExpanded.value) ...[
-                      ThemeUtil.width(),
-                      Flexible(
-                        child: Text(
-                          item.name,
-                          style: TextStyle(color: UiTheme.getOnPrimary(selected)),
-                          overflow: TextOverflow.ellipsis,
+              width: double.infinity,
+              height: 50,
+              decoration: ThemeUtil.boxDecoration(
+                color: selected ? UiTheme.primary() : null,
+                radius: 12,
+              ),
+              child: expanded
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(width: left),
+                        Icon(
+                          item.icon,
+                          color: selected
+                              ? UiTheme.getOnPrimary(selected)
+                              : item.color,
+                        ).toJump(logic.animName.value == item.name),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            item.name,
+                            style: TextStyle(
+                              color: UiTheme.getOnPrimary(selected),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    ],
-                    if (item.children.isNotEmpty) ...[
-                      const Spacer(),
-                      Icon(
-                        Icons.arrow_drop_up,
-                        color: UiTheme.getTextColor(selected),
-                        size: 28,
-                      ).toRotate(item.isExpanded.value),
-                      ThemeUtil.width(),
-                    ],
-                  ],
-                ));
+                        if (item.children.isNotEmpty) ...[
+                          Icon(
+                            Icons.arrow_drop_up,
+                            color: UiTheme.getTextColor(selected),
+                            size: 28,
+                          ).toRotate(item.isExpanded.value),
+                          const SizedBox(width: 8),
+                        ],
+                      ],
+                    )
+                  : Center(
+                      child: Icon(
+                        item.icon,
+                        color: selected
+                            ? UiTheme.getOnPrimary(selected)
+                            : item.color,
+                      ).toJump(logic.animName.value == item.name),
+                    ),
+            );
           }),
         ),
       ),
