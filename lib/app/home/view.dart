@@ -13,9 +13,14 @@ import 'package:get/get.dart';
 
 import 'logic.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   final logic = Get.put(HomeLogic());
 
   static Widget sidebarPage = SidebarPage();
@@ -50,31 +55,69 @@ class HomePage extends StatelessWidget {
 
   Widget body() {
     return Scaffold(
-      body: Row(
-        children: [
-          // 宽度扩大动画
-          Obx(() {
-            var show = sidebarShow.value;
-            return Visibility(
-              visible: show,
-              child: sidebarPage,
-            ).toAccordionX(
-              sidebarExpanded.value,
-              onEnd: () {
-                sidebarShow.value = true;
-              },
-            );
-          }),
-          ThemeUtil.lineV(),
-          Expanded(
-            child: Column(
-              children: [
-                // HeadPage(),
-                Expanded(child: TabBarPage()),
-              ],
+      body: Container(
+        width: sidebarExpanded.value ? 1440 : 1200,  // 根据侧边栏状态调整宽度
+        child: Row(
+          children: [
+            // 宽度扩大动画
+            Obx(() {
+              var show = sidebarShow.value;
+              return Visibility(
+                visible: show,
+                child: sidebarPage,
+              ).toAccordionX(
+                sidebarExpanded.value,
+                onEnd: () {
+                  sidebarShow.value = true;
+                },
+              );
+            }),
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () {
+                    sidebarExpanded.value = !sidebarExpanded.value;
+                    sidebarShow.value = false;
+                  },
+                  child: Container(
+                    height: 100,
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Obx(() => Icon(
+                      sidebarExpanded.value
+                          ? Icons.chevron_left
+                          : Icons.chevron_right,
+                      size: 10,
+                      color: Theme.of(context).iconTheme.color,
+                    )),
+                  ),
+                ),
+              ),
             ),
-          )
-        ],
+            ThemeUtil.lineV(),
+            Expanded(
+              child: Column(
+                children: [
+                  // HeadPage(),
+                  Expanded(child: TabBarPage()),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
