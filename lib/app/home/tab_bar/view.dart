@@ -78,7 +78,9 @@ class TabBarPage extends StatelessWidget {
           Expanded(
             child: IndexedStack(
               index: logic.currentIndex.value,
-              children: logic.tabList.toWidgetsWithIndex((e, index) => e.page),
+              children: logic.tabList.toWidgetsWithIndex((e, index) {
+                return e.page;
+              }),
             ),
           ),
         ],

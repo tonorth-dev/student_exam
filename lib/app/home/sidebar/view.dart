@@ -6,6 +6,7 @@ import 'package:student_exam/theme/ui_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../state.dart';
 import 'logic.dart';
 
 class SidebarPage extends StatelessWidget {
@@ -15,12 +16,54 @@ class SidebarPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-        width: 50,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minWidth:50, maxWidth: 50),
-          child: _default(),
-        ));
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        SizedBox(
+          width: 50,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 50, maxWidth: 50),
+            child: _default(),
+          ),
+        ),
+        Positioned(
+          top: 8,
+          right: -24,
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                sidebarExpanded.value = !sidebarExpanded.value;
+                sidebarShow.value = false;
+              },
+
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Obx(() => Icon(
+                  sidebarExpanded.value 
+                      ? Icons.chevron_left 
+                      : Icons.chevron_right,
+                  size: 20,
+                  color: Theme.of(context).iconTheme.color,
+                )),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _default() {
@@ -67,6 +110,7 @@ class SidebarPage extends StatelessWidget {
                     color: selected ? UiTheme.primary() : null, radius: 12),
                 height: 50,
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(width: left),
                     Icon(
@@ -75,22 +119,25 @@ class SidebarPage extends StatelessWidget {
                           ? UiTheme.getOnPrimary(selected)
                           : item.color,
                     ).toJump(logic.animName.value == item.name),
-                    ThemeUtil.width(),
-                    Text(
-                      item.name,
-                      style: TextStyle(color: UiTheme.getOnPrimary(selected)),
-                    ),
-                    const Spacer(),
-                    // 下拉箭头
-                    Visibility(
-                      visible: item.children.isNotEmpty,
-                      child: Icon(
+                    if (!sidebarExpanded.value) ...[
+                      ThemeUtil.width(),
+                      Flexible(
+                        child: Text(
+                          item.name,
+                          style: TextStyle(color: UiTheme.getOnPrimary(selected)),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                    if (item.children.isNotEmpty) ...[
+                      const Spacer(),
+                      Icon(
                         Icons.arrow_drop_up,
                         color: UiTheme.getTextColor(selected),
                         size: 28,
                       ).toRotate(item.isExpanded.value),
-                    ),
-                    ThemeUtil.width(),
+                      ThemeUtil.width(),
+                    ],
                   ],
                 ));
           }),

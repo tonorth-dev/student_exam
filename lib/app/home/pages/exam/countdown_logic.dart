@@ -89,6 +89,9 @@ class Countdown {
   }
 
   void reset() {
+    if (_tickController.isClosed || _isRunningController.isClosed || _segmentsController.isClosed) {
+      return;
+    }
     if (isStopped) {
       isStopped = false;
     }

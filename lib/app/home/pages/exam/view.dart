@@ -105,7 +105,7 @@ class _ExamPageState extends State<ExamPage> {
       children: [
         Obx(() => Container(
               decoration: BoxDecoration(
-                color: Colors.yellow,
+                color: Colors.white70,
                 image: DecorationImage(
                   image: AssetImage('assets/images/exam_page_bg.png'),
                   fit: BoxFit.fill,

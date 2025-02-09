@@ -46,6 +46,13 @@ class ThemeUtil {
     );
   }
 
+  static Widget lineVC({double width = 1}) {
+    return VerticalDivider(
+      width: width,
+      color: UiTheme.border(),
+    );
+  }
+
   static TableTheme getDefaultTheme() {
     return TableTheme(
       border: Border.all(color: UiTheme.primary(), width: 1),

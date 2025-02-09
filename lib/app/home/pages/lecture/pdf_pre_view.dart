@@ -4,8 +4,6 @@ import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:http/http.dart' as http;
-
-import '../../../../component/table/ex.dart';
 import '../../../../theme/theme_util.dart';
 import 'logic.dart';
 
@@ -26,7 +24,6 @@ class _PdfPreViewState extends State<PdfPreView> {
   int _lastPageNumber = 1;
   bool _isChangingPage = false;
   bool _isPdfLoaded = false;
-  final _key = GlobalKey();
 
   @override
   void initState() {
@@ -146,26 +143,42 @@ class _PdfPreViewState extends State<PdfPreView> {
 
       // 检测是否在最后一页并且是向下滚动
       if (currentPage == totalPages && isScrollingDown) {
-        setState(() {
-          _isChangingPage = true;
-        });
-        pdfLogic.moveToNextChapter();
-        if (mounted) {
+        // 获取下一个章节的节点信息
+        final nextNode = pdfLogic.getNextNode();
+        final isNextNodeValid = nextNode?.filePath != null && 
+                              nextNode!.filePath!.isNotEmpty && 
+                              nextNode.children.isEmpty;
+        
+        if (isNextNodeValid) {
           setState(() {
-            _isChangingPage = false;
+            _isChangingPage = true;
           });
+          pdfLogic.moveToNextChapter();
+          if (mounted) {
+            setState(() {
+              _isChangingPage = false;
+            });
+          }
         }
       }
-      // 检测是否在第一页并且是向上滚动，增加灵敏度
-      else if (currentPage <= 2 && isScrollingUp) {  // 修改这里，扩大检测范围到前两页
-        setState(() {
-          _isChangingPage = true;
-        });
-        pdfLogic.moveToPreviousChapter();
-        if (mounted) {
+      // 检测是否在第一页并且是向上滚动
+      else if (currentPage <= 2 && isScrollingUp) {
+        // 获取上一个章节的节点信息
+        final previousNode = pdfLogic.getPreviousNode();
+        final isPreviousNodeValid = previousNode?.filePath != null && 
+                                  previousNode!.filePath!.isNotEmpty && 
+                                  previousNode.children.isEmpty;
+        
+        if (isPreviousNodeValid) {
           setState(() {
-            _isChangingPage = false;
+            _isChangingPage = true;
           });
+          pdfLogic.moveToPreviousChapter();
+          if (mounted) {
+            setState(() {
+              _isChangingPage = false;
+            });
+          }
         }
       }
 

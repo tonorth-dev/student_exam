@@ -77,6 +77,8 @@ class LectureLogic extends GetxController {
   // 将 selectedNodeId 改为可观察变量
   final RxInt selectedNodeId = 0.obs;
 
+  final Rx<DirectoryNode?> selectedNode = Rx<DirectoryNode?>(null);
+
   void find(int newSize, int newPage) {
     size.value = newSize;
     page.value = newPage;
@@ -251,12 +253,37 @@ class LectureLogic extends GetxController {
 
   // 更新选中的文件
   void updateSelectedFile(DirectoryNode node) {
-    // 更新选中的节点
-    selectedNodeId.value = node.id;  // 使用 .value 更新
-    // 如果有文件路径，更新 PDF URL
+    selectedNode.value = node;  // Update selected node
+    selectedNodeId.value = node.id;
     if (node.filePath != null) {
       updatePdfUrl(node.filePath!);
     }
+  }
+
+  DirectoryNode? getNextNode() {
+    if (selectedPdfUrl.value == null || selectedPdfUrl.value!.isEmpty) return null;
+    
+    final currentUrl = ConfigUtil.ossUrl;
+    final nodes = getAllNodes(directoryTree);
+    final currentIndex = nodes.indexWhere((node) => 
+      node.filePath != null && 
+      selectedPdfUrl.value == "$currentUrl${node.filePath}"
+    );
+    
+    return currentIndex < nodes.length - 1 ? nodes[currentIndex + 1] : null;
+  }
+
+  DirectoryNode? getPreviousNode() {
+    if (selectedPdfUrl.value == null || selectedPdfUrl.value!.isEmpty) return null;
+    
+    final currentUrl = ConfigUtil.ossUrl;
+    final nodes = getAllNodes(directoryTree);
+    final currentIndex = nodes.indexWhere((node) => 
+      node.filePath != null && 
+      selectedPdfUrl.value == "$currentUrl${node.filePath}"
+    );
+    
+    return currentIndex > 0 ? nodes[currentIndex - 1] : null;
   }
 }
 

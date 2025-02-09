@@ -44,7 +44,7 @@ class LecturePage extends StatelessWidget {
           ),
           SizedBox(width: 30),
           SizedBox(
-            width: 300,
+            width: 260,
             height: MediaQuery.of(context).size.height * 0.9,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start, // Align children to the top
@@ -64,12 +64,16 @@ class LecturePage extends StatelessWidget {
               ],
             ),
           ),
-          ThemeUtil.lineV(width: 10),
+          Container(
+            padding: const EdgeInsets.only(left: 0,right: 0,top: 0,bottom: 13),
+            height: 742, // Set the height constraint
+            child:ThemeUtil.lineVC(width: 10),
+          ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                width: 780,
+                width: 820,
                 height: MediaQuery.of(context).size.height * 0.95,
                 child: Container(
                   padding: const EdgeInsets.all(16.0),
