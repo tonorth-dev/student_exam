@@ -28,14 +28,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
 
-  const initialWidth = 1440.0; // 初始宽度
-  const initialHeight = 810.0; // 初始高度
+  const initialHeight = 810.0;
 
   WindowOptions windowOptions = WindowOptions(
-    size: const Size(initialWidth, initialHeight),
+    size: const Size(1600, initialHeight),  // 初始包含侧边栏
     skipTaskbar: false,
-    minimumSize: const Size(1200, 810), // 最小宽度1200
-    maximumSize: const Size(1440, double.infinity), // 最大宽度1440
+    minimumSize: const Size(1451, 810),     // 收起状态宽度 (1441 + 10)
+    maximumSize: const Size(1600, 810),     // 展开状态宽度 (149 + 10 + 1441)
+    windowButtonVisibility: false,           // 隐藏窗口调整按钮
     center: true,
   );
 

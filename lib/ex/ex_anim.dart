@@ -62,7 +62,7 @@ extension ExAnim on Widget {
   }
 
   /// 展开，收缩动画
-  Widget toAccordionX(bool enable, {double width = 149, Function()? onEnd}) {
+  Widget toAccordionX(bool enable, {double width = 144, Function()? onEnd}) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       width: enable ? width : 0,
