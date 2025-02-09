@@ -6,6 +6,7 @@ class PsychologyLogic extends GetxController {
   // 状态变量
   final RxBool isLoading = false.obs;
   final RxBool isCompleted = false.obs;
+  final RxBool isAllCompleted = false.obs;
   final Rx<Map<String, dynamic>?> currentQuestion = Rx<Map<String, dynamic>?>(null);
 
   @override
@@ -26,10 +27,13 @@ class PsychologyLogic extends GetxController {
       });
 
       isLoading.value = false;
-      if (response != null && response.isNotEmpty) {
-        currentQuestion.value = response;
+      if (response["questions"] != null && response["questions"].isNotEmpty) {
+        currentQuestion.value = response["questions"];
       } else {
         isCompleted.value = true;
+      }
+      if (response["complete_count"] != null && response["complete_count"] >= 2) {
+        isAllCompleted.value = true;
       }
     } catch (e) {
       isLoading.value = false;
@@ -54,6 +58,11 @@ class PsychologyLogic extends GetxController {
   // 提交答案
   Future<void> submitAnswer(String answer) async {
     if (isLoading.value || currentQuestion.value == null) return;
+
+    if (isAllCompleted.value) {
+      "您已回答完两轮答题，无需再测试".toHint();
+      return;
+    }
 
     try {
       await StudentApi.submit({

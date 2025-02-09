@@ -189,27 +189,30 @@ class _PsychologyPageState extends State<PsychologyPage> {
             ),
           ),
           SizedBox(height: 180),
-          ElevatedButton(
-            onPressed: () => logic.resetTest(),
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.blue.shade600,
-              padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: BorderSide(
-                  color: Colors.blue.shade400,
-                  width: 1,
+          Visibility(
+            visible: !logic.isAllCompleted.value,
+            child: ElevatedButton(
+              onPressed: () => logic.resetTest(),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.blue.shade600,
+                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: BorderSide(
+                    color: Colors.blue.shade400,
+                    width: 1,
+                  ),
                 ),
+                elevation: 2,
+                shadowColor: Colors.blue.withOpacity(0.3),
               ),
-              elevation: 2,
-              shadowColor: Colors.blue.withOpacity(0.3),
-            ),
-            child: Text(
-              "再测一次",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+              child: Text(
+                "再测一次",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
