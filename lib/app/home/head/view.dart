@@ -9,10 +9,19 @@ import 'package:get/get.dart';
 
 import 'logic.dart';
 
-class HeadPage extends StatelessWidget {
-  HeadPage({Key? key}) : super(key: key);
+class HeadView extends StatefulWidget {
+  @override
+  _HeadViewState createState() => _HeadViewState();
+}
 
-  final logic = Get.put(HeadLogic());
+class _HeadViewState extends State<HeadView> {
+  final HeadLogic controller = Get.put(HeadLogic());
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    controller.refreshUserData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +48,7 @@ class HeadPage extends StatelessWidget {
               InkWell(
                 borderRadius: BorderRadius.circular(32),
                 onTap: () {
-                  logic.clickHeadImage();
+                  controller.clickHeadImage();
                 },
                 child: ClipOval(
                   // 圆形头像

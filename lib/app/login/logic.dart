@@ -17,6 +17,7 @@ class LoginLogic extends GetxController {
   var captchaText = TextEditingController();
   var captchaImageUrl = ''.obs;
   var captchaId = ''.obs;
+  final isLoggedIn = false.obs;
 
   @override
   void onInit() {
@@ -78,7 +79,8 @@ class LoginLogic extends GetxController {
         });
         // 登录成功后保存账号信息
         saveAccountInfo(accountText.text);
-        Get.offAll(() => HomePage());
+        isLoggedIn.value = true;
+        Get.off(() => HomePage());
       } else {
         captchaText.clear();
         fetchCaptcha();
@@ -93,6 +95,7 @@ class LoginLogic extends GetxController {
 
   void logout() {
     LoginData.easySave((p0) => {p0.token = "", p0.role = "", p0.user = ""});
+    isLoggedIn.value = false;
   }
 
   Uint8List base64ToImage(String base64String) {

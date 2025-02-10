@@ -21,21 +21,29 @@ class HeadLogic extends GetxController {
   void onInit() {
     super.onInit();
     _loadUserData();
+    // 添加监听器来监听登录状态变化
+    ever(loginLogic.isLoggedIn, (_) => refreshUserData());
   }
 
   // 异步加载用户数据的方法
   Future<void> _loadUserData() async {
     try {
       _loginData = await LoginData.read();
-      update(); // 更新视图
     } catch (e) {
-      print('Failed to load user data: $e');
+      debugPrint('Failed to load user data: $e');
+      _loginData = null;
     }
+  }
+
+  // 修改刷新方法以确保立即更新
+  void refreshUserData() async {
+    await _loadUserData();
+    update(); // 确保视图更新
   }
 
   void logout() {
     loginLogic.logout();
-    Get.offAll(() => LoginPage());
+    Get.off(() => LoginPage());
   }
 
   void clickHeadImage() {

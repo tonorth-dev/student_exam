@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
@@ -23,19 +24,21 @@ class _PdfPreViewState extends State<PdfPreView> {
   PdfViewerController? _pdfController;
   String? _currentUrl;
   String? _localFilePath;
+  StreamSubscription? _pdfUrlSubscription;
 
   @override
   void initState() {
     super.initState();
-    pdfLogic.selectedPdfUrl.listen((url) async {
-      if (url != null) {
-        await _initializePdf(url);
+    _pdfUrlSubscription = pdfLogic.selectedPdfUrl.listen((url) {
+      if (url != null && mounted) {
+        _initializePdf(url);
       }
     });
   }
 
   @override
   void dispose() {
+    _pdfUrlSubscription?.cancel();
     _pdfController?.dispose();
     super.dispose();
   }
@@ -67,10 +70,12 @@ class _PdfPreViewState extends State<PdfPreView> {
       final localPath = await _getLocalFilePath(url);
       if (await _isCacheValid(localPath)) {
         debugPrint('Using cached PDF at: $localPath');
-        setState(() {
-          _currentUrl = url;
-          _localFilePath = localPath;
-        });
+        if (mounted) {
+          setState(() {
+            _currentUrl = url;
+            _localFilePath = localPath;
+          });
+        }
       } else {
         debugPrint('Downloading PDF from remote URL.');
         final response = await http.get(Uri.parse(url));
@@ -78,10 +83,12 @@ class _PdfPreViewState extends State<PdfPreView> {
           final file = File(localPath);
           await file.writeAsBytes(response.bodyBytes);
           debugPrint('PDF cached at: $localPath');
-          setState(() {
-            _currentUrl = url;
-            _localFilePath = localPath;
-          });
+          if (mounted) {
+            setState(() {
+              _currentUrl = url;
+              _localFilePath = localPath;
+            });
+          }
         } else {
           debugPrint('Failed to download PDF. Status code: ${response.statusCode}');
           if (mounted) {
@@ -105,20 +112,20 @@ class _PdfPreViewState extends State<PdfPreView> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // 在这里放置你想要在左边显示的内容
-        SizedBox(width:25),
+        const SizedBox(width: 25),
         Expanded(
           child: Column(
             children: [
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               ThemeUtil.lineH(),
               ThemeUtil.height(),
               Expanded(
                 child: Obx(() {
                   final selectedPdfUrl = pdfLogic.selectedPdfUrl.value;
+                  
                   if (selectedPdfUrl == null || selectedPdfUrl.isEmpty) {
                     return Container(
-                      padding: EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                       ),
@@ -134,12 +141,36 @@ class _PdfPreViewState extends State<PdfPreView> {
                       ),
                     );
                   }
-                  return _localFilePath != null
-                      ? SfPdfViewer.file(File(_localFilePath!))
-                      : Center(child: CircularProgressIndicator());
+
+                  // 确保本地文件路径和当前URL匹配
+                  if (_localFilePath == null || _currentUrl != selectedPdfUrl) {
+                    // 触发初始化过程
+                    _initializePdf(selectedPdfUrl);
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  // 检查文件是否存在
+                  final file = File(_localFilePath!);
+                  if (!file.existsSync()) {
+                    _initializePdf(selectedPdfUrl);
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  return SfPdfViewer.file(
+                    file,
+                    key: ValueKey(_localFilePath),
+                    onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
+                      debugPrint('PDF load failed: ${details.error}');
+                      _initializePdf(selectedPdfUrl);
+                    },
+                  );
                 }),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
             ],
           ),
         ),

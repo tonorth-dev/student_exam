@@ -3,10 +3,24 @@ import 'package:get/get.dart';
 import '../../theme/ui_theme.dart';
 import 'logic.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({Key? key}) : super(key: key);
+class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key}) : super(key: key);
 
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final logic = Get.put(LoginLogic());
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 使用 addPostFrameCallback 确保在构建完成后执行
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      logic.fetchCaptcha();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

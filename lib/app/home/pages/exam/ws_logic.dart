@@ -174,11 +174,11 @@ class WSLogic extends GetxController {
         break;
       case 'error':
         final error = message['message'];
-        if (error.contains('登录')) {
+        if (error.contains('登录码已过期')) {
           "登录已失效，需重新登录".toHint();
           LoginData.clear();
           Future.delayed(Duration(milliseconds: 1000));
-          Get.offAll(() => LoginPage());
+          Get.to(() => LoginPage());
         }
         error.toString().toHint();
       case 'select_start':
