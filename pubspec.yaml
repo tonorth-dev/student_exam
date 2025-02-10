@@ -54,7 +54,6 @@ dependencies:
   flutter_styled_toast: ^2.2.1
   flutter_material_pickers: ^3.7.0
   number_pagination: ^1.1.6
-  printing: ^5.13.4
   field_suggestion: ^0.2.6
   flutter_fancy_tree_view: ^1.6.0
   searchfield: ^1.0.0
