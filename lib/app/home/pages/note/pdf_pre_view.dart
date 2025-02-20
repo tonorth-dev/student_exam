@@ -46,7 +46,8 @@ class _PdfPreViewState extends State<PdfPreView> {
   Future<String> _getLocalFilePath(String url) async {
     final directory = await getApplicationDocumentsDirectory();
     final fileName = Uri.parse(url).pathSegments.last;
-    return '${directory.path}/$fileName';
+    final fileNameHash = fileName.hashCode.toString();
+    return '${directory.path}/$fileNameHash.pdf';
   }
 
   Future<bool> _isCacheValid(String filePath) async {
@@ -90,22 +91,36 @@ class _PdfPreViewState extends State<PdfPreView> {
             });
           }
         } else {
-          debugPrint('Failed to download PDF. Status code: ${response.statusCode}');
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to load PDF: ${response.statusCode}')),
-            );
-          }
+          throw Exception('Failed to download PDF: ${response.statusCode}');
         }
       }
     } catch (e) {
       debugPrint('Error initializing PDF: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading PDF: $e')),
-        );
+        _showError('PDF加载失败：${e.toString()}');
       }
     }
+  }
+
+  void _showError(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('错误'),
+        content: SelectableText.rich(
+          TextSpan(
+            text: message,
+            style: const TextStyle(color: Colors.red),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
