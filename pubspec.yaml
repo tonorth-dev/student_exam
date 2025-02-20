@@ -1,5 +1,5 @@
 name: student_exam
-description: "App项目模板"
+description: "红师教育学生端"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 environment:
