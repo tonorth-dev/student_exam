@@ -25,10 +25,17 @@ class _PdfPreViewState extends State<PdfPreView> {
   String? _currentUrl;
   String? _localFilePath;
   StreamSubscription? _pdfUrlSubscription;
+  
+  // 修改缩放相关变量
+  double _currentZoom = 1.0;
+  static const double _zoomStep = 0.1;
+  static const int _maxZoomClicks = 8;
+  static const double _minZoom = 0.5; // 添加最小缩放限制
 
   @override
   void initState() {
     super.initState();
+    _pdfController = PdfViewerController(); // 初始化控制器
     _pdfUrlSubscription = pdfLogic.selectedPdfUrl.listen((url) {
       if (url != null && mounted) {
         _initializePdf(url);
@@ -123,6 +130,68 @@ class _PdfPreViewState extends State<PdfPreView> {
     );
   }
 
+  Widget _buildZoomControls() {
+    return Positioned(
+      right: 16,
+      bottom: 16,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.8),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: _currentZoom < (1 + _zoomStep * _maxZoomClicks)
+                      ? () {
+                          setState(() {
+                            _currentZoom = (_currentZoom + _zoomStep)
+                                .clamp(1.0, 1 + _zoomStep * _maxZoomClicks);
+                            _pdfController?.zoomLevel = _currentZoom;
+                          });
+                        }
+                      : null,
+                  tooltip: '放大',
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    '${(_currentZoom * 100).toInt()}%',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.remove),
+                  onPressed: _currentZoom > 1.0
+                      ? () {
+                          setState(() {
+                            _currentZoom = (_currentZoom - _zoomStep)
+                                .clamp(1.0, 1 + _zoomStep * _maxZoomClicks);
+                            _pdfController?.zoomLevel = _currentZoom;
+                          });
+                        }
+                      : null,
+                  tooltip: '还原',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -157,16 +226,13 @@ class _PdfPreViewState extends State<PdfPreView> {
                     );
                   }
 
-                  // 确保本地文件路径和当前URL匹配
                   if (_localFilePath == null || _currentUrl != selectedPdfUrl) {
-                    // 触发初始化过程
                     _initializePdf(selectedPdfUrl);
                     return const Center(
                       child: CircularProgressIndicator(),
                     );
                   }
 
-                  // 检查文件是否存在
                   final file = File(_localFilePath!);
                   if (!file.existsSync()) {
                     _initializePdf(selectedPdfUrl);
@@ -175,13 +241,19 @@ class _PdfPreViewState extends State<PdfPreView> {
                     );
                   }
 
-                  return SfPdfViewer.file(
-                    file,
-                    key: ValueKey(_localFilePath),
-                    onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
-                      debugPrint('PDF load failed: ${details.error}');
-                      _initializePdf(selectedPdfUrl);
-                    },
+                  return Stack(
+                    children: [
+                      SfPdfViewer.file(
+                        file,
+                        key: ValueKey(_localFilePath),
+                        controller: _pdfController,
+                        onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
+                          debugPrint('PDF load failed: ${details.error}');
+                          _initializePdf(selectedPdfUrl);
+                        },
+                      ),
+                      _buildZoomControls(),
+                    ],
                   );
                 }),
               ),

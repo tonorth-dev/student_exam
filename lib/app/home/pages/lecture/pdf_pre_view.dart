@@ -24,6 +24,10 @@ class _PdfPreViewState extends State<PdfPreView> {
   int _lastPageNumber = 1;
   bool _isChangingPage = false;
   bool _isPdfLoaded = false;
+  double _currentZoom = 1.0;
+  static const double _zoomStep = 0.1;
+  static const int _maxZoomClicks = 8;
+  static const double _minZoom = 0.5;
 
   @override
   void initState() {
@@ -215,6 +219,68 @@ class _PdfPreViewState extends State<PdfPreView> {
     );
   }
 
+  Widget _buildZoomControls() {
+    return Positioned(
+      right: 16,
+      bottom: 16,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.8),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: _currentZoom < (1 + _zoomStep * _maxZoomClicks)
+                      ? () {
+                          setState(() {
+                            _currentZoom = (_currentZoom + _zoomStep)
+                                .clamp(1.0, 1 + _zoomStep * _maxZoomClicks);
+                            _pdfController.zoomLevel = _currentZoom;
+                          });
+                        }
+                      : null,
+                  tooltip: '放大',
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    '${(_currentZoom * 100).toInt()}%',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.remove),
+                  onPressed: _currentZoom > 1.0
+                      ? () {
+                          setState(() {
+                            _currentZoom = (_currentZoom - _zoomStep)
+                                .clamp(1.0, 1 + _zoomStep * _maxZoomClicks);
+                            _pdfController.zoomLevel = _currentZoom;
+                          });
+                        }
+                      : null,
+                  tooltip: '还原',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -249,7 +315,6 @@ class _PdfPreViewState extends State<PdfPreView> {
             return FutureBuilder<bool>(
               future: Future.wait([
                 File(_localFilePath!).exists(),
-                // 添加一个短暂延迟以确保布局完成
                 Future.delayed(const Duration(milliseconds: 100)),
               ]).then((results) => results[0]),
               builder: (context, snapshot) {
@@ -257,9 +322,14 @@ class _PdfPreViewState extends State<PdfPreView> {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                return AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: _buildPdfViewer(_localFilePath!),
+                return Stack(
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: _buildPdfViewer(_localFilePath!),
+                    ),
+                    _buildZoomControls(),
+                  ],
                 );
               },
             );
