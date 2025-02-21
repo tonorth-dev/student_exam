@@ -50,21 +50,36 @@ class _PdfPreViewState extends State<PdfPreView> {
     super.dispose();
   }
 
-  Future<String> _getLocalFilePath(String url) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final fileName = Uri.parse(url).pathSegments.last;
-    final fileNameHash = fileName.hashCode.toString();
-    return '${directory.path}/$fileNameHash.pdf';
-  }
-
   Future<bool> _isCacheValid(String filePath) async {
-    final file = File(filePath);
-    if (await file.exists()) {
-      final lastModified = await file.lastModified();
-      final now = DateTime.now();
-      return now.difference(lastModified).inDays < 3;
+    try {
+      final file = File(filePath);
+      if (await file.exists()) {
+        final fileSize = await file.length();
+        // 检查文件大小是否为0
+        if (fileSize == 0) {
+          debugPrint('Cache file exists but is empty');
+          return false;
+        }
+        // 检查文件最后修改时间
+        final lastModified = await file.lastModified();
+        final now = DateTime.now();
+        // 缓存保留7天
+        final isValid = now.difference(lastModified).inDays < 7;
+        debugPrint('Cache ${isValid ? "valid" : "expired"} for: $filePath');
+        return isValid;
+      }
+    } catch (e) {
+      debugPrint('Error checking cache: $e');
     }
     return false;
+  }
+
+  Future<String> _getLocalFilePath(String url) async {
+    final directory = await getApplicationDocumentsDirectory();
+    // 使用URL的哈希值作为文件名，避免中文路径问题
+    final fileName = Uri.parse(url).pathSegments.last;
+    final fileNameHash = '${fileName.hashCode}_${url.hashCode}';
+    return '${directory.path}/pdf_cache/$fileNameHash.pdf';
   }
 
   Future<void> _initializePdf(String url) async {
@@ -76,6 +91,8 @@ class _PdfPreViewState extends State<PdfPreView> {
     debugPrint('Initializing PDF with URL: $url');
     try {
       final localPath = await _getLocalFilePath(url);
+      final file = File(localPath);
+
       if (await _isCacheValid(localPath)) {
         debugPrint('Using cached PDF at: $localPath');
         if (mounted) {
@@ -84,13 +101,30 @@ class _PdfPreViewState extends State<PdfPreView> {
             _localFilePath = localPath;
           });
         }
-      } else {
-        debugPrint('Downloading PDF from remote URL.');
-        final response = await http.get(Uri.parse(url));
-        if (response.statusCode == 200) {
-          final file = File(localPath);
-          await file.writeAsBytes(response.bodyBytes);
-          debugPrint('PDF cached at: $localPath');
+        return; // 如果缓存有效，直接返回
+      }
+
+      debugPrint('Downloading PDF from remote URL: $url');
+      final response = await http.get(Uri.parse(url));
+      if (!mounted) return;
+
+      if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
+        // 确保目录存在
+        final directory = file.parent;
+        if (!await directory.exists()) {
+          await directory.create(recursive: true);
+        }
+        
+        // 先写入临时文件
+        final tempFile = File('${localPath}_temp');
+        await tempFile.writeAsBytes(response.bodyBytes);
+        
+        // 验证文件写入成功
+        if (await tempFile.exists() && await tempFile.length() > 0) {
+          // 重命名为正式文件
+          await tempFile.rename(localPath);
+          debugPrint('PDF cached successfully at: $localPath');
+
           if (mounted) {
             setState(() {
               _currentUrl = url;
@@ -98,8 +132,10 @@ class _PdfPreViewState extends State<PdfPreView> {
             });
           }
         } else {
-          throw Exception('Failed to download PDF: ${response.statusCode}');
+          throw Exception('Failed to write PDF file');
         }
+      } else {
+        throw Exception('下载PDF失败：状态码 ${response.statusCode}');
       }
     } catch (e) {
       debugPrint('Error initializing PDF: $e');
