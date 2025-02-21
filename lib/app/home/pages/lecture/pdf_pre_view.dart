@@ -203,7 +203,7 @@ class _PdfPreViewState extends State<PdfPreView> {
           height: constraints.maxHeight,
           child: SfPdfViewer.file(
             File(filePath),
-            key: ValueKey(filePath), // 使用文件路径作为key以确保重新加载
+            key: ValueKey(filePath),
             controller: _pdfController,
             onPageChanged: _handlePdfPageChanged,
             onDocumentLoaded: _onDocumentLoaded,
@@ -211,7 +211,8 @@ class _PdfPreViewState extends State<PdfPreView> {
             pageSpacing: 0,
             enableDoubleTapZooming: true,
             canShowScrollHead: true,
-            enableTextSelection: true,
+            enableTextSelection: false,
+            enableDocumentLinkAnnotation: false,
             initialZoomLevel: 1.0,
           ),
         );

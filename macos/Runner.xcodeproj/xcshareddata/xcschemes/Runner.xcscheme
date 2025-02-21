@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "33CC10EC2044A3C60003C045"
-               BuildableName = "hongshi_student_app.app"
+               BuildableName = "&#x7ea2;&#x5e08;&#x6559;&#x80b2;&#x5b66;&#x751f;&#x7aef;.app"
                BlueprintName = "Runner"
                ReferencedContainer = "container:Runner.xcodeproj">
             </BuildableReference>
@@ -31,7 +31,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "33CC10EC2044A3C60003C045"
-            BuildableName = "hongshi_student_app.app"
+            BuildableName = "&#x7ea2;&#x5e08;&#x6559;&#x80b2;&#x5b66;&#x751f;&#x7aef;.app"
             BlueprintName = "Runner"
             ReferencedContainer = "container:Runner.xcodeproj">
          </BuildableReference>
@@ -66,7 +66,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "33CC10EC2044A3C60003C045"
-            BuildableName = "hongshi_student_app.app"
+            BuildableName = "&#x7ea2;&#x5e08;&#x6559;&#x80b2;&#x5b66;&#x751f;&#x7aef;.app"
             BlueprintName = "Runner"
             ReferencedContainer = "container:Runner.xcodeproj">
          </BuildableReference>
@@ -83,7 +83,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "33CC10EC2044A3C60003C045"
-            BuildableName = "hongshi_student_app.app"
+            BuildableName = "&#x7ea2;&#x5e08;&#x6559;&#x80b2;&#x5b66;&#x751f;&#x7aef;.app"
             BlueprintName = "Runner"
             ReferencedContainer = "container:Runner.xcodeproj">
          </BuildableReference>

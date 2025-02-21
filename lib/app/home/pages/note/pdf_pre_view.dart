@@ -247,6 +247,8 @@ class _PdfPreViewState extends State<PdfPreView> {
                         file,
                         key: ValueKey(_localFilePath),
                         controller: _pdfController,
+                        enableTextSelection: false,
+                        enableDocumentLinkAnnotation: false,
                         onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
                           debugPrint('PDF load failed: ${details.error}');
                           _initializePdf(selectedPdfUrl);
