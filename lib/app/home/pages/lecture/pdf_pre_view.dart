@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import '../../../../theme/theme_util.dart';
 import '../../../../common/encr_util.dart';
 import 'logic.dart';
+import 'package:path/path.dart' as p;
 
 class PdfPreView extends StatefulWidget {
   final String title;
@@ -100,20 +101,26 @@ class _PdfPreViewState extends State<PdfPreView> {
   Future<String> _getLocalFilePath(String url) async {
     try {
       final directory = await getApplicationDocumentsDirectory();
-      // 使用URL的base64编码作为文件名，保留扩展名信息
-      final urlBytes = utf8.encode(url);
-      final urlHash = base64Url.encode(urlBytes).replaceAll(RegExp(r'[/\\?%*:|"<>]'), '_');
-      final cachePath = '${directory.path}/pdf_cache';
-      
-      // 确保缓存目录存在
+      // 使用 path.join 拼接路径，确保跨平台兼容
+      final cachePath = p.join(directory.path, 'pdf_cache');
       final cacheDir = Directory(cachePath);
+
+      // 检查目录是否存在，如果不存在则尝试创建
       if (!await cacheDir.exists()) {
-        await cacheDir.create(recursive: true);
+        try {
+          await cacheDir.create(recursive: true);
+          debugPrint('缓存目录已创建: $cachePath');
+        } catch (e) {
+          debugPrint('创建缓存目录失败: $e');
+        }
       }
 
-      return '$cachePath/$urlHash.encrypted';
+      // 生成唯一的文件名，避免路径中的非法字符
+      final urlBytes = utf8.encode(url);
+      final urlHash = base64Url.encode(urlBytes).replaceAll(RegExp(r'[/\\?%*:|"<>]'), '_');
+      return p.join(cachePath, '$urlHash.encrypted');
     } catch (e) {
-      debugPrint('Error generating file path: $e');
+      debugPrint('生成文件路径时出错: $e');
       rethrow;
     }
   }
@@ -141,77 +148,73 @@ class _PdfPreViewState extends State<PdfPreView> {
   }
 
   Future<void> _initializePdf(String url) async {
-    if (url.isEmpty) {
-      debugPrint('Empty URL provided');
-      return;
-    }
-
-    if (_currentUrl == url) {
-      debugPrint('Same URL, skipping reinitialization');
-      return;
-    }
-
-    setState(() {
-      _isPdfLoaded = false;
-      _isChangingPage = false;
-      _localFilePath = null;
-    });
+    if (url.isEmpty || _currentUrl == url) return;
 
     try {
       final cleanUrl = url.trim();
-      final localPath = await _getLocalFilePath(cleanUrl);
-      debugPrint('Local path for PDF: $localPath');
+      String? localPath;
+      try {
+        localPath = await _getLocalFilePath(cleanUrl);
+      } catch (e) {
+        debugPrint('获取本地文件路径失败: $e');
+      }
 
-      // 尝试从本地加密缓存加载
-      if (await _isCacheValid(localPath)) {
-        final decryptedFile = await _getDecryptedTempFile(localPath);
-        if (decryptedFile != null) {
-          debugPrint('Using cached encrypted PDF');
-          if (mounted) {
-            setState(() {
-              _currentUrl = cleanUrl;
-              _localFilePath = decryptedFile.path;
-              _lastPageNumber = 1;
-            });
+      File? decryptedFile;
+      if (localPath != null) {
+        try {
+          if (await _isCacheValid(localPath)) {
+            decryptedFile = await _getDecryptedTempFile(localPath);
           }
-          return;
+        } catch (e) {
+          debugPrint('检查或解密本地文件时出错: $e');
         }
       }
 
-      // 从远程下载
-      debugPrint('Downloading PDF from: $cleanUrl');
-      final response = await http.get(Uri.parse(cleanUrl));
-      
-      if (!mounted) return;
-
-      if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
-        // 加密文件内容
-        final encryptedBytes = EncryptionUtil.encryptBytes(response.bodyBytes);
-        
-        // 保存加密文件
-        final encryptedFile = File(localPath);
-        await encryptedFile.writeAsBytes(encryptedBytes);
-        
-        // 创建解密的临时文件用于查看
-        final tempDir = await getTemporaryDirectory();
-        final tempFile = File('${tempDir.path}/temp_${DateTime.now().millisecondsSinceEpoch}.pdf');
-        await tempFile.writeAsBytes(response.bodyBytes);
-
+      if (decryptedFile != null && await decryptedFile.exists()) {
         if (mounted) {
           setState(() {
             _currentUrl = cleanUrl;
-            _localFilePath = tempFile.path;
-            _lastPageNumber = 1;
+            _localFilePath = decryptedFile?.path;
           });
         }
       } else {
-        throw Exception('下载PDF失败: HTTP ${response.statusCode}');
+        await _downloadAndSetPdf(cleanUrl, localPath);
       }
     } catch (e) {
-      debugPrint('Error in _initializePdf: $e');
-      if (mounted) {
-        _showError('PDF加载失败：${e.toString()}');
+      debugPrint('初始化 PDF 时出错: $e');
+      if (mounted) _showError('PDF 加载失败：${e.toString()}');
+    }
+  }
+
+  Future<void> _downloadAndSetPdf(String url, String? localPath) async {
+    debugPrint('从远程下载 PDF: $url');
+    final response = await http.get(Uri.parse(url));
+    if (!mounted) return;
+
+    if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
+      if (localPath != null) {
+        try {
+          final encryptedBytes = EncryptionUtil.encryptBytes(response.bodyBytes);
+          final encryptedFile = File(localPath);
+          await encryptedFile.parent.create(recursive: true);
+          await encryptedFile.writeAsBytes(encryptedBytes);
+        } catch (e) {
+          debugPrint('保存加密文件失败: $e');
+        }
       }
+
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File(p.join(tempDir.path, 'temp_${DateTime.now().millisecondsSinceEpoch}.pdf'));
+      await tempFile.writeAsBytes(response.bodyBytes);
+
+      if (mounted) {
+        setState(() {
+          _currentUrl = url;
+          _localFilePath = tempFile.path;
+        });
+      }
+    } else {
+      throw Exception('下载 PDF 失败: HTTP ${response.statusCode}');
     }
   }
 
@@ -360,12 +363,12 @@ class _PdfPreViewState extends State<PdfPreView> {
                   icon: const Icon(Icons.add),
                   onPressed: _currentZoom < (1 + _zoomStep * _maxZoomClicks)
                       ? () {
-                    setState(() {
-                      _currentZoom = (_currentZoom + _zoomStep)
-                          .clamp(1.0, 1 + _zoomStep * _maxZoomClicks);
-                      _pdfController.zoomLevel = _currentZoom;
-                    });
-                  }
+                          setState(() {
+                            _currentZoom = (_currentZoom + _zoomStep)
+                                .clamp(_minZoom, 1 + _zoomStep * _maxZoomClicks);
+                            _pdfController.zoomLevel = _currentZoom;
+                          });
+                        }
                       : null,
                   tooltip: '放大',
                 ),
@@ -378,16 +381,16 @@ class _PdfPreViewState extends State<PdfPreView> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.remove),
-                  onPressed: _currentZoom > 1.0
+                  onPressed: _currentZoom > _minZoom
                       ? () {
-                    setState(() {
-                      _currentZoom = (_currentZoom - _zoomStep)
-                          .clamp(1.0, 1 + _zoomStep * _maxZoomClicks);
-                      _pdfController.zoomLevel = _currentZoom;
-                    });
-                  }
+                          setState(() {
+                            _currentZoom = (_currentZoom - _zoomStep)
+                                .clamp(_minZoom, 1 + _zoomStep * _maxZoomClicks);
+                            _pdfController.zoomLevel = _currentZoom;
+                          });
+                        }
                       : null,
-                  tooltip: '还原',
+                  tooltip: '缩小',
                 ),
               ],
             ),
