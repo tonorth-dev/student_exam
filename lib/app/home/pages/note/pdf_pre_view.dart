@@ -66,58 +66,37 @@ class _PdfPreViewState extends State<PdfPreView> {
       final startDate = DateTime(2025, 2, 17);
       final endDate = DateTime(2025, 2, 23);
 
-      // 获取目录下所有文件
-      final files = await directory.list(recursive: false).toList();
-
-      for (var entity in files) {
+      await for (var entity in directory.list(recursive: false)) {
         if (entity is File && entity.path.endsWith('.pdf')) {
           try {
-            final stat = await entity.stat();
-            final createTime = stat.changed;
-            final modifiedTime = stat.modified;
+            final stat = await entity.stat().catchError((e) => null); // 捕获stat异常
+            if (stat == null) continue;
 
-            // 检查文件创建时间或修改时间是否在指定范围内
             final isInRange = (time) => time.isAfter(startDate) &&
                 time.isBefore(endDate.add(const Duration(days: 1)));
 
-            if (isInRange(createTime) || isInRange(modifiedTime)) {
-              try {
-                await entity.delete();
-                "已删除PDF: ${entity.path}".toHint();
-              } catch (deleteError) {
-                "删除文件失败 ${entity.path}: $deleteError".toHint();
-              }
+            // 仅当时间符合且尝试删除
+            if (isInRange(stat.changed) || isInRange(stat.modified)) {
+              await entity.delete().catchError((e) { // 双重捕获
+                "删除失败但继续: ${entity.path}".toHint();
+              });
             }
           } catch (e) {
-            "检查文件失败 ${entity.path}: $e".toHint();
-            continue;
+            "文件检查异常已忽略: ${entity.path}".toHint();
           }
         }
       }
+
+      // 缓存目录处理（保持原逻辑）
       final cacheDir = Directory('${directory.path}/pdf_cache');
-
       if (await cacheDir.exists()) {
-        try {
-          await cacheDir.delete(recursive: true);
-          "已删除缓存目录: ${cacheDir.path}".toHint();
-
-          // 重新创建缓存目录
-          await cacheDir.create(recursive: true);
-          "已创建新的缓存目录: ${cacheDir.path}".toHint();
-        } catch (e) {
-          "删除缓存目录失败: $e".toHint();
-        }
+        await cacheDir.delete(recursive: true).catchError((e) => null); // 失败不阻断
+        await cacheDir.create(recursive: true);
       } else {
-        // 如果目录不存在，创建新的
-        try {
-          await cacheDir.create(recursive: true);
-          "已创建缓存目录: ${cacheDir.path}".toHint();
-        } catch (e) {
-          "创建缓存目录失败: $e".toHint();
-        }
+        await cacheDir.create(recursive: true);
       }
     } catch (e) {
-      "清理缓存失败: $e".toHint();
+      "缓存清理失败但不影响运行".toHint(); // 最高级保护
     }
   }
 
