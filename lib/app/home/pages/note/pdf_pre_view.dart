@@ -153,6 +153,12 @@ class _PdfPreViewState extends State<PdfPreView> {
     if (url.isEmpty || _currentUrl == url) return;
 
     try {
+      // 重置缩放状态
+      setState(() {
+        _currentZoom = 1.0;
+        _pdfController.zoomLevel = 1.0;
+      });
+
       final cleanUrl = url.trim();
       String? localPath;
       try {
@@ -265,6 +271,11 @@ class _PdfPreViewState extends State<PdfPreView> {
   }
 
   Widget _buildZoomControls() {
+    // 确保在PDF加载完成后才显示缩放控制
+    if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
+      return const SizedBox.shrink();
+    }
+
     return Positioned(
       right: 16,
       bottom: 16,
@@ -289,13 +300,11 @@ class _PdfPreViewState extends State<PdfPreView> {
                   icon: const Icon(Icons.add),
                   onPressed: _currentZoom < (1 + _zoomStep * _maxZoomClicks)
                       ? () {
-                          if (_pdfController != null) {
-                            setState(() {
-                              _currentZoom = (_currentZoom + _zoomStep)
-                                  .clamp(_minZoom, 1 + _zoomStep * _maxZoomClicks);
-                              _pdfController.zoomLevel = _currentZoom;
-                            });
-                          }
+                          setState(() {
+                            _currentZoom = (_currentZoom + _zoomStep)
+                                .clamp(_minZoom, 1 + _zoomStep * _maxZoomClicks);
+                            _pdfController.zoomLevel = _currentZoom;
+                          });
                         }
                       : null,
                   tooltip: '放大',
@@ -311,13 +320,11 @@ class _PdfPreViewState extends State<PdfPreView> {
                   icon: const Icon(Icons.remove),
                   onPressed: _currentZoom > _minZoom
                       ? () {
-                          if (_pdfController != null) {
-                            setState(() {
-                              _currentZoom = (_currentZoom - _zoomStep)
-                                  .clamp(_minZoom, 1 + _zoomStep * _maxZoomClicks);
-                              _pdfController.zoomLevel = _currentZoom;
-                            });
-                          }
+                          setState(() {
+                            _currentZoom = (_currentZoom - _zoomStep)
+                                .clamp(_minZoom, 1 + _zoomStep * _maxZoomClicks);
+                            _pdfController.zoomLevel = _currentZoom;
+                          });
                         }
                       : null,
                   tooltip: '缩小',
@@ -364,35 +371,25 @@ class _PdfPreViewState extends State<PdfPreView> {
                     );
                   }
 
-                  return FutureBuilder(
-                    future: _initializePdf(selectedPdfUrl),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return Center(child: Text('加载失败：${snapshot.error}'));
-                      }
-                      if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      return Stack(
-                        children: [
-                          SfPdfViewer.file(
-                            File(_localFilePath!),
-                            key: ValueKey(_localFilePath),
-                            controller: _pdfController,
-                            enableTextSelection: false,
-                            enableDocumentLinkAnnotation: false,
-                            onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
-                              debugPrint('PDF load failed: ${details.error}');
-                              _initializePdf(selectedPdfUrl);
-                            },
-                          ),
-                          _buildZoomControls(),
-                        ],
-                      );
-                    },
+                  if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  return Stack(
+                    children: [
+                      SfPdfViewer.file(
+                        File(_localFilePath!),
+                        key: ValueKey(_localFilePath),
+                        controller: _pdfController,
+                        enableTextSelection: false,
+                        enableDocumentLinkAnnotation: false,
+                        onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
+                          debugPrint('PDF load failed: ${details.error}');
+                          _initializePdf(selectedPdfUrl);
+                        },
+                      ),
+                      _buildZoomControls(),
+                    ],
                   );
                 }),
               ),

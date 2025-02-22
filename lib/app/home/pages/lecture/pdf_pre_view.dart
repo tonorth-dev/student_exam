@@ -151,6 +151,12 @@ class _PdfPreViewState extends State<PdfPreView> {
     if (url.isEmpty || _currentUrl == url) return;
 
     try {
+      // 重置缩放状态
+      setState(() {
+        _currentZoom = 1.0;
+        _pdfController.zoomLevel = 1.0;
+      });
+
       final cleanUrl = url.trim();
       String? localPath;
       try {
@@ -339,6 +345,11 @@ class _PdfPreViewState extends State<PdfPreView> {
   }
 
   Widget _buildZoomControls() {
+    // 确保在PDF加载完成后才显示缩放控制
+    if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
+      return const SizedBox.shrink();
+    }
+
     return Positioned(
       right: 16,
       bottom: 16,
