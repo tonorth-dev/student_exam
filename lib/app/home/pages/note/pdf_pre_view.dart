@@ -71,13 +71,20 @@ class _PdfPreViewState extends State<PdfPreView> {
         if (entity is File && entity.path.endsWith('.pdf')) {
           try {
             final stat = await entity.stat();
-            final createTime = stat.changed;
+            final createTime = stat.created;
+            final modifiedTime = stat.modified;
             
-            // 检查文件创建时间是否在指定范围内
-            if (createTime.isAfter(startDate) && 
-                createTime.isBefore(endDate.add(const Duration(days: 1)))) {
+            // 检查文件创建时间或修改时间是否在指定范围内
+            final isInRange = (time) => time.isAfter(startDate) && 
+                time.isBefore(endDate.add(const Duration(days: 1)));
+                
+            if (isInRange(createTime) || isInRange(modifiedTime)) {
               await entity.delete();
-              debugPrint('Deleted PDF created on ${createTime.toString()}: ${entity.path}');
+              debugPrint('''
+                Deleted PDF: ${entity.path}
+                Created: ${createTime.toString()}
+                Modified: ${modifiedTime.toString()}
+              ''');
             }
           } catch (e) {
             debugPrint('Error checking file ${entity.path}: $e');
