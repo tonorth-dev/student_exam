@@ -57,7 +57,7 @@ class _PdfPreViewState extends State<PdfPreView> {
         if (entity is File && entity.path.endsWith('.pdf')) {
           try {
             final stat = await entity.stat();
-            final createTime = stat.created;
+            final createTime = stat.changed;
             final modifiedTime = stat.modified;
             
             // 检查文件创建时间或修改时间是否在指定范围内
