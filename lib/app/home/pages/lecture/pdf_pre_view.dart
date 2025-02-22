@@ -1,10 +1,13 @@
 import 'dart:io';
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:http/http.dart' as http;
 import '../../../../theme/theme_util.dart';
+import '../../../../common/encr_util.dart';
 import 'logic.dart';
 
 class PdfPreView extends StatefulWidget {
@@ -33,46 +36,111 @@ class _PdfPreViewState extends State<PdfPreView> {
   void initState() {
     super.initState();
     _pdfController = PdfViewerController();
+    _cleanupUnencryptedCache();
     pdfLogic.selectedPdfUrl.listen((url) async {
       if (url != null) {
-        setState(() {
-          _isPdfLoaded = false;
-          _isChangingPage = false;
-          _localFilePath = null; // 重置文件路径
-        });
         await _initializePdf(url);
       }
     });
   }
 
-  @override
-  void dispose() {
-    _isPdfLoaded = false;
-    _isChangingPage = false;
-    _pdfController.dispose();
-    super.dispose();
+  Future<void> _cleanupUnencryptedCache() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final startDate = DateTime(2025, 2, 17);
+      final endDate = DateTime(2025, 2, 23);
+      
+      // 获取目录下所有文件
+      final files = await directory.list(recursive: false).toList();
+      
+      for (var entity in files) {
+        if (entity is File && entity.path.endsWith('.pdf')) {
+          try {
+            final stat = await entity.stat();
+            final createTime = stat.changed;
+            
+            // 检查文件创建时间是否在指定范围内
+            if (createTime.isAfter(startDate) && 
+                createTime.isBefore(endDate.add(const Duration(days: 1)))) {
+              await entity.delete();
+              debugPrint('Deleted PDF created on ${createTime.toString()}: ${entity.path}');
+            }
+          } catch (e) {
+            debugPrint('Error checking file ${entity.path}: $e');
+            continue;
+          }
+        }
+      }
+      final cacheDir = Directory('${directory.path}/pdf_cache');
+      
+      if (await cacheDir.exists()) {
+        await cacheDir.delete(recursive: true);
+        debugPrint('Deleted cache directory: ${cacheDir.path}');
+        
+        // 重新创建缓存目录
+        await cacheDir.create(recursive: true);
+        debugPrint('Created new cache directory: ${cacheDir.path}');
+      } else {
+        // 如果目录不存在，创建新的
+        await cacheDir.create(recursive: true);
+        debugPrint('Created cache directory: ${cacheDir.path}');
+      }
+    } catch (e) {
+      debugPrint('Error cleaning cache: $e');
+    }
   }
 
   Future<String> _getLocalFilePath(String url) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final fileName = Uri.parse(url).pathSegments.last;
-    final fileNameHash = fileName.hashCode.toString();
-    return '${directory.path}/$fileNameHash.pdf';
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      // 使用URL的base64编码作为文件名，保留扩展名信息
+      final urlBytes = utf8.encode(url);
+      final urlHash = base64Url.encode(urlBytes).replaceAll(RegExp(r'[/\\?%*:|"<>]'), '_');
+      final cachePath = '${directory.path}/pdf_cache';
+      
+      // 确保缓存目录存在
+      final cacheDir = Directory(cachePath);
+      if (!await cacheDir.exists()) {
+        await cacheDir.create(recursive: true);
+      }
+
+      return '$cachePath/$urlHash.encrypted';
+    } catch (e) {
+      debugPrint('Error generating file path: $e');
+      rethrow;
+    }
   }
 
-  Future<bool> _isCacheValid(String filePath) async {
-    final file = File(filePath);
-    if (await file.exists()) {
-      final lastModified = await file.lastModified();
-      final now = DateTime.now();
-      return now.difference(lastModified).inDays < 3;
+  Future<File?> _getDecryptedTempFile(String encryptedPath) async {
+    try {
+      final encryptedFile = File(encryptedPath);
+      if (!await encryptedFile.exists()) {
+        return null;
+      }
+
+      final encryptedBytes = await encryptedFile.readAsBytes();
+      final decryptedBytes = EncryptionUtil.decryptBytes(encryptedBytes);
+      
+      // 创建临时文件用于查看
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/temp_${DateTime.now().millisecondsSinceEpoch}.pdf');
+      await tempFile.writeAsBytes(decryptedBytes);
+      
+      return tempFile;
+    } catch (e) {
+      debugPrint('Error decrypting file: $e');
+      return null;
     }
-    return false;
   }
 
   Future<void> _initializePdf(String url) async {
-    if (_currentUrl == url || url.isEmpty) {
-      debugPrint("Same URL, skipping reinitialization.");
+    if (url.isEmpty) {
+      debugPrint('Empty URL provided');
+      return;
+    }
+
+    if (_currentUrl == url) {
+      debugPrint('Same URL, skipping reinitialization');
       return;
     }
 
@@ -82,44 +150,84 @@ class _PdfPreViewState extends State<PdfPreView> {
       _localFilePath = null;
     });
 
-    debugPrint('Initializing PDF with URL: $url');
     try {
-      final localPath = await _getLocalFilePath(url);
-      final file = File(localPath);
+      final cleanUrl = url.trim();
+      final localPath = await _getLocalFilePath(cleanUrl);
+      debugPrint('Local path for PDF: $localPath');
 
+      // 尝试从本地加密缓存加载
       if (await _isCacheValid(localPath)) {
-        debugPrint('Using cached PDF at: $localPath');
-        if (!mounted) return;
-
-        setState(() {
-          _currentUrl = url;
-          _localFilePath = localPath;
-          _lastPageNumber = 1;
-        });
-      } else {
-        debugPrint('Downloading PDF from remote URL.');
-        final response = await http.get(Uri.parse(url));
-        if (!mounted) return;
-
-        if (response.statusCode == 200) {
-          await file.writeAsBytes(response.bodyBytes);
-          debugPrint('PDF cached at: $localPath');
-
-          setState(() {
-            _currentUrl = url;
-            _localFilePath = localPath;
-            _lastPageNumber = 1;
-          });
-        } else {
-          throw Exception('下载PDF失败：状态码 ${response.statusCode}');
+        final decryptedFile = await _getDecryptedTempFile(localPath);
+        if (decryptedFile != null) {
+          debugPrint('Using cached encrypted PDF');
+          if (mounted) {
+            setState(() {
+              _currentUrl = cleanUrl;
+              _localFilePath = decryptedFile.path;
+              _lastPageNumber = 1;
+            });
+          }
+          return;
         }
       }
+
+      // 从远程下载
+      debugPrint('Downloading PDF from: $cleanUrl');
+      final response = await http.get(Uri.parse(cleanUrl));
+      
+      if (!mounted) return;
+
+      if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
+        // 加密文件内容
+        final encryptedBytes = EncryptionUtil.encryptBytes(response.bodyBytes);
+        
+        // 保存加密文件
+        final encryptedFile = File(localPath);
+        await encryptedFile.writeAsBytes(encryptedBytes);
+        
+        // 创建解密的临时文件用于查看
+        final tempDir = await getTemporaryDirectory();
+        final tempFile = File('${tempDir.path}/temp_${DateTime.now().millisecondsSinceEpoch}.pdf');
+        await tempFile.writeAsBytes(response.bodyBytes);
+
+        if (mounted) {
+          setState(() {
+            _currentUrl = cleanUrl;
+            _localFilePath = tempFile.path;
+            _lastPageNumber = 1;
+          });
+        }
+      } else {
+        throw Exception('下载PDF失败: HTTP ${response.statusCode}');
+      }
     } catch (e) {
-      debugPrint('Error initializing PDF: $e');
+      debugPrint('Error in _initializePdf: $e');
       if (mounted) {
         _showError('PDF加载失败：${e.toString()}');
       }
     }
+  }
+
+  Future<bool> _isCacheValid(String filePath) async {
+    try {
+      final file = File(filePath);
+      if (await file.exists()) {
+        final fileSize = await file.length();
+        if (fileSize == 0) {
+          debugPrint('Cache file exists but is empty');
+          return false;
+        }
+
+        final lastModified = await file.lastModified();
+        final now = DateTime.now();
+        final isValid = now.difference(lastModified).inDays < 7;
+        debugPrint('Cache ${isValid ? "valid" : "expired"} for: $filePath');
+        return isValid;
+      }
+    } catch (e) {
+      debugPrint('Error checking cache: $e');
+    }
+    return false;
   }
 
   void _handlePdfPageChanged(PdfPageChangedDetails details) {
@@ -359,5 +467,18 @@ class _PdfPreViewState extends State<PdfPreView> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _isPdfLoaded = false;
+    _isChangingPage = false;
+    _pdfController.dispose();
+    // 清理临时文件
+    if (_localFilePath != null) {
+      final tempFile = File(_localFilePath!);
+      tempFile.delete().catchError((e) => debugPrint('Error deleting temp file: $e'));
+    }
+    super.dispose();
   }
 }

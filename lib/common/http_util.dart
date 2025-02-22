@@ -10,6 +10,7 @@ import 'config_util.dart';
 
 class HttpUtil {
   static const authorization = "X-Token";
+  static const appVersion = "X-App-Version";
 
   static final dio = Dio(BaseOptions(
     baseUrl: ConfigUtil.fullUrl,
@@ -68,7 +69,10 @@ class HttpUtil {
   /// 全局请求头
   static Future<Map<String, dynamic>> header() async {
     var data = await LoginData.read();
-    return {authorization: data.token};
+    return {
+      authorization: data.token,
+      appVersion: ConfigUtil.appVersion,
+    };
   }
 
   /// 上传文件处理

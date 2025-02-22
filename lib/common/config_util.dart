@@ -5,6 +5,7 @@ class ConfigUtil {
   // static const String baseUrl = "http://127.0.0.1";
   static const String httpPort = "";
   static final String fullUrl = _buildFullUrl();
+  static final String appVersion = "1.0.0";
 
   static String _buildFullUrl() {
     return httpPort.isEmpty ? baseUrl : "$baseUrl:$httpPort";
