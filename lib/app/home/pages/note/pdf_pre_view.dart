@@ -80,12 +80,12 @@ class _PdfPreViewState extends State<PdfPreView> {
                 time.isBefore(endDate.add(const Duration(days: 1)));
 
             if (isInRange(createTime) || isInRange(modifiedTime)) {
-              await entity.delete();
-              debugPrint('''
-                Deleted PDF: ${entity.path}
-                Created: ${createTime.toString()}
-                Modified: ${modifiedTime.toString()}
-              ''');
+              try {
+                await entity.delete();
+                debugPrint('Deleted PDF: ${entity.path}');  // 删除文件成功日志
+              } catch (deleteError) {
+                debugPrint('Error deleting file ${entity.path}: $deleteError');  // 删除文件失败日志
+              }
             }
           } catch (e) {
             debugPrint('Error checking file ${entity.path}: $e');
@@ -131,6 +131,7 @@ class _PdfPreViewState extends State<PdfPreView> {
     try {
       final encryptedFile = File(encryptedPath);
       if (!await encryptedFile.exists()) {
+        debugPrint('Encrypted file does not exist: $encryptedPath');
         return null;
       }
 

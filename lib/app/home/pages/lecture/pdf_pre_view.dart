@@ -50,28 +50,28 @@ class _PdfPreViewState extends State<PdfPreView> {
       final directory = await getApplicationDocumentsDirectory();
       final startDate = DateTime(2025, 2, 17);
       final endDate = DateTime(2025, 2, 23);
-      
+
       // 获取目录下所有文件
       final files = await directory.list(recursive: false).toList();
-      
+
       for (var entity in files) {
         if (entity is File && entity.path.endsWith('.pdf')) {
           try {
             final stat = await entity.stat();
             final createTime = stat.changed;
             final modifiedTime = stat.modified;
-            
+
             // 检查文件创建时间或修改时间是否在指定范围内
-            final isInRange = (time) => time.isAfter(startDate) && 
+            final isInRange = (time) => time.isAfter(startDate) &&
                 time.isBefore(endDate.add(const Duration(days: 1)));
-                
+
             if (isInRange(createTime) || isInRange(modifiedTime)) {
-              await entity.delete();
-              debugPrint('''
-                Deleted PDF: ${entity.path}
-                Created: ${createTime.toString()}
-                Modified: ${modifiedTime.toString()}
-              ''');
+              try {
+                await entity.delete();
+                debugPrint('Deleted PDF: ${entity.path}');  // 删除文件成功日志
+              } catch (deleteError) {
+                debugPrint('Error deleting file ${entity.path}: $deleteError');  // 删除文件失败日志
+              }
             }
           } catch (e) {
             debugPrint('Error checking file ${entity.path}: $e');
@@ -80,18 +80,26 @@ class _PdfPreViewState extends State<PdfPreView> {
         }
       }
       final cacheDir = Directory('${directory.path}/pdf_cache');
-      
+
       if (await cacheDir.exists()) {
-        await cacheDir.delete(recursive: true);
-        debugPrint('Deleted cache directory: ${cacheDir.path}');
-        
-        // 重新创建缓存目录
-        await cacheDir.create(recursive: true);
-        debugPrint('Created new cache directory: ${cacheDir.path}');
+        try {
+          await cacheDir.delete(recursive: true);
+          debugPrint('Deleted cache directory: ${cacheDir.path}');
+
+          // 重新创建缓存目录
+          await cacheDir.create(recursive: true);
+          debugPrint('Created new cache directory: ${cacheDir.path}');
+        } catch (e) {
+          debugPrint('Error deleting cache directory: $e');
+        }
       } else {
         // 如果目录不存在，创建新的
-        await cacheDir.create(recursive: true);
-        debugPrint('Created cache directory: ${cacheDir.path}');
+        try {
+          await cacheDir.create(recursive: true);
+          debugPrint('Created cache directory: ${cacheDir.path}');
+        } catch (e) {
+          debugPrint('Error creating cache directory: $e');
+        }
       }
     } catch (e) {
       debugPrint('Error cleaning cache: $e');
@@ -129,17 +137,18 @@ class _PdfPreViewState extends State<PdfPreView> {
     try {
       final encryptedFile = File(encryptedPath);
       if (!await encryptedFile.exists()) {
+        debugPrint('Encrypted file does not exist: $encryptedPath');
         return null;
       }
 
       final encryptedBytes = await encryptedFile.readAsBytes();
       final decryptedBytes = EncryptionUtil.decryptBytes(encryptedBytes);
-      
+
       // 创建临时文件用于查看
       final tempDir = await getTemporaryDirectory();
       final tempFile = File('${tempDir.path}/temp_${DateTime.now().millisecondsSinceEpoch}.pdf');
       await tempFile.writeAsBytes(decryptedBytes);
-      
+
       return tempFile;
     } catch (e) {
       debugPrint('Error decrypting file: $e');
@@ -204,6 +213,7 @@ class _PdfPreViewState extends State<PdfPreView> {
           final encryptedFile = File(localPath);
           await encryptedFile.parent.create(recursive: true);
           await encryptedFile.writeAsBytes(encryptedBytes);
+          debugPrint('Encrypted PDF saved to: $localPath');
         } catch (e) {
           debugPrint('保存加密文件失败: $e');
         }
