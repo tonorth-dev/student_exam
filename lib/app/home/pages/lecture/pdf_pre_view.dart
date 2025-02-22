@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:student_exam/ex/ex_hint.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:http/http.dart' as http;
 import '../../../../theme/theme_util.dart';
@@ -68,13 +69,13 @@ class _PdfPreViewState extends State<PdfPreView> {
             if (isInRange(createTime) || isInRange(modifiedTime)) {
               try {
                 await entity.delete();
-                debugPrint('Deleted PDF: ${entity.path}');  // 删除文件成功日志
+                "Deleted PDF: $entity.path".toHint();  // 删除文件成功日志
               } catch (deleteError) {
-                debugPrint('Error deleting file ${entity.path}: $deleteError');  // 删除文件失败日志
+                "Error deleting file $entity.path: $deleteError".toHint();  // 删除文件失败日志
               }
             }
           } catch (e) {
-            debugPrint('Error checking file ${entity.path}: $e');
+            "Error checking file $entity.path: $e".toHint();
             continue;
           }
         }
@@ -84,25 +85,25 @@ class _PdfPreViewState extends State<PdfPreView> {
       if (await cacheDir.exists()) {
         try {
           await cacheDir.delete(recursive: true);
-          debugPrint('Deleted cache directory: ${cacheDir.path}');
+          "Deleted cache directory: $cacheDir.path".toHint();
 
           // 重新创建缓存目录
           await cacheDir.create(recursive: true);
-          debugPrint('Created new cache directory: ${cacheDir.path}');
+          "Created new cache directory: $cacheDir.path".toHint();
         } catch (e) {
-          debugPrint('Error deleting cache directory: $e');
+          "Error deleting cache directory: $e".toHint();
         }
       } else {
         // 如果目录不存在，创建新的
         try {
           await cacheDir.create(recursive: true);
-          debugPrint('Created cache directory: ${cacheDir.path}');
+          "Created cache directory: $cacheDir.path".toHint();
         } catch (e) {
-          debugPrint('Error creating cache directory: $e');
+          "Error creating cache directory: $e".toHint();
         }
       }
     } catch (e) {
-      debugPrint('Error cleaning cache: $e');
+      "Error cleaning cache: $e".toHint();
     }
   }
 
@@ -117,9 +118,9 @@ class _PdfPreViewState extends State<PdfPreView> {
       if (!await cacheDir.exists()) {
         try {
           await cacheDir.create(recursive: true);
-          debugPrint('缓存目录已创建: $cachePath');
+          "缓存目录已创建: $cachePath".toHint();
         } catch (e) {
-          debugPrint('创建缓存目录失败: $e');
+          "创建缓存目录失败: $e".toHint();
         }
       }
 
@@ -128,7 +129,7 @@ class _PdfPreViewState extends State<PdfPreView> {
       final urlHash = base64Url.encode(urlBytes).replaceAll(RegExp(r'[/\\?%*:|"<>]'), '_');
       return p.join(cachePath, '$urlHash.encrypted');
     } catch (e) {
-      debugPrint('生成文件路径时出错: $e');
+      "生成文件路径时出错: $e".toHint();
       rethrow;
     }
   }
@@ -137,7 +138,7 @@ class _PdfPreViewState extends State<PdfPreView> {
     try {
       final encryptedFile = File(encryptedPath);
       if (!await encryptedFile.exists()) {
-        debugPrint('Encrypted file does not exist: $encryptedPath');
+        "Encrypted file does not exist: $encryptedPath".toHint();
         return null;
       }
 
@@ -151,7 +152,7 @@ class _PdfPreViewState extends State<PdfPreView> {
 
       return tempFile;
     } catch (e) {
-      debugPrint('Error decrypting file: $e');
+      "Error decrypting file: $e".toHint();
       return null;
     }
   }
@@ -171,7 +172,7 @@ class _PdfPreViewState extends State<PdfPreView> {
       try {
         localPath = await _getLocalFilePath(cleanUrl);
       } catch (e) {
-        debugPrint('获取本地文件路径失败: $e');
+        "获取本地文件路径失败: $e".toHint();
       }
 
       File? decryptedFile;
@@ -181,7 +182,7 @@ class _PdfPreViewState extends State<PdfPreView> {
             decryptedFile = await _getDecryptedTempFile(localPath);
           }
         } catch (e) {
-          debugPrint('检查或解密本地文件时出错: $e');
+          "检查或解密本地文件时出错: $e".toHint();
         }
       }
 
@@ -196,13 +197,13 @@ class _PdfPreViewState extends State<PdfPreView> {
         await _downloadAndSetPdf(cleanUrl, localPath);
       }
     } catch (e) {
-      debugPrint('初始化 PDF 时出错: $e');
+      "初始化 PDF 时出错: $e".toHint();
       if (mounted) _showError('PDF 加载失败：${e.toString()}');
     }
   }
 
   Future<void> _downloadAndSetPdf(String url, String? localPath) async {
-    debugPrint('从远程下载 PDF: $url');
+    "从远程下载 PDF: $url".toHint();
     final response = await http.get(Uri.parse(url));
     if (!mounted) return;
 
@@ -213,9 +214,9 @@ class _PdfPreViewState extends State<PdfPreView> {
           final encryptedFile = File(localPath);
           await encryptedFile.parent.create(recursive: true);
           await encryptedFile.writeAsBytes(encryptedBytes);
-          debugPrint('Encrypted PDF saved to: $localPath');
+          "Encrypted PDF saved to: $localPath".toHint();
         } catch (e) {
-          debugPrint('保存加密文件失败: $e');
+          "保存加密文件失败: $e".toHint();
         }
       }
 
@@ -240,18 +241,18 @@ class _PdfPreViewState extends State<PdfPreView> {
       if (await file.exists()) {
         final fileSize = await file.length();
         if (fileSize == 0) {
-          debugPrint('Cache file exists but is empty');
+          "Cache file exists but is empty".toHint();
           return false;
         }
 
         final lastModified = await file.lastModified();
         final now = DateTime.now();
         final isValid = now.difference(lastModified).inDays < 7;
-        debugPrint('Cache ${isValid ? "valid" : "expired"} for: $filePath');
+        "Cache ${isValid ? "valid" : "expired"} for: $filePath".toHint();
         return isValid;
       }
     } catch (e) {
-      debugPrint('Error checking cache: $e');
+      "Error checking cache: $e".toHint();
     }
     return false;
   }
@@ -312,7 +313,7 @@ class _PdfPreViewState extends State<PdfPreView> {
 
       _lastPageNumber = currentPage;
     } catch (e) {
-      debugPrint('Error handling page change: $e');
+      "Error handling page change: $e".toHint();
     }
   }
 
@@ -508,7 +509,7 @@ class _PdfPreViewState extends State<PdfPreView> {
     // 清理临时文件
     if (_localFilePath != null) {
       final tempFile = File(_localFilePath!);
-      tempFile.delete().catchError((e) => debugPrint('Error deleting temp file: $e'));
+      tempFile.delete().catchError((e) => "Error deleting temp file: $e".toHint());
     }
     super.dispose();
   }

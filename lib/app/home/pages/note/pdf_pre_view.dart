@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:student_exam/ex/ex_hint.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;  // 引入 path 包
@@ -54,7 +55,7 @@ class _PdfPreViewState extends State<PdfPreView> {
     // 清理临时文件
     if (_localFilePath != null) {
       final tempFile = File(_localFilePath!);
-      tempFile.delete().catchError((e) => debugPrint('Error deleting temp file: $e'));
+      tempFile.delete().catchError((e) => "删除临时文件失败: $e".toHint());
     }
     super.dispose();
   }
@@ -82,70 +83,107 @@ class _PdfPreViewState extends State<PdfPreView> {
             if (isInRange(createTime) || isInRange(modifiedTime)) {
               try {
                 await entity.delete();
-                debugPrint('Deleted PDF: ${entity.path}');  // 删除文件成功日志
+                "已删除PDF: ${entity.path}".toHint();
               } catch (deleteError) {
-                debugPrint('Error deleting file ${entity.path}: $deleteError');  // 删除文件失败日志
+                "删除文件失败 ${entity.path}: $deleteError".toHint();
               }
             }
           } catch (e) {
-            debugPrint('Error checking file ${entity.path}: $e');
+            "检查文件失败 ${entity.path}: $e".toHint();
             continue;
           }
         }
       }
+      final cacheDir = Directory('${directory.path}/pdf_cache');
+
+      if (await cacheDir.exists()) {
+        try {
+          await cacheDir.delete(recursive: true);
+          "已删除缓存目录: ${cacheDir.path}".toHint();
+
+          // 重新创建缓存目录
+          await cacheDir.create(recursive: true);
+          "已创建新的缓存目录: ${cacheDir.path}".toHint();
+        } catch (e) {
+          "删除缓存目录失败: $e".toHint();
+        }
+      } else {
+        // 如果目录不存在，创建新的
+        try {
+          await cacheDir.create(recursive: true);
+          "已创建缓存目录: ${cacheDir.path}".toHint();
+        } catch (e) {
+          "创建缓存目录失败: $e".toHint();
+        }
+      }
     } catch (e) {
-      debugPrint('Error cleaning cache: $e');
+      "清理缓存失败: $e".toHint();
     }
   }
 
   Future<String> _getLocalFilePath(String url) async {
     try {
-      // 获取应用文档目录，适用于 Windows 和 macOS
       final directory = await getApplicationDocumentsDirectory();
-      // 使用 path.join 拼接路径，确保跨平台兼容
       final cachePath = p.join(directory.path, 'pdf_cache');
       final cacheDir = Directory(cachePath);
 
-      // 检查目录是否存在，如果不存在则尝试创建
       if (!await cacheDir.exists()) {
         try {
           await cacheDir.create(recursive: true);
-          debugPrint('缓存目录已创建: $cachePath');
+          "缓存目录已创建: $cachePath".toHint();
         } catch (e) {
-          debugPrint('创建缓存目录失败: $e');
-          // 如果创建失败，继续执行，避免程序崩溃
+          "创建缓存目录失败: $e".toHint();
         }
       }
 
-      // 生成唯一的文件名，避免路径中的非法字符
       final urlBytes = utf8.encode(url);
       final urlHash = base64Url.encode(urlBytes).replaceAll(RegExp(r'[/\\?%*:|"<>]'), '_');
       return p.join(cachePath, '$urlHash.encrypted');
     } catch (e) {
-      debugPrint('生成文件路径时出错: $e');
-      rethrow; // 让调用者处理异常
+      "生成文件路径时出错: $e".toHint();
+      rethrow;
     }
+  }
+
+  Future<bool> _isCacheValid(String filePath) async {
+    try {
+      final file = File(filePath);
+      if (await file.exists()) {
+        final fileSize = await file.length();
+        if (fileSize == 0) {
+          "缓存文件存在但为空".toHint();
+          return false;
+        }
+        final lastModified = await file.lastModified();
+        final now = DateTime.now();
+        final isValid = now.difference(lastModified).inDays < 7;
+        "缓存${isValid ? "有效" : "已过期"}: $filePath".toHint();
+        return isValid;
+      }
+    } catch (e) {
+      "检查缓存时出错: $e".toHint();
+    }
+    return false;
   }
 
   Future<File?> _getDecryptedTempFile(String encryptedPath) async {
     try {
       final encryptedFile = File(encryptedPath);
       if (!await encryptedFile.exists()) {
-        debugPrint('Encrypted file does not exist: $encryptedPath');
+        "加密文件不存在: $encryptedPath".toHint();
         return null;
       }
 
       final encryptedBytes = await encryptedFile.readAsBytes();
       final decryptedBytes = EncryptionUtil.decryptBytes(encryptedBytes);
 
-      // 创建临时文件用于查看
       final tempDir = await getTemporaryDirectory();
-      final tempFile = File(p.join(tempDir.path, 'temp_${DateTime.now().millisecondsSinceEpoch}.pdf'));
+      final tempFile = File('${tempDir.path}/temp_${DateTime.now().millisecondsSinceEpoch}.pdf');
       await tempFile.writeAsBytes(decryptedBytes);
 
       return tempFile;
     } catch (e) {
-      debugPrint('解密文件时出错: $e');
+      "解密文件时出错: $e".toHint();
       return null;
     }
   }
@@ -165,7 +203,7 @@ class _PdfPreViewState extends State<PdfPreView> {
       try {
         localPath = await _getLocalFilePath(cleanUrl);
       } catch (e) {
-        debugPrint('获取本地文件路径失败: $e');
+        "获取本地文件路径失败: $e".toHint();
       }
 
       File? decryptedFile;
@@ -176,7 +214,7 @@ class _PdfPreViewState extends State<PdfPreView> {
             decryptedFile = await _getDecryptedTempFile(localPath);
           }
         } catch (e) {
-          debugPrint('检查或解密本地文件时出错: $e');
+          "检查或解密本地文件时出错: $e".toHint();
         }
       }
 
@@ -193,61 +231,53 @@ class _PdfPreViewState extends State<PdfPreView> {
         await _downloadAndSetPdf(cleanUrl, localPath);
       }
     } catch (e) {
-      debugPrint('初始化 PDF 时出错: $e');
+      "初始化 PDF 时出错: $e".toHint();
       if (mounted) _showError('PDF 加载失败：${e.toString()}');
     }
   }
 
   Future<void> _downloadAndSetPdf(String url, String? localPath) async {
-    debugPrint('从远程下载 PDF: $url');
+    "从远程下载 PDF: $url".toHint();
     final response = await http.get(Uri.parse(url));
     if (!mounted) return;
 
     if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
-      // 如果提供了 localPath，尝试保存加密文件
       if (localPath != null) {
         try {
           final encryptedBytes = EncryptionUtil.encryptBytes(response.bodyBytes);
           final encryptedFile = File(localPath);
-          // 确保目录存在
           await encryptedFile.parent.create(recursive: true);
           await encryptedFile.writeAsBytes(encryptedBytes);
+          "已保存加密PDF到: $localPath".toHint();
         } catch (e) {
-          debugPrint('保存加密文件失败: $e');
+          "保存加密文件失败: $e".toHint();
         }
       }
 
-      // 创建临时文件用于显示
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File(p.join(tempDir.path, 'temp_${DateTime.now().millisecondsSinceEpoch}.pdf'));
-      await tempFile.writeAsBytes(response.bodyBytes);
+      try {
+        final tempDir = await getTemporaryDirectory();
+        final tempFile = File('${tempDir.path}/temp_${DateTime.now().millisecondsSinceEpoch}.pdf');
+        await tempFile.writeAsBytes(response.bodyBytes);
 
-      if (mounted) {
-        setState(() {
-          _currentUrl = url;
-          _localFilePath = tempFile.path;
-        });
+        if (!mounted) return;
+
+        if (await tempFile.exists() && await tempFile.length() > 0) {
+          setState(() {
+            _currentUrl = url;
+            _localFilePath = tempFile.path;
+          });
+        } else {
+          "临时文件创建失败".toHint();
+          throw Exception('临时文件创建失败');
+        }
+      } catch (e) {
+        "创建临时文件失败: $e".toHint();
+        throw e;
       }
     } else {
-      throw Exception('下载 PDF 失败: HTTP ${response.statusCode}');
+      "下载PDF失败: HTTP ${response.statusCode}".toHint();
+      throw Exception('下载失败: HTTP ${response.statusCode}');
     }
-  }
-
-  Future<bool> _isCacheValid(String filePath) async {
-    try {
-      final file = File(filePath);
-      if (await file.exists()) {
-        final fileSize = await file.length();
-        if (fileSize == 0) return false;
-        final lastModified = await file.lastModified();
-        final now = DateTime.now();
-        final isValid = now.difference(lastModified).inDays < 7;
-        return isValid;
-      }
-    } catch (e) {
-      debugPrint('检查缓存时出错: $e');
-    }
-    return false;
   }
 
   void _showError(String message) {
@@ -385,7 +415,7 @@ class _PdfPreViewState extends State<PdfPreView> {
                         enableTextSelection: false,
                         enableDocumentLinkAnnotation: false,
                         onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
-                          debugPrint('PDF load failed: ${details.error}');
+                          "PDF load failed: ${details.error}".toHint();
                           _initializePdf(selectedPdfUrl);
                         },
                       ),
