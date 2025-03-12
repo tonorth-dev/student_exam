@@ -17,7 +17,7 @@ class NotePage extends StatelessWidget {
     return Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/note_page_bg.png'), // Replace with your background image path
+            image: AssetImage('assets/images/note_page_bg.png'),
             fit: BoxFit.fill, // Set the image fill method
           ),
         ),

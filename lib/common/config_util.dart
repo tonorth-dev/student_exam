@@ -1,9 +1,9 @@
 import '../api/config_api.dart';
 
 class ConfigUtil {
-  static const String baseUrl = "https://admin.81hongshi.com";
-  // static const String baseUrl = "http://127.0.0.1";
-  static const String httpPort = "";
+  // static const String baseUrl = "https://admin.81hongshi.com";
+  static const String baseUrl = "http://127.0.0.1";
+  static const String httpPort = "13921";
   static final String fullUrl = _buildFullUrl();
   static final String appVersion = "1.0.0";
 

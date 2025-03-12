@@ -1,179 +1,106 @@
 import 'package:flutter/material.dart';
+import 'dart:io' show Platform;
+import 'package:window_manager/window_manager.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:screen_retriever/screen_retriever.dart';
 
-void main() {
-  runApp(const FigmaToCodeApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await windowManager.ensureInitialized();
+
+  // 预设窗口尺寸
+  const presetSizes = [
+    Size(1024, 518),
+    Size(1600, 810),
+    Size(1920, 972),
+  ];
+
+  // 获取显示器信息
+  final primaryDisplay = await screenRetriever.getPrimaryDisplay();
+  final screenSize = Size(
+    primaryDisplay.size.width,
+    primaryDisplay.size.height,
+  );
+  
+  print('显示器尺寸：${screenSize.width}*${screenSize.height}');
+  
+  // 选择最接近的预设尺寸
+  Size closestSize = presetSizes.first;
+  for (var size in presetSizes) {
+    if ((size.width - screenSize.width).abs() <
+        (closestSize.width - screenSize.width).abs()) {
+      closestSize = size;
+    }
+  }
+
+  // 设置窗口尺寸并居中
+  await windowManager.setSize(closestSize);
+  await windowManager.center();
+  
+  // 设置窗口标题和其他属性
+  await windowManager.setTitle('学生考试系统');
+  await windowManager.setMinimumSize(const Size(800, 600));
+  
+  print('使用窗口尺寸：${closestSize.width}*${closestSize.height}');
+
+  // 运行应用
+  runApp(MyApp(designSize: closestSize));
 }
 
-class FigmaToCodeApp extends StatelessWidget {
-  const FigmaToCodeApp({Key? key}) : super(key: key);
-
+class MyApp extends StatelessWidget {
+  final Size designSize;
+  
+  const MyApp({Key? key, required this.designSize}) : super(key: key);
+  
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color.fromARGB(255, 18, 32, 47),
-      ),
-      home: const MainScreen(),
+    // 使用ScreenUtilInit初始化，以便根据设计尺寸适配UI元素
+    return ScreenUtilInit(
+      designSize: designSize,
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: '学生考试系统',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            textTheme: Typography.englishLike2018.apply(fontSizeFactor: 1.sp),
+          ),
+          home: const HomePage(),
+        );
+      },
     );
   }
 }
 
-class MainScreen extends StatelessWidget {
-  const MainScreen({Key? key}) : super(key: key);
+class HomePage extends StatelessWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Container(
-          width: double.infinity,
-          height: MediaQuery.of(context).size.height, // Match screen height
-          color: Colors.white,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Sidebar with constraints
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start, // Align at the top
-                children: [
-                  _buildSidebar(context),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 40),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 40),
-                          _buildHeader(),
-                          const SizedBox(height: 9.73),
-                          _buildListItems(),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+      appBar: AppBar(title: Text('自适应窗口示例', style: TextStyle(fontSize: 18.sp))),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '窗口尺寸已根据屏幕分辨率适配',
+              style: TextStyle(fontSize: 16.sp),
+            ),
+            SizedBox(height: 20.h),
+            Container(
+              width: 200.w,
+              height: 50.h,
+              color: Colors.blue.shade100,
+              alignment: Alignment.center,
+              child: Text(
+                '这是一个使用ScreenUtil适配的容器',
+                style: TextStyle(fontSize: 14.sp),
               ),
-
-              // Bottom Navigation
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.only(left: 310), // Adjust based on sidebar width
-                child: _buildBottomNavigation(),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSidebar(BuildContext context) {
-    return Container(
-      width: 310,
-      height: MediaQuery.of(context).size.height, // Fix for infinite height
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.only(left: 39.90, top: 38.18),
-        child: _buildSidebarContent(),
-      ),
-    );
-  }
-
-  Widget _buildSidebarContent() {
-    // Placeholder for sidebar content
-    return Container(
-      width: 231.67,
-      height: 53.29,
-      // Add your sidebar elements here
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      width: double.infinity,
-      height: 46,
-      color: Colors.transparent,
-      child: const Text(
-        '2024高频考题（42章经）',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontFamily: 'PingFang SC',
-          fontWeight: FontWeight.w400,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildListItems() {
-    return SizedBox(
-      width: double.infinity,
-      height: 276, // Adjust this height based on your content or logic
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: 6, // Example count, adjust as needed
-        itemBuilder: (context, index) => Container(
-          width: double.infinity,
-          height: 46,
-          color: Colors.white.withOpacity(0.8),
-          child: Row(
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: ShapeDecoration(
-                  color: index == 2 ? Colors.red : Colors.black,
-                  shape: const OvalBorder(),
-                ),
-              ),
-              const SizedBox(width: 5),
-              Text(
-                '2024高频考题（42章经）(1)_0$index',
-                style: TextStyle(
-                  color: index == 2 ? Colors.red : Colors.black,
-                  fontSize: 16,
-                  fontFamily: 'PingFang SC',
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomNavigation() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        _buildButton('上一页', const Color(0xFFFF4F1A)),
-        const SizedBox(width: 25),
-        _buildButton('下一页', const Color(0xFFFF4F1A)),
-        const SizedBox(width: 25),
-        _buildButton('退出', const Color(0xFFFF4F1A)),
-      ],
-    );
-  }
-
-  Widget _buildButton(String text, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 25),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment(0.00, 1.00),
-          end: Alignment(0, -1),
-          colors: [Color(0xFFFFD566), Colors.white],
-        ),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFF92D37), width: 1),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: textColor,
-          fontSize: 20,
-          fontFamily: 'PingFang SC',
-          fontWeight: FontWeight.w600,
+            ),
+          ],
         ),
       ),
     );

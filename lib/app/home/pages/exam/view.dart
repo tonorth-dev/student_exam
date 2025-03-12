@@ -59,43 +59,46 @@ class _ExamPageState extends State<ExamPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(80),
-        child: AppBar(
-          title: const Text(''),
-          centerTitle: true,
-          elevation: 0,
-          // 设置 elevation 为 0
-          flexibleSpace: FlexibleSpaceBar(
-            background: Image.asset(
-              'assets/images/exam_banner_logo.png',
-              fit: BoxFit.fill,
-            ),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(32),
-                onTap: () {
-                  headerLogic.clickHeadImage();
-                },
-                child: ClipOval(
-                  child: Image.asset(
-                    "assets/images/cat.jpeg",
-                    height: 42,
-                    width: 42,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      appBar: _buildAppBar(),
       body: SafeArea(
         child: Container(
           child: _buildPanel(),
         ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(80),
+      child: AppBar(
+        title: const Text(''),
+        centerTitle: true,
+        elevation: 0,
+        flexibleSpace: FlexibleSpaceBar(
+          background: Image.asset(
+            'assets/images/exam_banner_logo.png',
+            fit: BoxFit.fill,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(32),
+              onTap: () {
+                headerLogic.clickHeadImage();
+              },
+              child: ClipOval(
+                child: Image.asset(
+                  "assets/images/cat.jpeg",
+                  height: 42,
+                  width: 42,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
