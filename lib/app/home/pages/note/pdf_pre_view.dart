@@ -11,6 +11,7 @@ import 'package:path/path.dart' as p;  // 引入 path 包
 import '../../../../common/encr_util.dart';
 import '../../../../component/table/ex.dart';
 import '../../../../theme/theme_util.dart';
+import '../../../../component/watermark.dart';
 import 'logic.dart';
 
 class PdfPreView extends StatefulWidget {
@@ -328,33 +329,40 @@ class _PdfPreViewState extends State<PdfPreView> {
                     } else {
                       isFullScreen.value = true;
                       Get.to(
-                        () => Row(
+                        () => Stack(
                           children: [
-                            const SizedBox(width: 25),
-                            Expanded(
-                              child: Column(
-                                children: [
-                                  const SizedBox(height: 8),
-                                  ThemeUtil.lineH(),
-                                  ThemeUtil.height(),
-                                  Expanded(
-                                    child: Stack(
-                                      children: [
-                                        Container(
-                                          decoration: const BoxDecoration(
-                                            image: DecorationImage(
-                                              image: AssetImage('assets/images/note_page_bg.png'),
-                                              fit: BoxFit.fill,
+                            Row(
+                              children: [
+                                const SizedBox(width: 25),
+                                Expanded(
+                                  child: Column(
+                                    children: [
+                                      const SizedBox(height: 8),
+                                      ThemeUtil.lineH(),
+                                      ThemeUtil.height(),
+                                      Expanded(
+                                        child: Stack(
+                                          children: [
+                                            Container(
+                                              decoration: const BoxDecoration(
+                                                image: DecorationImage(
+                                                  image: AssetImage('assets/images/note_page_bg.png'),
+                                                  fit: BoxFit.fill,
+                                                ),
+                                              ),
                                             ),
-                                          ),
+                                            _buildPdfContent(),
+                                          ],
                                         ),
-                                        _buildPdfContent(),
-                                      ],
-                                    ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                    ],
                                   ),
-                                  const SizedBox(height: 10),
-                                ],
-                              ),
+                                ),
+                              ],
+                            ),
+                            const IgnorePointer(
+                              child: WatermarkWidget(),
                             ),
                           ],
                         ),

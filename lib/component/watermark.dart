@@ -45,7 +45,7 @@ class WatermarkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
-      ..color = Colors.grey.withOpacity(0.25)
+      ..color = Colors.grey.withOpacity(0.30)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
