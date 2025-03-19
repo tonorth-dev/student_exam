@@ -45,14 +45,14 @@ class WatermarkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
-      ..color = Colors.grey.withOpacity(0.15)
+      ..color = Colors.grey.withOpacity(0.25)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
     TextSpan span = TextSpan(
       text: '红师教育（${loginData.code}）',
       style: TextStyle(
-        fontSize: 20.0,
+        fontSize: 24.0,
         color: paint.color,
         fontFamily: 'OPPOSans',
       ),

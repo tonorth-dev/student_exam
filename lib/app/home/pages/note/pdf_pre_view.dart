@@ -30,7 +30,7 @@ class _PdfPreViewState extends State<PdfPreView> {
   StreamSubscription? _pdfUrlSubscription;
 
   // 修改缩放相关变量
-  double _currentZoom = 1.0;
+  final RxDouble _currentZoom = 1.0.obs;
   static const double _zoomStep = 0.1;
   static const int _maxZoomClicks = 8;
   static const double _minZoom = 0.5;
@@ -159,7 +159,7 @@ class _PdfPreViewState extends State<PdfPreView> {
     try {
       // 重置缩放状态
       setState(() {
-        _currentZoom = 1.0;
+        _currentZoom.value = 1.0;
         _pdfController.zoomLevel = 1.0;
       });
 
@@ -277,20 +277,20 @@ class _PdfPreViewState extends State<PdfPreView> {
   void _handleZoom(bool zoomIn) {
     if (!mounted) return;
     
-    setState(() {
-      if (zoomIn) {
-        if (_currentZoom < (1 + _zoomStep * _maxZoomClicks)) {
-          _currentZoom += _zoomStep;
-        }
-      } else {
-        if (_currentZoom > _minZoom) {
-          _currentZoom -= _zoomStep;
-        }
+    double newZoom = _currentZoom.value;
+    if (zoomIn) {
+      if (newZoom < (1 + _zoomStep * _maxZoomClicks)) {
+        newZoom += _zoomStep;
       }
-    });
+    } else {
+      if (newZoom > _minZoom) {
+        newZoom -= _zoomStep;
+      }
+    }
     
-    // 直接设置缩放级别
-    _pdfController.zoomLevel = _currentZoom;
+    // 直接更新缩放值和控制器
+    _currentZoom.value = newZoom;
+    _pdfController.zoomLevel = newZoom;
   }
 
   Widget _buildZoomControls() {
@@ -322,39 +322,45 @@ class _PdfPreViewState extends State<PdfPreView> {
                 IconButton(
                   icon: Obx(() => Icon(isFullScreen.value ? Icons.fullscreen_exit : Icons.fullscreen)),
                   onPressed: () {
-                    isFullScreen.value = !isFullScreen.value;
                     if (isFullScreen.value) {
-                      // 获取 NotePage 的 context
-                      final context = Get.context;
-                      if (context != null) {
-                        // 在整个 NotePage 上覆盖显示 PDF
-                        Navigator.of(context).push(
-                          PageRouteBuilder(
-                            opaque: false,
-                            pageBuilder: (context, _, __) => Material(
-                              color: Colors.white,
-                              child: Stack(
+                      isFullScreen.value = false;
+                      Get.back();
+                    } else {
+                      isFullScreen.value = true;
+                      Get.to(
+                        () => Row(
+                          children: [
+                            const SizedBox(width: 25),
+                            Expanded(
+                              child: Column(
                                 children: [
-                                  _buildPdfContent(),
-                                  Positioned(
-                                    top: 16,
-                                    right: 16,
-                                    child: IconButton(
-                                      icon: const Icon(Icons.fullscreen_exit),
-                                      onPressed: () {
-                                        isFullScreen.value = false;
-                                        Navigator.of(context).pop();
-                                      },
-                                      color: Colors.black54,
-                                      tooltip: '退出全屏',
+                                  const SizedBox(height: 8),
+                                  ThemeUtil.lineH(),
+                                  ThemeUtil.height(),
+                                  Expanded(
+                                    child: Stack(
+                                      children: [
+                                        Container(
+                                          decoration: const BoxDecoration(
+                                            image: DecorationImage(
+                                              image: AssetImage('assets/images/note_page_bg.png'),
+                                              fit: BoxFit.fill,
+                                            ),
+                                          ),
+                                        ),
+                                        _buildPdfContent(),
+                                      ],
                                     ),
                                   ),
+                                  const SizedBox(height: 10),
                                 ],
                               ),
                             ),
-                          ),
-                        );
-                      }
+                          ],
+                        ),
+                        fullscreenDialog: true,
+                        transition: Transition.fade,
+                      );
                     }
                   },
                   tooltip: isFullScreen.value ? '退出全屏' : '全屏',
@@ -362,21 +368,21 @@ class _PdfPreViewState extends State<PdfPreView> {
                 const Divider(height: 1),
                 IconButton(
                   icon: const Icon(Icons.add),
-                  onPressed: _currentZoom < (1 + _zoomStep * _maxZoomClicks)
+                  onPressed: _currentZoom.value < (1 + _zoomStep * _maxZoomClicks)
                       ? () => _handleZoom(true)
                       : null,
                   tooltip: '放大',
                 ),
-                Container(
+                Obx(() => Container(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Text(
-                    '${(_currentZoom * 100).toInt()}%',
+                    '${(_currentZoom.value * 100).toInt()}%',
                     style: const TextStyle(fontSize: 12),
                   ),
-                ),
+                )),
                 IconButton(
                   icon: const Icon(Icons.remove),
-                  onPressed: _currentZoom > _minZoom
+                  onPressed: _currentZoom.value > 1.0
                       ? () => _handleZoom(false)
                       : null,
                   tooltip: '缩小',
@@ -442,11 +448,9 @@ class _PdfPreViewState extends State<PdfPreView> {
         children: [
           SfPdfViewer.file(
             File(_localFilePath!),
-            key: ValueKey(_localFilePath),
             controller: _pdfController,
             enableTextSelection: false,
             enableDocumentLinkAnnotation: false,
-            initialZoomLevel: _currentZoom,
             onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
               debugPrint('PDF load failed: ${details.error}');
               _initializePdf(selectedPdfUrl);
