@@ -39,4 +39,12 @@ class UserApi {
   static Future<dynamic> userList({Map<String, dynamic>? params}) async {
     return await HttpUtil.get("/user/student/info", params: params);
   }
+
+  static Future<dynamic> userInfo() async {
+    try {
+      return await HttpUtil.get("/jwt/valid_user");
+    } catch (e) {
+      rethrow; // 重新抛出异常以便调用者处理
+    }
+  }
 }

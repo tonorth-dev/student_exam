@@ -12,6 +12,7 @@ import '../../../../api/major_api.dart';
 import '../../../../common/config_util.dart';
 import '../../../../component/table/table_data.dart';
 import '../../../../component/widget.dart';
+import 'package:student_exam/app/data/book_model.dart';
 
 class NoteLogic extends GetxController {
   var list = <Map<String, dynamic>>[].obs;
@@ -42,38 +43,72 @@ class NoteLogic extends GetxController {
   final ValueNotifier<dynamic> selectedLevel2 = ValueNotifier(null);
   final ValueNotifier<dynamic> selectedLevel3 = ValueNotifier(null);
 
-  void find(int newSize, int newPage) {
-    size.value = newSize;
-    page.value = newPage;
-    list.clear();
-    selectedRows.clear();
-    loading.value = true;
-    // 打印调用堆栈
+  final searchController = TextEditingController();
+  final bookList = <BookModel>[].obs;
+  final expandedRows = <int>{}.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchBooks();
+  }
+
+  @override
+  void onClose() {
+    searchController.dispose();
+    super.onClose();
+  }
+
+  void onSearchChanged(String value) {
+    searchText.value = value;
+  }
+
+  void onSearch() {
+    page.value = 1;
+    fetchBooks();
+  }
+
+  Future<void> fetchBooks() async {
     try {
-      BookApi.bookList({
+      final response = await BookApi.bookList({
         "size": size.value.toString(),
         "page": page.value.toString(),
-        "keyword": searchText.value.toString() ?? "",
-      }).then((value) async {
-        if (value != null && value["list"] != null) {
-          total.value = value["total"] ?? 0;
-          list.assignAll((value["list"] as List<dynamic>).toListMap());
-          await Future.delayed(const Duration(milliseconds: 300));
-          loading.value = false;
-        } else {
-          loading.value = false;
-          "未获取到讲义数据".toHint();
-        }
-      }).catchError((error) {
-        loading.value = false;
-        print("获取讲义列表失败: $error");
-        "获取讲义列表失败: $error".toHint();
+        "keyword": searchText.value,
       });
+
+      if (response != null && response['list'] != null) {
+        final List<dynamic> list = response['list'];
+        bookList.value = list.map((item) => BookModel.fromJson(item)).toList();
+      }
     } catch (e) {
-      loading.value = false;
-      print("获取讲义列表失败: $e");
-      "获取讲义列表失败: $e".toHint();
+      print('Error fetching books: $e');
+      // 在界面上显示错误信息
+      Get.snackbar(
+        '错误',
+        '获取题本列表失败',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
+  }
+
+  void toggleExpand(int bookId) {
+    if (expandedRows.contains(bookId)) {
+      expandedRows.remove(bookId);
+    } else {
+      expandedRows.add(bookId);
+    }
+  }
+
+  void downloadBook(BookModel book) {
+    // TODO: 实现下载功能
+    print('Downloading book: ${book.name}');
+  }
+
+  void previewBook(BookModel book) {
+    // TODO: 实现预览功能
+    print('Previewing book: ${book.name}');
   }
 
   var columns = <ColumnData>[];
