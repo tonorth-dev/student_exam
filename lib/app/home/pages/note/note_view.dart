@@ -40,8 +40,8 @@ class NoteTableView extends StatelessWidget {
                 height: 30,
                 key: Key('search'),
                 onPressed: () {
-                  logic.selectedRows.clear();
-                  logic.find(logic.size.value, logic.page.value);
+                  logic.selectedBookIds.clear();
+                  logic.fetchData();
                 },
               ),
             ],
@@ -93,7 +93,9 @@ class NoteTableView extends StatelessWidget {
                       uniqueId: 'note_pagination',
                       total: logic.total.value,
                       changed: (int newSize, int newPage) {
-                        logic.find(newSize, newPage);
+                        logic.size.value = newSize;
+                        logic.page.value = newPage;
+                        logic.fetchData();
                       },
                     ),
                   ],

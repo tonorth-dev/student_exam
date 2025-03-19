@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:student_exam/app/data/book_model.dart';
 import 'package:student_exam/app/home/pages/note/logic.dart';
 
 import '../../sidebar/logic.dart';
@@ -97,16 +96,14 @@ class NoteView extends StatelessWidget {
 
   Widget _buildDataTable() {
     return Obx(() {
-      final books = logic.bookList;
+      final books = logic.list;
       
       return SingleChildScrollView(
         child: DataTable(
           columns: const [
             DataColumn(label: Text('题本名称')),
             DataColumn(label: Text('专业')),
-            DataColumn(label: Text('题型')),
             DataColumn(label: Text('题目数量')),
-            DataColumn(label: Text('操作')),
           ],
           rows: _buildTableRows(books),
         ),
@@ -114,18 +111,16 @@ class NoteView extends StatelessWidget {
     });
   }
 
-  List<DataRow> _buildTableRows(List<BookModel> books) {
+  List<DataRow> _buildTableRows(List<Map<String, dynamic>> books) {
     final List<DataRow> rows = [];
     
     for (var book in books) {
-      // 添加父行
       rows.add(_buildBookRow(book, isChild: false));
       
-      // 如果有子题本且当前题本是展开状态，添加子行
-      if (book.Children != null && 
-          book.Children!.isNotEmpty && 
-          logic.expandedRows.contains(book.id)) {
-        for (var childBook in book.Children!) {
+      if (book['Children'] != null && 
+          logic.expandedBookIds.contains(book['id'].toString())) {
+        final children = List<Map<String, dynamic>>.from(book['Children']);
+        for (var childBook in children) {
           rows.add(_buildBookRow(childBook, isChild: true));
         }
       }
@@ -134,47 +129,29 @@ class NoteView extends StatelessWidget {
     return rows;
   }
 
-  DataRow _buildBookRow(BookModel book, {required bool isChild}) {
+  DataRow _buildBookRow(Map<String, dynamic> book, {required bool isChild}) {
     return DataRow(
       cells: [
         DataCell(
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (!isChild && book.Children != null && book.Children!.isNotEmpty)
+              if (!isChild && book['Children'] != null && (book['Children'] as List).isNotEmpty)
                 IconButton(
                   icon: Icon(
-                    logic.expandedRows.contains(book.id)
+                    logic.expandedBookIds.contains(book['id'].toString())
                         ? Icons.expand_less
                         : Icons.expand_more,
                   ),
-                  onPressed: () => logic.toggleExpand(book.id),
+                  onPressed: () => logic.toggleExpand(book['id']),
                 ),
               if (isChild) const SizedBox(width: 32),
-              Flexible(child: Text(book.name)),
+              Flexible(child: Text(book['name'] ?? '')),
             ],
           ),
         ),
-        DataCell(Text(book.majorName)),
-        DataCell(Text(book.levelName)),
-        DataCell(Text(book.questionsNumber.toString())),
-        DataCell(
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.download),
-                onPressed: () => logic.downloadBook(book),
-                tooltip: '下载题本',
-              ),
-              IconButton(
-                icon: const Icon(Icons.preview),
-                onPressed: () => logic.previewBook(book),
-                tooltip: '预览题本',
-              ),
-            ],
-          ),
-        ),
+        DataCell(Text(book['major_name'] ?? '')),
+        DataCell(Text(book['questions_number']?.toString() ?? '0')),
       ],
     );
   }

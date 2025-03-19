@@ -12,45 +12,39 @@ import '../../../../api/major_api.dart';
 import '../../../../common/config_util.dart';
 import '../../../../component/table/table_data.dart';
 import '../../../../component/widget.dart';
-import 'package:student_exam/app/data/book_model.dart';
 
 class NoteLogic extends GetxController {
-  var list = <Map<String, dynamic>>[].obs;
-  var total = 0.obs;
-  var size = 15.obs;
-  var page = 1.obs;
-  var loading = false.obs;
+  final loading = false.obs;
+  final total = 0.obs;
+  final page = 1.obs;
+  final size = 15.obs;
   final searchText = ''.obs;
-  final RxString selectedKey = ''.obs; // 初始化为空字符串
-  final RxList<String> expandedKeys = <String>[].obs;
-
-  final RxString selectedNoteId = '0'
-      .obs; // To track which note's directory we are viewing
-
-  var isLoading = false.obs;
-
-
-  final GlobalKey<CascadingDropdownFieldState> majorDropdownKey =
-  GlobalKey<CascadingDropdownFieldState>();
-
-  // 当前编辑的题目数据
-  var currentEditNote = RxMap<String, dynamic>({}).obs;
-  RxList<int> selectedRows = <int>[].obs;
-
-  final selectedPdfUrl = RxnString("");
+  final RxList<Map<String, dynamic>> list = <Map<String, dynamic>>[].obs;
+  final RxSet<String> expandedBookIds = <String>{}.obs;
+  final RxSet<String> selectedBookIds = <String>{}.obs;
+  final searchController = TextEditingController();
 
   final ValueNotifier<dynamic> selectedLevel1 = ValueNotifier(null);
   final ValueNotifier<dynamic> selectedLevel2 = ValueNotifier(null);
   final ValueNotifier<dynamic> selectedLevel3 = ValueNotifier(null);
 
-  final searchController = TextEditingController();
-  final bookList = <BookModel>[].obs;
-  final expandedRows = <int>{}.obs;
+  final RxString selectedKey = ''.obs;
+  final RxList<String> expandedKeys = <String>[].obs;
+  final selectedPdfUrl = RxnString("");
+  final currentEditNote = RxMap<String, dynamic>({}).obs;
+
+  final RxString selectedNoteId =
+      '0'.obs; // To track which note's directory we are viewing
+
+  var isLoading = false.obs;
+
+  final GlobalKey<CascadingDropdownFieldState> majorDropdownKey =
+      GlobalKey<CascadingDropdownFieldState>();
 
   @override
   void onInit() {
     super.onInit();
-    fetchBooks();
+    fetchData();
   }
 
   @override
@@ -59,108 +53,80 @@ class NoteLogic extends GetxController {
     super.onClose();
   }
 
+  void fetchData() async {
+    try {
+      BookApi.bookList({
+        "size": size.value.toString(),
+        "page": page.value.toString(),
+        "keyword": searchText.value.toString() ?? "",
+      }).then((value) async {
+        if (value != null && value["list"] != null) {
+          list.value = (value["list"] as List).map((item) => 
+            Map<String, dynamic>.from(item as Map)).toList();
+        }
+      });
+    } catch (e) {
+      print('获取题本错误: $e');
+    }
+  }
+
   void onSearchChanged(String value) {
     searchText.value = value;
   }
 
   void onSearch() {
-    page.value = 1;
-    fetchBooks();
-  }
-
-  Future<void> fetchBooks() async {
-    try {
-      final response = await BookApi.bookList({
-        "size": size.value.toString(),
-        "page": page.value.toString(),
-        "keyword": searchText.value,
-      });
-
-      if (response != null && response['list'] != null) {
-        final List<dynamic> list = response['list'];
-        bookList.value = list.map((item) => BookModel.fromJson(item)).toList();
-      }
-    } catch (e) {
-      print('Error fetching books: $e');
-      // 在界面上显示错误信息
-      Get.snackbar(
-        '错误',
-        '获取题本列表失败',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+    final searchTerm = searchController.text.toLowerCase();
+    if (searchTerm.isEmpty) {
+      fetchData();
+      return;
     }
+
+    final filteredList = list.where((book) {
+      return book['name'].toLowerCase().contains(searchTerm) ||
+          book['major_name'].toLowerCase().contains(searchTerm);
+    }).toList();
+
+    list.value = filteredList;
   }
 
-  void toggleExpand(int bookId) {
-    if (expandedRows.contains(bookId)) {
-      expandedRows.remove(bookId);
+  void toggleExpand(dynamic bookId) {
+    final id = bookId.toString();
+    if (expandedBookIds.contains(id)) {
+      expandedBookIds.remove(id);
     } else {
-      expandedRows.add(bookId);
+      expandedBookIds.add(id);
     }
   }
 
-  void downloadBook(BookModel book) {
-    // TODO: 实现下载功能
-    print('Downloading book: ${book.name}');
+  void toggleSelect(String bookId) {
+    if (selectedBookIds.contains(bookId)) {
+      selectedBookIds.remove(bookId);
+    } else {
+      selectedBookIds.add(bookId);
+    }
   }
 
-  void previewBook(BookModel book) {
-    // TODO: 实现预览功能
-    print('Previewing book: ${book.name}');
+  void downloadBook(Map<String, dynamic> book) {
+    print('Downloading book: ${book['name']}');
+  }
+
+  void previewBook(Map<String, dynamic> book) {
+    print('Previewing book: ${book['name']}');
   }
 
   var columns = <ColumnData>[];
 
   @override
-  void onInit() {
-    super.onInit(); // Fetch and populate major data on initialization
-
-    columns = [
-      ColumnData(title: "ID", key: "id", width: 80),
-      ColumnData(title: "题本名称", key: "name", width: 240),
-      ColumnData(title: "专业", key: "major_name", width: 120),
-      ColumnData(title: "难度", key: "level_name", width: 100),
-      ColumnData(title: "试题数量", key: "questions_number", width: 60),
-    ];
-
-    // 初始化数据
-    // find(size.value, page.value);
-  }
-
-  @override
   void refresh() {
-    find(size.value, page.value);
-  }
-
-  void toggleSelectAll() {
-    if (selectedRows.length == list.length) {
-      // 当前所有行都被选中，清空选中状态
-      selectedRows.clear();
-    } else {
-      // 当前不是所有行都被选中，选择所有行
-      selectedRows.assignAll(list.map((item) => item['id']));
-    }
-  }
-
-  void toggleSelect(int id) {
-    if (selectedRows.contains(id)) {
-      // 当前行已被选中，取消选中
-      selectedRows.remove(id);
-    } else {
-      // 当前行未被选中，选中
-      selectedRows.add(id);
-    }
+    fetchData();
   }
 
   void reset() {
     majorDropdownKey.currentState?.reset();
     searchText.value = '';
-    selectedRows.clear();
+    selectedBookIds.clear();
 
-    // 重新初始化数据
-    find(size.value, page.value);
+    fetchData();
   }
 
   void updatePdfUrl(String url) {
@@ -178,10 +144,20 @@ class NoteLogic extends GetxController {
   Future<void> loadAndUpdatePdfUrl(int id) async {
     final response = await BookApi.generateBook(id, isTeacher: true);
 
-    // 检查响应状态码
     if (!response['url'].isEmpty) {
-      // 获取 PDF 文件的 URL
       selectedPdfUrl.value = "${ConfigUtil.ossUrl}${response['url']}";
     }
+  }
+
+  void selectBook(Map<String, dynamic> book) {
+    if (selectedBookIds.contains(book['id'])) {
+      selectedBookIds.remove(book['id']);
+    } else {
+      selectedBookIds.add(book['id']);
+    }
+  }
+
+  bool isBookSelected(Map<String, dynamic> book) {
+    return selectedBookIds.contains(book['id']);
   }
 }
