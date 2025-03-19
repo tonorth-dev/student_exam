@@ -100,10 +100,27 @@ class NoteView extends StatelessWidget {
       
       return SingleChildScrollView(
         child: DataTable(
+          columnSpacing: 0,
+          showCheckboxColumn: false,
           columns: const [
-            DataColumn(label: Text('题本名称')),
-            DataColumn(label: Text('专业')),
-            DataColumn(label: Text('题目数量')),
+            DataColumn(
+              label: SizedBox(
+                width: 300,
+                child: Text('题本名称'),
+              ),
+            ),
+            DataColumn(
+              label: SizedBox(
+                width: 200,
+                child: Text('专业'),
+              ),
+            ),
+            DataColumn(
+              label: SizedBox(
+                width: 100,
+                child: Text('题目数量'),
+              ),
+            ),
           ],
           rows: _buildTableRows(books),
         ),
@@ -130,28 +147,91 @@ class NoteView extends StatelessWidget {
   }
 
   DataRow _buildBookRow(Map<String, dynamic> book, {required bool isChild}) {
+    final isSelected = logic.selectedBookIds.contains(book['id'].toString());
     return DataRow(
+      color: isSelected ? MaterialStateProperty.all(const Color(0xFFE0F7FA)) : null,
       cells: [
         DataCell(
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (!isChild && book['Children'] != null && (book['Children'] as List).isNotEmpty)
-                IconButton(
-                  icon: Icon(
-                    logic.expandedBookIds.contains(book['id'].toString())
-                        ? Icons.expand_less
-                        : Icons.expand_more,
+          SizedBox(
+            width: 300,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!isChild && book['Children'] != null && (book['Children'] as List).isNotEmpty)
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => logic.toggleExpand(book['id']),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        alignment: Alignment.center,
+                        child: Text(
+                          logic.expandedBookIds.contains(book['id'].toString()) ? '-' : '+',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                  onPressed: () => logic.toggleExpand(book['id']),
+                if (isChild) const SizedBox(width: 40),
+                Expanded(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        logic.selectBook(book);
+                        logic.updatePdfUrl(book['teacher_file_path'] ?? '');
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          book['name'] ?? '',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              if (isChild) const SizedBox(width: 32),
-              Flexible(child: Text(book['name'] ?? '')),
-            ],
+              ],
+            ),
           ),
         ),
-        DataCell(Text(book['major_name'] ?? '')),
-        DataCell(Text(book['questions_number']?.toString() ?? '0')),
+        DataCell(
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                logic.selectBook(book);
+                logic.updatePdfUrl(book['teacher_file_path'] ?? '');
+              },
+              child: SizedBox(
+                width: 200,
+                child: Text(
+                  book['major_name'] ?? '',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ),
+        ),
+        DataCell(
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                logic.selectBook(book);
+                logic.updatePdfUrl(book['teacher_file_path'] ?? '');
+              },
+              child: SizedBox(
+                width: 100,
+                child: Text(book['questions_number']?.toString() ?? '0'),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

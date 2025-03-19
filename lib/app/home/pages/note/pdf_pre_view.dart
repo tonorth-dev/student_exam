@@ -33,7 +33,10 @@ class _PdfPreViewState extends State<PdfPreView> {
   double _currentZoom = 1.0;
   static const double _zoomStep = 0.1;
   static const int _maxZoomClicks = 8;
-  static const double _minZoom = 0.5; // 添加最小缩放限制
+  static const double _minZoom = 0.5;
+  
+  // 添加全屏状态变量
+  final RxBool isFullScreen = false.obs;
 
   @override
   void initState() {
@@ -271,8 +274,26 @@ class _PdfPreViewState extends State<PdfPreView> {
     );
   }
 
+  void _handleZoom(bool zoomIn) {
+    if (!mounted) return;
+    
+    setState(() {
+      if (zoomIn) {
+        if (_currentZoom < (1 + _zoomStep * _maxZoomClicks)) {
+          _currentZoom += _zoomStep;
+        }
+      } else {
+        if (_currentZoom > _minZoom) {
+          _currentZoom -= _zoomStep;
+        }
+      }
+    });
+    
+    // 直接设置缩放级别
+    _pdfController.zoomLevel = _currentZoom;
+  }
+
   Widget _buildZoomControls() {
-    // 确保在PDF加载完成后才显示缩放控制
     if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
       return const SizedBox.shrink();
     }
@@ -297,16 +318,52 @@ class _PdfPreViewState extends State<PdfPreView> {
             ),
             child: Column(
               children: [
+                // 全屏按钮
+                IconButton(
+                  icon: Obx(() => Icon(isFullScreen.value ? Icons.fullscreen_exit : Icons.fullscreen)),
+                  onPressed: () {
+                    isFullScreen.value = !isFullScreen.value;
+                    if (isFullScreen.value) {
+                      // 获取 NotePage 的 context
+                      final context = Get.context;
+                      if (context != null) {
+                        // 在整个 NotePage 上覆盖显示 PDF
+                        Navigator.of(context).push(
+                          PageRouteBuilder(
+                            opaque: false,
+                            pageBuilder: (context, _, __) => Material(
+                              color: Colors.white,
+                              child: Stack(
+                                children: [
+                                  _buildPdfContent(),
+                                  Positioned(
+                                    top: 16,
+                                    right: 16,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.fullscreen_exit),
+                                      onPressed: () {
+                                        isFullScreen.value = false;
+                                        Navigator.of(context).pop();
+                                      },
+                                      color: Colors.black54,
+                                      tooltip: '退出全屏',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  tooltip: isFullScreen.value ? '退出全屏' : '全屏',
+                ),
+                const Divider(height: 1),
                 IconButton(
                   icon: const Icon(Icons.add),
                   onPressed: _currentZoom < (1 + _zoomStep * _maxZoomClicks)
-                      ? () {
-                    setState(() {
-                      _currentZoom = (_currentZoom + _zoomStep)
-                          .clamp(_minZoom, 1 + _zoomStep * _maxZoomClicks);
-                      _pdfController.zoomLevel = _currentZoom;
-                    });
-                  }
+                      ? () => _handleZoom(true)
                       : null,
                   tooltip: '放大',
                 ),
@@ -320,13 +377,7 @@ class _PdfPreViewState extends State<PdfPreView> {
                 IconButton(
                   icon: const Icon(Icons.remove),
                   onPressed: _currentZoom > _minZoom
-                      ? () {
-                    setState(() {
-                      _currentZoom = (_currentZoom - _zoomStep)
-                          .clamp(_minZoom, 1 + _zoomStep * _maxZoomClicks);
-                      _pdfController.zoomLevel = _currentZoom;
-                    });
-                  }
+                      ? () => _handleZoom(false)
                       : null,
                   tooltip: '缩小',
                 ),
@@ -350,49 +401,7 @@ class _PdfPreViewState extends State<PdfPreView> {
               ThemeUtil.lineH(),
               ThemeUtil.height(),
               Expanded(
-                child: Obx(() {
-                  final selectedPdfUrl = pdfLogic.selectedPdfUrl.value;
-
-                  if (selectedPdfUrl == null || selectedPdfUrl.isEmpty) {
-                    return Container(
-                      padding: const EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                      ),
-                      child: Center(
-                        child: Text(
-                          "请选择一个文件",
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            color: Colors.blue.shade700,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-
-                  if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  return Stack(
-                    children: [
-                      SfPdfViewer.file(
-                        File(_localFilePath!),
-                        key: ValueKey(_localFilePath),
-                        controller: _pdfController,
-                        enableTextSelection: false,
-                        enableDocumentLinkAnnotation: false,
-                        onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
-                          debugPrint('PDF load failed: ${details.error}');
-                          _initializePdf(selectedPdfUrl);
-                        },
-                      ),
-                      _buildZoomControls(),
-                    ],
-                  );
-                }),
+                child: _buildPdfContent(),
               ),
               const SizedBox(height: 10),
             ],
@@ -400,5 +409,52 @@ class _PdfPreViewState extends State<PdfPreView> {
         ),
       ],
     );
+  }
+
+  Widget _buildPdfContent() {
+    return Obx(() {
+      final selectedPdfUrl = pdfLogic.selectedPdfUrl.value;
+
+      if (selectedPdfUrl == null || selectedPdfUrl.isEmpty) {
+        return Container(
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+          ),
+          child: Center(
+            child: Text(
+              "请选择一个文件",
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.blue.shade700,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      }
+
+      if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      return Stack(
+        children: [
+          SfPdfViewer.file(
+            File(_localFilePath!),
+            key: ValueKey(_localFilePath),
+            controller: _pdfController,
+            enableTextSelection: false,
+            enableDocumentLinkAnnotation: false,
+            initialZoomLevel: _currentZoom,
+            onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
+              debugPrint('PDF load failed: ${details.error}');
+              _initializePdf(selectedPdfUrl);
+            },
+          ),
+          _buildZoomControls(),
+        ],
+      );
+    });
   }
 }

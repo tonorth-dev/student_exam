@@ -132,13 +132,9 @@ class NoteLogic extends GetxController {
   void updatePdfUrl(String url) {
     if (url.isEmpty) {
       selectedPdfUrl.value = "";
-      debugPrint('Selected PDF URL updated: ${selectedPdfUrl.value}');
       return;
     }
-    if (selectedPdfUrl.value != "${ConfigUtil.ossUrl}$url") {
-      selectedPdfUrl.value = "${ConfigUtil.ossUrl}$url";
-      debugPrint('Selected PDF URL updated: ${selectedPdfUrl.value}');
-    }
+    selectedPdfUrl.value = "${ConfigUtil.ossUrl}$url";
   }
 
   Future<void> loadAndUpdatePdfUrl(int id) async {
@@ -150,11 +146,9 @@ class NoteLogic extends GetxController {
   }
 
   void selectBook(Map<String, dynamic> book) {
-    if (selectedBookIds.contains(book['id'])) {
-      selectedBookIds.remove(book['id']);
-    } else {
-      selectedBookIds.add(book['id']);
-    }
+    final id = book['id'].toString();
+    selectedBookIds.clear();
+    selectedBookIds.add(id);
   }
 
   bool isBookSelected(Map<String, dynamic> book) {
