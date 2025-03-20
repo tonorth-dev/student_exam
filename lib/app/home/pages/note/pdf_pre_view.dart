@@ -284,7 +284,7 @@ class _PdfPreViewState extends State<PdfPreView> {
         newZoom += _zoomStep;
       }
     } else {
-      if (newZoom > _minZoom) {
+      if (newZoom > 1.0) {  // 修改这里，限制最小缩放为 1.0
         newZoom -= _zoomStep;
       }
     }
@@ -454,6 +454,14 @@ class _PdfPreViewState extends State<PdfPreView> {
 
       return Stack(
         children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/note_page_bg.png'),
+                fit: BoxFit.fill,
+              ),
+            ),
+          ),
           SfPdfViewer.file(
             File(_localFilePath!),
             controller: _pdfController,
@@ -464,6 +472,9 @@ class _PdfPreViewState extends State<PdfPreView> {
               _initializePdf(selectedPdfUrl);
             },
           ),
+          // const IgnorePointer(
+          //   child: WatermarkWidget(),
+          // ),
           _buildZoomControls(),
         ],
       );

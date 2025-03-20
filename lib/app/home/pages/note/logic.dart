@@ -1,14 +1,7 @@
-import 'dart:io';
-
-import 'package:student_exam/ex/ex_list.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:student_exam/ex/ex_hint.dart';
-import 'package:student_exam/component/dialog.dart';
 import '../../../../api/book_api.dart';
-import '../../../../api/major_api.dart';
 import '../../../../common/config_util.dart';
 import '../../../../component/table/table_data.dart';
 import '../../../../component/widget.dart';

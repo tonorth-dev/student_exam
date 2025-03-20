@@ -1,5 +1,4 @@
 import 'package:student_exam/ex/ex_hint.dart';
-import 'package:student_exam/theme/ui_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/version_service.dart';
@@ -9,8 +8,6 @@ import '../home/view.dart';  // 假设主页面在这个路径
 import '../login/view.dart';
 import '../../api/user_api.dart';
 import 'package:bot_toast/bot_toast.dart';
-
-import 'logic.dart';
 
 class LaunchPage extends StatefulWidget {
   const LaunchPage({Key? key}) : super(key: key);

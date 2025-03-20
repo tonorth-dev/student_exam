@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../api/version_api.dart';
-import '../models/version_info.dart';
+import 'package:student_exam/api/version_api.dart';
+import 'package:student_exam/models/version_info.dart';
 import 'package:flutter/foundation.dart';
 
 class VersionService {
@@ -10,7 +10,7 @@ class VersionService {
   Future<VersionInfo?> checkForUpdates() async {
     try {
       final currentVersion = await _getCurrentVersion();
-      final response = await _api.checkVersion();
+      final response = await VersionApi.checkVersion();
       final latestVersion = VersionInfo.fromJson(response, Platform.isMacOS);
       
       // 如果不需要更新，返回 null

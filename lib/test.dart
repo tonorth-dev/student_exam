@@ -41,7 +41,7 @@ void main() async {
       double difference = logicalSize.width - size.width;
       if (difference < minDifference) {
         minDifference = difference;
-        closestSize = size;
+      closestSize = size;
       }
     }
   }
@@ -56,11 +56,11 @@ void main() async {
   // 设置窗口尺寸并居中
   await windowManager.setSize(closestSize);
   await windowManager.center();
-  
+
   // 设置窗口标题和其他属性
   await windowManager.setTitle('学生考试系统');
   await windowManager.setMinimumSize(const Size(800, 600));
-  
+
   print('使用窗口尺寸：${closestSize.width}*${closestSize.height}');
 
   // 运行应用
@@ -80,7 +80,7 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return MaterialApp(
+    return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: '学生考试系统',
           theme: ThemeData(
