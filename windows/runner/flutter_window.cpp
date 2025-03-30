@@ -1,6 +1,7 @@
 #include "flutter_window.h"
 
 #include <optional>
+#include <Windows.h>
 
 #include "flutter/generated_plugin_registrant.h"
 
@@ -26,6 +27,40 @@ bool FlutterWindow::OnCreate() {
   }
   RegisterPlugins(flutter_controller_->engine());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
+
+  // 注册平台通道处理器
+  flutter::MethodChannel<flutter::EncodableValue> channel(
+      flutter_controller_->engine()->messenger(), "com.example.student_exam/screen_info",
+      &flutter::StandardMethodCodec::GetInstance());
+
+  // 设置平台通道的处理函数
+  channel.SetMethodCallHandler(
+      [](const flutter::MethodCall<flutter::EncodableValue> &call,
+         std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+        if (call.method_name() == "getScreenSize") {
+          // 获取主屏幕的尺寸（像素）
+          int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+          int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+
+          // 获取系统 DPI
+          HDC hdc = GetDC(NULL);
+          int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
+          ReleaseDC(NULL, hdc);
+
+          // 计算逻辑尺寸 (96 是标准 DPI)
+          double logicalWidth = screenWidth * (96.0 / dpiX);
+          double logicalHeight = screenHeight * (96.0 / dpiX);
+
+          // 创建返回值
+          flutter::EncodableMap screen_size;
+          screen_size[flutter::EncodableValue("width")] = flutter::EncodableValue(logicalWidth);
+          screen_size[flutter::EncodableValue("height")] = flutter::EncodableValue(logicalHeight);
+          
+          result->Success(flutter::EncodableValue(screen_size));
+        } else {
+          result->NotImplemented();
+        }
+      });
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
     this->Show();

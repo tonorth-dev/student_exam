@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
@@ -10,8 +11,10 @@ import 'package:http/http.dart' as http;
 import '../../../../theme/theme_util.dart';
 import '../../../../common/encr_util.dart';
 import '../../../../component/watermark.dart';
+import '../../../../common/screen_adapter.dart';
 import 'logic.dart';
 import 'package:path/path.dart' as p;
+import '../../../../main.dart' show screenAdapter;
 
 class PdfPreView extends StatefulWidget {
   final String title;
@@ -25,6 +28,7 @@ class PdfPreView extends StatefulWidget {
 class _PdfPreViewState extends State<PdfPreView> {
   final LectureLogic pdfLogic = Get.put(LectureLogic());
   late PdfViewerController _pdfController;
+  final _screenAdapter = screenAdapter;
   String? _currentUrl;
   String? _localFilePath;
   String? _decryptedFilePath;
@@ -289,216 +293,22 @@ class _PdfPreViewState extends State<PdfPreView> {
     });
   }
 
-  Widget _buildPdfContent() {
-    return Obx(() {
-      final selectedPdfUrl = pdfLogic.selectedPdfUrl.value;
-
-      if (selectedPdfUrl == null || selectedPdfUrl.isEmpty) {
-        return Container(
-          padding: const EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-          ),
-          child: Center(
-            child: Text(
-              "请点击要学习的章节",
-              style: TextStyle(
-                fontSize: 16.0,
-                color: Colors.red.shade700,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        );
-      }
-
-      if (_isLoading.value) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(
-                value: _loadingProgress.value > 0 ? _loadingProgress.value : null,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '正在加载 PDF (${(_loadingProgress.value * 100).toInt()}%)',
-                style: const TextStyle(fontSize: 14),
-              ),
-            ],
-          ),
-        );
-      }
-
-      if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
-        return const Center(child: CircularProgressIndicator());
-      }
-
-      return Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/note_page_bg.png'),
-                fit: BoxFit.fill,
-              ),
-            ),
-          ),
-          SfPdfViewer.file(
-            File(_localFilePath!),
-            controller: _pdfController,
-            enableTextSelection: false,
-            enableDocumentLinkAnnotation: false,
-            onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
-              debugPrint('PDF load failed: ${details.error}');
-              _initializePdf(selectedPdfUrl);
-            },
-            onPageChanged: _handlePdfPageChanged,
-            onDocumentLoaded: _onDocumentLoaded,
-            scrollDirection: PdfScrollDirection.vertical,
-            pageSpacing: 0,
-            enableDoubleTapZooming: true,
-            canShowScrollHead: true,
-          ),
-          // const IgnorePointer(
-          //   child: WatermarkWidget(),
-          // ),
-          _buildZoomControls(),
-        ],
-      );
-    });
-  }
-
-  Widget _buildZoomControls() {
-    if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
-      return const SizedBox.shrink();
+  @override
+  void dispose() {
+    _isPdfLoaded = false;
+    _isChangingPage = false;
+    _pdfController.dispose();
+    // 清理临时文件
+    if (_localFilePath != null) {
+      final tempFile = File(_localFilePath!);
+      tempFile.delete().catchError((e) => debugPrint('Error deleting temp file: $e'));
     }
-
-    return Positioned(
-      right: 16,
-      bottom: 16,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                // 全屏按钮
-                IconButton(
-                  icon: Obx(() => Icon(isFullScreen.value ? Icons.fullscreen_exit : Icons.fullscreen)),
-                  onPressed: () {
-                    if (isFullScreen.value) {
-                      isFullScreen.value = false;
-                      Get.back();
-                    } else {
-                      isFullScreen.value = true;
-                      Get.to(
-                        () => Stack(
-                          children: [
-                            Row(
-                              children: [
-                                const SizedBox(width: 25),
-                                Expanded(
-                                  child: Column(
-                                    children: [
-                                      const SizedBox(height: 8),
-                                      ThemeUtil.lineH(),
-                                      ThemeUtil.height(),
-                                      Expanded(
-                                        child: Stack(
-                                          children: [
-                                            Container(
-                                              decoration: const BoxDecoration(
-                                                image: DecorationImage(
-                                                  image: AssetImage('assets/images/note_page_bg.png'),
-                                                  fit: BoxFit.fill,
-                                                ),
-                                              ),
-                                            ),
-                                            _buildPdfContent(),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const IgnorePointer(
-                              child: WatermarkWidget(),
-                            ),
-                          ],
-                        ),
-                        fullscreenDialog: true,
-                        transition: Transition.fade,
-                      );
-                    }
-                  },
-                  tooltip: isFullScreen.value ? '退出全屏' : '全屏',
-                ),
-                const Divider(height: 1),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: _currentZoom.value < (1 + _zoomStep * _maxZoomClicks)
-                      ? () => _handleZoom(true)
-                      : null,
-                  tooltip: '放大',
-                ),
-                Obx(() => Container(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text(
-                    '${(_currentZoom.value * 100).toInt()}%',
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                )),
-                IconButton(
-                  icon: const Icon(Icons.remove),
-                  onPressed: _currentZoom.value > 1.0
-                      ? () => _handleZoom(false)
-                      : null,
-                  tooltip: '缩小',
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _handleZoom(bool zoomIn) {
-    if (!mounted) return;
-    
-    double newZoom = _currentZoom.value;
-    if (zoomIn) {
-      if (newZoom < (1 + _zoomStep * _maxZoomClicks)) {
-        newZoom += _zoomStep;
-      }
-    } else {
-      if (newZoom > 1.0) {  // 修改这里，限制最小缩放为 1.0
-        newZoom -= _zoomStep;
-      }
-    }
-    
-    // 直接更新缩放值和控制器
-    _currentZoom.value = newZoom;
-    _pdfController.zoomLevel = newZoom;
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // 无需重复计算屏幕尺寸，直接使用全局的 screenAdapter
     return Column(
       children: [
         ThemeUtil.height(),
@@ -507,7 +317,7 @@ class _PdfPreViewState extends State<PdfPreView> {
             final selectedPdfUrl = pdfLogic.selectedPdfUrl.value;
             if (selectedPdfUrl == null || selectedPdfUrl.isEmpty) {
               return Container(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(_screenAdapter.getAdaptivePadding(16.0)),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                 ),
@@ -515,7 +325,7 @@ class _PdfPreViewState extends State<PdfPreView> {
                   child: Text(
                     "请点击要学习的章节",
                     style: TextStyle(
-                      fontSize: 16.0,
+                      fontSize: _screenAdapter.getAdaptiveFontSize(16.0),
                       color: Colors.red.shade700,
                       fontWeight: FontWeight.bold,
                     ),
@@ -554,6 +364,187 @@ class _PdfPreViewState extends State<PdfPreView> {
     );
   }
 
+  Widget _buildPdfContent() {
+    return Obx(() {
+      final selectedPdfUrl = pdfLogic.selectedPdfUrl.value;
+
+      if (selectedPdfUrl == null || selectedPdfUrl.isEmpty) {
+        return Container(
+          padding: EdgeInsets.all(_screenAdapter.getAdaptivePadding(16.0)),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+          ),
+          child: Center(
+            child: Text(
+              "请点击要学习的章节",
+              style: TextStyle(
+                fontSize: _screenAdapter.getAdaptiveFontSize(16.0),
+                color: Colors.red.shade700,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      }
+
+      if (_isLoading.value) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                value: _loadingProgress.value > 0 ? _loadingProgress.value : null,
+              ),
+              SizedBox(height: _screenAdapter.getAdaptiveHeight(16.0)),
+              Text(
+                '正在加载 PDF (${(_loadingProgress.value * 100).toInt()}%)',
+                style: TextStyle(
+                  fontSize: _screenAdapter.getAdaptiveFontSize(14.0),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      return Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/note_page_bg.png'),
+                fit: BoxFit.fill,
+              ),
+            ),
+          ),
+          SfPdfViewer.file(
+            File(_localFilePath!),
+            controller: _pdfController,
+            enableTextSelection: false,
+            enableDocumentLinkAnnotation: false,
+            onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
+              debugPrint('PDF load failed: ${details.error}');
+              _initializePdf(selectedPdfUrl);
+            },
+            onPageChanged: _handlePdfPageChanged,
+            onDocumentLoaded: _onDocumentLoaded,
+            scrollDirection: PdfScrollDirection.vertical,
+            pageSpacing: 0,
+            enableDoubleTapZooming: true,
+            canShowScrollHead: true,
+          ),
+          const IgnorePointer(
+            child: WatermarkWidget(),
+          ),
+          _buildZoomControls(),
+        ],
+      );
+    });
+  }
+
+  Widget _buildZoomControls() {
+    if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned(
+      right: _screenAdapter.getAdaptivePadding(16.0),
+      bottom: _screenAdapter.getAdaptivePadding(16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.8),
+              borderRadius: BorderRadius.circular(_screenAdapter.getAdaptiveWidth(24)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                IconButton(
+                  icon: Obx(() => Icon(isFullScreen.value ? Icons.fullscreen_exit : Icons.fullscreen)),
+                  onPressed: () {
+                    if (isFullScreen.value) {
+                      isFullScreen.value = false;
+                      Get.back();
+                    } else {
+                      isFullScreen.value = true;
+                      Get.to(
+                        () => Scaffold(
+                          body: SafeArea(
+                            child: _buildPdfContent(),
+                          ),
+                        ),
+                        fullscreenDialog: true,
+                        transition: Transition.fade,
+                      );
+                    }
+                  },
+                  tooltip: isFullScreen.value ? '退出全屏' : '全屏',
+                ),
+                const Divider(height: 1),
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: _currentZoom.value < (1 + _zoomStep * _maxZoomClicks)
+                      ? () => _handleZoom(true)
+                      : null,
+                  tooltip: '放大',
+                ),
+                Obx(() => Container(
+                  padding: EdgeInsets.symmetric(
+                    vertical: _screenAdapter.getAdaptivePadding(4),
+                  ),
+                  child: Text(
+                    '${(_currentZoom.value * 100).toInt()}%',
+                    style: TextStyle(
+                      fontSize: _screenAdapter.getAdaptiveFontSize(12),
+                    ),
+                  ),
+                )),
+                IconButton(
+                  icon: const Icon(Icons.remove),
+                  onPressed: _currentZoom.value > 1.0
+                      ? () => _handleZoom(false)
+                      : null,
+                  tooltip: '缩小',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleZoom(bool zoomIn) {
+    if (!mounted) return;
+    
+    double newZoom = _currentZoom.value;
+    if (zoomIn) {
+      if (newZoom < (1 + _zoomStep * _maxZoomClicks)) {
+        newZoom += _zoomStep;
+      }
+    } else {
+      if (newZoom > 1.0) {  // 修改这里，限制最小缩放为 1.0
+        newZoom -= _zoomStep;
+      }
+    }
+    
+    // 直接更新缩放值和控制器
+    _currentZoom.value = newZoom;
+    _pdfController.zoomLevel = newZoom;
+  }
+
   void _showError(String message) {
     showDialog(
       context: context,
@@ -573,18 +564,5 @@ class _PdfPreViewState extends State<PdfPreView> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _isPdfLoaded = false;
-    _isChangingPage = false;
-    _pdfController.dispose();
-    // 清理临时文件
-    if (_localFilePath != null) {
-      final tempFile = File(_localFilePath!);
-      tempFile.delete().catchError((e) => debugPrint('Error deleting temp file: $e'));
-    }
-    super.dispose();
   }
 }
