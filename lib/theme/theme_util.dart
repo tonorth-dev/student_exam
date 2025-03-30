@@ -1,5 +1,6 @@
 import 'package:student_exam/theme/ui_theme.dart';
 import 'package:flutter/material.dart';
+import '../common/app_providers.dart';
 
 import '../component/table/table_data.dart';
 
@@ -7,48 +8,60 @@ class ThemeUtil {
   /// 圆角
   static BoxDecoration boxDecoration(
       {Color? color, double radius = 6, Color? border}) {
+    // 获取screenAdapter实例
+    final screenAdapter = AppProviders.instance.screenAdapter;
     // 圆角
     return BoxDecoration(
       color: color,
       // 边框颜色
       border: border != null ? Border.all(color: border) : null,
-      borderRadius: BorderRadius.all(Radius.circular(radius)),
+      borderRadius: BorderRadius.all(Radius.circular(screenAdapter.getAdaptiveWidth(radius))),
     );
   }
 
   /// 行高
   static SizedBox height({double? height = 12}) {
+    // 获取screenAdapter实例
+    final screenAdapter = AppProviders.instance.screenAdapter;
     return SizedBox(
-      height: height,
+      height: screenAdapter.getAdaptiveHeight(height!),
     );
   }
 
   /// 行宽
   static SizedBox width({double? width = 12}) {
+    // 获取screenAdapter实例
+    final screenAdapter = AppProviders.instance.screenAdapter;
     return SizedBox(
-      width: width,
+      width: screenAdapter.getAdaptiveWidth(width!),
     );
   }
 
   /// 水平线
   static Widget lineH({double height = 1}) {
+    // 获取screenAdapter实例
+    final screenAdapter = AppProviders.instance.screenAdapter;
     return Divider(
-      height: height,
+      height: screenAdapter.getAdaptiveHeight(height),
       color: Color(0x80ffffff),
     );
   }
 
   /// 垂直线
   static Widget lineV({double width = 1}) {
+    // 获取screenAdapter实例
+    final screenAdapter = AppProviders.instance.screenAdapter;
     return VerticalDivider(
-      width: width,
+      width: screenAdapter.getAdaptiveWidth(width),
       color: UiTheme.border(),
     );
   }
 
   static Widget lineVC({double width = 1}) {
+    // 获取screenAdapter实例
+    final screenAdapter = AppProviders.instance.screenAdapter;
     return VerticalDivider(
-      width: width,
+      width: screenAdapter.getAdaptiveWidth(width),
       color: UiTheme.border(),
     );
   }

@@ -60,8 +60,8 @@ class ScreenAdapter {
     // 筛选出适合当前屏幕尺寸的选项 - 修改判断逻辑，不再要求严格小于
     final availableSizes = [small, medium, large]
         .where((size) => 
-            size.width <= screenSize.width && 
-            size.height <= screenSize.height)
+            size.width < screenSize.width &&
+            size.height < screenSize.height)
         .toList();
     
     if (availableSizes.isEmpty) {
@@ -79,13 +79,15 @@ class ScreenAdapter {
 
   // 根据基准尺寸计算实际尺寸
   double getAdaptiveWidth(double width) {
-    return width * currentSize.value.width / medium.width;
+    var size = width * currentSize.value.width / medium.width;
+    debugPrint("getAdaptiveHeight: $width, ${currentSize.value.width}, $size");
+    return  size;
   }
 
   double getAdaptiveHeight(double height) {
-    print("getAdaptiveHeight: $height, ${currentSize.value.height}, ${medium.height}");
-    debugPrint("getAdaptiveHeight: $height, ${currentSize.value.height}, ${medium.height}");
-    return height * currentSize.value.height / medium.height;
+    var size = height * currentSize.value.height / medium.height;
+    debugPrint("getAdaptiveHeight: $height, ${currentSize.value.height}, $size");
+    return size;
   }
 
   // 获取字体大小

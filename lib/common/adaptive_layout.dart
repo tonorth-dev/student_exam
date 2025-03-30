@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'screen_adapter.dart';
-import '../main.dart' show screenAdapter;
+import 'app_providers.dart';
 
 class AdaptiveLayout extends StatelessWidget {
   final Widget child;
@@ -25,6 +24,8 @@ class AdaptiveLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return Obx(() {
       return Container(
         width: width != null ? screenAdapter.getAdaptiveWidth(width!) : null,
@@ -71,6 +72,8 @@ class AdaptiveText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return Obx(() {
       final adaptedStyle = style?.copyWith(
         fontSize: style?.fontSize != null
@@ -103,6 +106,8 @@ class AdaptiveIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return Obx(() {
       return Icon(
         icon,
@@ -135,6 +140,8 @@ class AdaptiveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return Obx(() {
       return SizedBox(
         width: width != null ? screenAdapter.getAdaptiveWidth(width!) : null,
@@ -163,6 +170,6 @@ class AdaptiveButton extends StatelessWidget {
 // 自适应数据表格列宽
 class AdaptiveTableColumn {
   static double getWidth(double baseWidth) {
-    return screenAdapter.getAdaptiveWidth(baseWidth);
+    return AppProviders.instance.screenAdapter.getAdaptiveWidth(baseWidth);
   }
 } 

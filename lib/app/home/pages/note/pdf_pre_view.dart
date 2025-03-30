@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;  // 引入 path 包
+import 'package:student_exam/common/app_providers.dart';
 
 import '../../../../common/encr_util.dart';
 import '../../../../component/table/ex.dart';
@@ -226,22 +227,46 @@ class _PdfPreViewState extends State<PdfPreView> {
   }
 
   void _showError(String message) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('错误'),
+        title: Text(
+          '错误',
+          style: TextStyle(
+            fontSize: screenAdapter.getAdaptiveFontSize(18),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: SelectableText.rich(
           TextSpan(
             text: message,
-            style: const TextStyle(color: Colors.red),
+            style: TextStyle(
+              color: Colors.red, 
+              fontSize: screenAdapter.getAdaptiveFontSize(14),
+            ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('确定'),
+            child: Text(
+              '确定',
+              style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
+            ),
           ),
         ],
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: screenAdapter.getAdaptivePadding(24),
+          vertical: screenAdapter.getAdaptivePadding(16),
+        ),
+        titlePadding: EdgeInsets.only(
+          left: screenAdapter.getAdaptivePadding(24),
+          right: screenAdapter.getAdaptivePadding(24),
+          top: screenAdapter.getAdaptivePadding(16),
+        ),
+        actionsPadding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8)),
       ),
     );
   }
@@ -266,25 +291,27 @@ class _PdfPreViewState extends State<PdfPreView> {
   }
 
   Widget _buildZoomControls() {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
       return const SizedBox.shrink();
     }
 
     return Positioned(
-      right: 16,
-      bottom: 16,
+      right: screenAdapter.getAdaptivePadding(16),
+      bottom: screenAdapter.getAdaptivePadding(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(24)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+                  blurRadius: screenAdapter.getAdaptivePadding(4),
+                  offset: Offset(0, screenAdapter.getAdaptiveHeight(2)),
                 ),
               ],
             ),
@@ -292,7 +319,10 @@ class _PdfPreViewState extends State<PdfPreView> {
               children: [
                 // 全屏按钮
                 IconButton(
-                  icon: Obx(() => Icon(isFullScreen.value ? Icons.fullscreen_exit : Icons.fullscreen)),
+                  icon: Obx(() => Icon(
+                    isFullScreen.value ? Icons.fullscreen_exit : Icons.fullscreen,
+                    size: screenAdapter.getAdaptiveIconSize(24),
+                  )),
                   onPressed: () {
                     if (isFullScreen.value) {
                       isFullScreen.value = false;
@@ -304,11 +334,11 @@ class _PdfPreViewState extends State<PdfPreView> {
                           children: [
                             Row(
                               children: [
-                                const SizedBox(width: 25),
+                                SizedBox(width: screenAdapter.getAdaptiveWidth(25)),
                                 Expanded(
                                   child: Column(
                                     children: [
-                                      const SizedBox(height: 8),
+                                      SizedBox(height: screenAdapter.getAdaptiveHeight(8)),
                                       ThemeUtil.lineH(),
                                       ThemeUtil.height(),
                                       Expanded(
@@ -326,7 +356,7 @@ class _PdfPreViewState extends State<PdfPreView> {
                                           ],
                                         ),
                                       ),
-                                      const SizedBox(height: 10),
+                                      SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
                                     ],
                                   ),
                                 ),
@@ -343,28 +373,34 @@ class _PdfPreViewState extends State<PdfPreView> {
                     }
                   },
                   tooltip: isFullScreen.value ? '退出全屏' : '全屏',
+                  iconSize: screenAdapter.getAdaptiveIconSize(24),
+                  padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8)),
                 ),
-                const Divider(height: 1),
+                Divider(height: screenAdapter.getAdaptiveHeight(1)),
                 IconButton(
-                  icon: const Icon(Icons.add),
+                  icon: Icon(Icons.add, size: screenAdapter.getAdaptiveIconSize(24)),
                   onPressed: _currentZoom.value < (1 + _zoomStep * _maxZoomClicks)
                       ? () => _handleZoom(true)
                       : null,
                   tooltip: '放大',
+                  iconSize: screenAdapter.getAdaptiveIconSize(24),
+                  padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8)),
                 ),
                 Obx(() => Container(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  padding: EdgeInsets.symmetric(vertical: screenAdapter.getAdaptivePadding(4)),
                   child: Text(
                     '${(_currentZoom.value * 100).toInt()}%',
-                    style: const TextStyle(fontSize: 12),
+                    style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(12)),
                   ),
                 )),
                 IconButton(
-                  icon: const Icon(Icons.remove),
+                  icon: Icon(Icons.remove, size: screenAdapter.getAdaptiveIconSize(24)),
                   onPressed: _currentZoom.value > 1.0
                       ? () => _handleZoom(false)
                       : null,
                   tooltip: '缩小',
+                  iconSize: screenAdapter.getAdaptiveIconSize(24),
+                  padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8)),
                 ),
               ],
             ),
@@ -376,19 +412,21 @@ class _PdfPreViewState extends State<PdfPreView> {
 
   @override
   Widget build(BuildContext context) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return Row(
       children: [
-        const SizedBox(width: 25),
+        SizedBox(width: screenAdapter.getAdaptiveWidth(25)),
         Expanded(
           child: Column(
             children: [
-              const SizedBox(height: 8),
+              SizedBox(height: screenAdapter.getAdaptiveHeight(8)),
               ThemeUtil.lineH(),
               ThemeUtil.height(),
               Expanded(
                 child: _buildPdfContent(),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
             ],
           ),
         ),
@@ -397,12 +435,14 @@ class _PdfPreViewState extends State<PdfPreView> {
   }
 
   Widget _buildPdfContent() {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return Obx(() {
       final selectedPdfUrl = pdfLogic.selectedPdfUrl.value;
 
       if (selectedPdfUrl == null || selectedPdfUrl.isEmpty) {
         return Container(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
           decoration: BoxDecoration(
             color: Colors.grey.shade100,
           ),
@@ -410,7 +450,7 @@ class _PdfPreViewState extends State<PdfPreView> {
             child: Text(
               "请选择一个文件",
               style: TextStyle(
-                fontSize: 16.0,
+                fontSize: screenAdapter.getAdaptiveFontSize(16.0),
                 color: Colors.blue.shade700,
                 fontWeight: FontWeight.bold,
               ),
@@ -427,10 +467,10 @@ class _PdfPreViewState extends State<PdfPreView> {
               CircularProgressIndicator(
                 value: _loadingProgress.value > 0 ? _loadingProgress.value : null,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: screenAdapter.getAdaptiveHeight(16)),
               Text(
                 '正在加载 PDF (${(_loadingProgress.value * 100).toInt()}%)',
-                style: const TextStyle(fontSize: 14),
+                style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
               ),
             ],
           ),

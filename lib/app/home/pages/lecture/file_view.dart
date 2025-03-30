@@ -6,6 +6,7 @@ import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../../component/table/ex.dart';
 import '../../../../theme/theme_util.dart';
+import '../../../../common/app_providers.dart';
 import 'logic.dart';
 
 class LectureFileView extends StatefulWidget {
@@ -80,6 +81,9 @@ class _LectureFileViewState extends State<LectureFileView> {
 
   @override
   Widget build(BuildContext context) {
+    // 获取 screenAdapter 实例
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return Column(
       children: [
         ThemeUtil.height(),
@@ -97,14 +101,17 @@ class _LectureFileViewState extends State<LectureFileView> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    // 获取 screenAdapter 实例
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return Container(
-      padding: EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
       decoration: BoxDecoration(color: Colors.grey.shade50),
       child: Center(
         child: Text(
           "请点击讲义进行学习",
           style: TextStyle(
-            fontSize: 16.0,
+            fontSize: screenAdapter.getAdaptiveFontSize(16.0),
             color: Colors.red.shade700,
             fontWeight: FontWeight.bold,
           ),
@@ -125,13 +132,16 @@ class _LectureFileViewState extends State<LectureFileView> {
   }
 
   Widget _buildTreeNode(BuildContext context, TreeEntry<DirectoryNode> entry) {
+    // 获取 screenAdapter 实例
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     final DirectoryNode dirNode = entry.node;
     final bool isFileNode = dirNode.filePath != null && dirNode.filePath!.isNotEmpty;
     final bool isLeafNode = dirNode.children.isEmpty;
     final bool isExpanded = entry.isExpanded;
 
     // 根据节点层级设置缩进
-    final double indentLevel = entry.level * 24.0;
+    final double indentLevel = entry.level * screenAdapter.getAdaptiveWidth(24.0);
 
     return Obx(() {
       final bool isSelected = widget.logic.selectedNodeId.value == dirNode.id;
@@ -148,21 +158,25 @@ class _LectureFileViewState extends State<LectureFileView> {
         child: Container(
           color: isSelected ? Colors.red.withOpacity(0.1) : Colors.transparent,
           child: Padding(
-            padding: EdgeInsets.only(left: indentLevel, top: 8.0, bottom: 8.0),
+            padding: EdgeInsets.only(
+              left: indentLevel, 
+              top: screenAdapter.getAdaptivePadding(8.0), 
+              bottom: screenAdapter.getAdaptivePadding(8.0)
+            ),
             child: Row(
               children: [
                 Container(
-                  width: 24,
+                  width: screenAdapter.getAdaptiveWidth(24),
                   alignment: Alignment.centerLeft,
                   child: (isFileNode && isLeafNode)
                       ? Icon(
                           Icons.insert_drive_file,
-                          size: 16,
+                          size: screenAdapter.getAdaptiveIconSize(16),
                           color: Colors.red.shade400,
                         )
                       : Icon(
                           isExpanded ? Icons.remove : Icons.add,
-                          size: 16,
+                          size: screenAdapter.getAdaptiveIconSize(16),
                           color: Colors.red.shade300,
                         ),
                 ),
@@ -170,13 +184,13 @@ class _LectureFileViewState extends State<LectureFileView> {
                   child: Text(
                     dirNode.name,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: screenAdapter.getAdaptiveFontSize(14),
                       color: isSelected ? Colors.red.shade700 : Colors.black87,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                 ),
-                SizedBox(width: 16),
+                SizedBox(width: screenAdapter.getAdaptiveWidth(16)),
               ],
             ),
           ),

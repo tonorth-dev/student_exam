@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:student_exam/component/pagination/view.dart';
 import 'package:student_exam/component/widget.dart';
+import 'package:student_exam/common/app_providers.dart';
 import 'logic.dart';
 import 'package:student_exam/theme/theme_util.dart';
 import 'package:provider/provider.dart';
@@ -17,27 +18,29 @@ class NoteTableView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return ChangeNotifierProvider<ButtonState>(
       create: (_) => ButtonState(),
       child: Column(
         children: [
-          SizedBox(height: 130),
+          SizedBox(height: screenAdapter.getAdaptiveHeight(130)),
           Row(
             children: [
-              SizedBox(width: 10),
+              SizedBox(width: screenAdapter.getAdaptiveWidth(10)),
               SearchBoxWidget(
                 key: Key('keywords'),
                 hint: '输入题本名称',
-                width: 170,
+                width: screenAdapter.getAdaptiveWidth(170),
                 onTextChanged: (String value) {
                   logic.searchText.value = value;
                 },
                 searchText: logic.searchText,
               ),
-              SizedBox(width: 10),
+              SizedBox(width: screenAdapter.getAdaptiveWidth(10)),
               SearchButtonWidget(
-                width: 55,
-                height: 30,
+                width: screenAdapter.getAdaptiveWidth(55),
+                height: screenAdapter.getAdaptiveHeight(30),
                 key: Key('search'),
                 onPressed: () {
                   logic.selectedBookIds.clear();
@@ -55,26 +58,26 @@ class NoteTableView extends StatelessWidget {
                 : SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: SizedBox(
-                      width: 600,
+                      width: screenAdapter.getAdaptiveWidth(600),
                       child: SfDataGrid(
                         source: NoteDataSource(logic: logic, context: context),
                         headerGridLinesVisibility: GridLinesVisibility.none,
                         gridLinesVisibility: GridLinesVisibility.none,
                         columnWidthMode: ColumnWidthMode.fill,
-                        headerRowHeight: 40,
-                        rowHeight: 38,
+                        headerRowHeight: screenAdapter.getAdaptiveHeight(40),
+                        rowHeight: screenAdapter.getAdaptiveHeight(38),
                         columns: logic.columns.map((column) => GridColumn(
                           columnName: column.key,
-                          width: column.width,
+                          width: screenAdapter.getAdaptiveWidth(column.width),
                           label: Container(
                             color: Color(0xFFF3F4F8),
                             alignment: Alignment.center,
-                            padding: const EdgeInsets.all(8.0),
+                            padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8.0)),
                             child: Text(
                               column.title,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.black87,
-                                fontSize: 14,
+                                fontSize: screenAdapter.getAdaptiveFontSize(14),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -86,7 +89,7 @@ class NoteTableView extends StatelessWidget {
           ),
           ThemeUtil.height(height: 8),
           Obx(() => Padding(
-                padding: EdgeInsets.only(right: 50),
+                padding: EdgeInsets.only(right: screenAdapter.getAdaptivePadding(50)),
                 child: Column(
                   children: [
                     PaginationPage(
@@ -112,6 +115,7 @@ class NoteDataSource extends DataGridSource {
   final BuildContext context;
   List<DataGridRow> _rows = [];
   int? _selectedRowIndex;
+  final screenAdapter = AppProviders.instance.screenAdapter;
 
   NoteDataSource({required this.logic, required this.context}) {
     _buildRows();
@@ -159,10 +163,13 @@ class NoteDataSource extends DataGridSource {
             cursor: SystemMouseCursors.click,
             child: Container(
               alignment: Alignment.center,
-              padding: const EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8.0)),
               child: Text(
                 value,
-                style: const TextStyle(color: Colors.black87, fontSize: 14),
+                style: TextStyle(
+                  color: Colors.black87, 
+                  fontSize: screenAdapter.getAdaptiveFontSize(14),
+                ),
               ),
             ),
           ),

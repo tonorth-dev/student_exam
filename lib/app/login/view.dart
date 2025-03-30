@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../theme/ui_theme.dart';
+import '../../common/app_providers.dart';
 import 'logic.dart';
 
 class LoginPage extends StatefulWidget {
@@ -24,28 +25,30 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return Scaffold(
       body: Center(
         child: SizedBox(
-          width: 300,
+          width: screenAdapter.getAdaptiveWidth(300),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
+              Text(
                 '红师教育学生端',
-                style: TextStyle(fontSize: 32),
+                style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(32)),
               ),
-              SizedBox(height: 18),
+              SizedBox(height: screenAdapter.getAdaptiveHeight(18)),
               textInput(logic.passwordText,
                   hintText: '请输入密码', labelText: '输入密码', password: true),
-              SizedBox(height: 10),
+              SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
               Row(
                 children: [
                   Expanded(
                     child: textInput(logic.captchaText,
                         hintText: '请输入验证码', labelText: '验证码'),
                   ),
-                  SizedBox(width: 10),
+                  SizedBox(width: screenAdapter.getAdaptiveWidth(10)),
                   InkWell(
                     onTap: logic.fetchCaptcha,
                     child: Obx(() {
@@ -54,45 +57,57 @@ class _LoginPageState extends State<LoginPage> {
                         if (logic.captchaImageUrl.value.startsWith('data:image/png;base64,')) {
                           return Image.memory(
                             logic.base64ToImage(logic.captchaImageUrl.value),
-                            width: 100,
-                            height: 40,
+                            width: screenAdapter.getAdaptiveWidth(100),
+                            height: screenAdapter.getAdaptiveHeight(40),
                             errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.error);
+                              return Icon(
+                                Icons.error,
+                                size: screenAdapter.getAdaptiveIconSize(24),
+                              );
                             },
                           );
                         } else {
                           // 否则，尝试使用 Image.network 加载图片
                           return Image.network(
                             logic.captchaImageUrl.value,
-                            width: 100,
-                            height: 40,
+                            width: screenAdapter.getAdaptiveWidth(100),
+                            height: screenAdapter.getAdaptiveHeight(40),
                             errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.error);
+                              return Icon(
+                                Icons.error,
+                                size: screenAdapter.getAdaptiveIconSize(24),
+                              );
                             },
                           );
                         }
                       } else {
-                        return const Icon(Icons.error);
+                        return Icon(
+                          Icons.error,
+                          size: screenAdapter.getAdaptiveIconSize(24),
+                        );
                       }
                     }),
                   )
                 ],
               ),
-              SizedBox(height: 20),
+              SizedBox(height: screenAdapter.getAdaptiveHeight(20)),
               InkWell(
                 onTap: () {
                   logic.login();
                 },
                 child: Container(
                   width: double.infinity,
-                  height: 50,
+                  height: screenAdapter.getAdaptiveHeight(50),
                   decoration: BoxDecoration(
                       color: Theme.of(context).primaryColor,
-                      borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(8))),
                   child: Center(
                       child: Text(
                         '登入',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
+                        style: TextStyle(
+                          color: Colors.white, 
+                          fontSize: screenAdapter.getAdaptiveFontSize(16)
+                        ),
                       )),
                 ),
               )
@@ -105,18 +120,30 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget textInput(TextEditingController text,
       {String? hintText, String? labelText, bool password = false}) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return TextField(
       controller: text,
       obscureText: password,
+      style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
       decoration: InputDecoration(
-        border: const OutlineInputBorder(),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(4)),
+        ),
         labelText: labelText,
+        labelStyle: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
         hintText: hintText,
+        hintStyle: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: screenAdapter.getAdaptivePadding(12),
+          vertical: screenAdapter.getAdaptivePadding(16),
+        ),
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(
-            width: 2,
+            width: screenAdapter.getAdaptiveWidth(2),
             color: UiTheme.primary(),
           ),
+          borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(4)),
         ),
       ),
     );

@@ -5,6 +5,7 @@ import 'package:student_exam/theme/theme_util.dart';
 import 'package:student_exam/theme/ui_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:student_exam/common/app_providers.dart';
 
 import 'logic.dart';
 
@@ -15,10 +16,15 @@ class SidebarPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return SizedBox(
-        width: 50,
+        width: screenAdapter.getAdaptiveWidth(50),
         child: ConstrainedBox(
-          constraints: BoxConstraints(minWidth:50, maxWidth: 50),
+          constraints: BoxConstraints(
+            minWidth: screenAdapter.getAdaptiveWidth(50), 
+            maxWidth: screenAdapter.getAdaptiveWidth(50)
+          ),
           child: _default(),
         ));
   }
@@ -34,9 +40,16 @@ class SidebarPage extends StatelessWidget {
     );
   }
 
-  static const double leftSpace = 12;
+  // 左侧间距转为动态值
+  static double getLeftSpace() {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    return screenAdapter.getAdaptivePadding(12);
+  }
 
-  Widget _text(SidebarTree item, {double left = leftSpace}) {
+  Widget _text(SidebarTree item, {double? left}) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    final leftPadding = left ?? getLeftSpace();
+    
     return MouseRegion(
       // 鼠标悬停
       onEnter: (event) {
@@ -46,9 +59,12 @@ class SidebarPage extends StatelessWidget {
         logic.animName.value = "";
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: EdgeInsets.symmetric(
+          horizontal: screenAdapter.getAdaptivePadding(8), 
+          vertical: screenAdapter.getAdaptivePadding(4)
+        ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(12)),
           onTap: () {
             if (item.children.isNotEmpty) {
               item.isExpanded.value = !item.isExpanded.value;
@@ -65,12 +81,13 @@ class SidebarPage extends StatelessWidget {
                 width: double.infinity,
                 decoration: ThemeUtil.boxDecoration(
                     color: selected ? UiTheme.primary() : null, radius: 12),
-                height: 50,
+                height: screenAdapter.getAdaptiveHeight(50),
                 child: Row(
                   children: [
-                    SizedBox(width: left),
+                    SizedBox(width: leftPadding),
                     Icon(
                       item.icon,
+                      size: screenAdapter.getAdaptiveIconSize(24),
                       color: selected
                           ? UiTheme.getOnPrimary(selected)
                           : item.color,
@@ -78,7 +95,10 @@ class SidebarPage extends StatelessWidget {
                     ThemeUtil.width(),
                     Text(
                       item.name,
-                      style: TextStyle(color: UiTheme.getOnPrimary(selected)),
+                      style: TextStyle(
+                        color: UiTheme.getOnPrimary(selected),
+                        fontSize: screenAdapter.getAdaptiveFontSize(14),
+                      ),
                     ),
                     const Spacer(),
                     // 下拉箭头
@@ -87,7 +107,7 @@ class SidebarPage extends StatelessWidget {
                       child: Icon(
                         Icons.arrow_drop_up,
                         color: UiTheme.getTextColor(selected),
-                        size: 28,
+                        size: screenAdapter.getAdaptiveIconSize(28),
                       ).toRotate(item.isExpanded.value),
                     ),
                     ThemeUtil.width(),
@@ -99,19 +119,21 @@ class SidebarPage extends StatelessWidget {
     );
   }
 
-  Widget _tree(SidebarTree item, {double left = leftSpace}) {
+  Widget _tree(SidebarTree item, {double? left}) {
+    final leftPadding = left ?? getLeftSpace();
+    
     return Column(
       children: [
-        _text(item, left: left),
+        _text(item, left: leftPadding),
         Obx(() {
           return Visibility(
               visible: item.isExpanded.value,
               child: Column(
                 children: item.children.toWidgets((e) {
                   if (e.children.isNotEmpty) {
-                    return _tree(e, left: left + leftSpace);
+                    return _tree(e, left: leftPadding + getLeftSpace());
                   }
-                  return _text(e, left: left + leftSpace);
+                  return _text(e, left: leftPadding + getLeftSpace());
                 }),
               ));
         })

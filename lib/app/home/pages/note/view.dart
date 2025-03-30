@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:student_exam/app/home/pages/note/logic.dart';
+import 'package:student_exam/common/app_providers.dart';
 
 import '../../sidebar/logic.dart';
 import 'note_view.dart';
@@ -13,6 +14,8 @@ class NotePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return Container(
         decoration: BoxDecoration(
           image: DecorationImage(
@@ -22,18 +25,18 @@ class NotePage extends StatelessWidget {
         ),
     child: Row(
       children: [
-        SizedBox(width: 8),
+        SizedBox(width: screenAdapter.getAdaptiveWidth(8)),
         Expanded(
           flex: 4,
           child: Container(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
             child: NoteView(),
           ),
         ),
         Expanded(
           flex: 5,
           child: Container(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
             child: PdfPreView(
                 key: const Key("pdf_review"), title: "文件预览"),
           ),
@@ -69,25 +72,41 @@ class NoteView extends StatelessWidget {
   }
 
   Widget _buildSearchBar() {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16)),
       child: Row(
         children: [
           Expanded(
             child: TextField(
               controller: logic.searchController,
-              decoration: const InputDecoration(
+              style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
+              decoration: InputDecoration(
                 hintText: '搜索题本',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: Icon(Icons.search, size: screenAdapter.getAdaptiveIconSize(24)),
                 border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: screenAdapter.getAdaptivePadding(8),
+                  horizontal: screenAdapter.getAdaptivePadding(12),
+                ),
               ),
               onChanged: logic.onSearchChanged,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: screenAdapter.getAdaptiveWidth(16)),
           ElevatedButton(
             onPressed: logic.onSearch,
-            child: const Text('搜索'),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(
+                vertical: screenAdapter.getAdaptivePadding(10),
+                horizontal: screenAdapter.getAdaptivePadding(16),
+              ),
+            ),
+            child: Text(
+              '搜索', 
+              style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
+            ),
           ),
         ],
       ),
@@ -95,6 +114,8 @@ class NoteView extends StatelessWidget {
   }
 
   Widget _buildDataTable() {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return Obx(() {
       final books = logic.list;
       
@@ -102,23 +123,34 @@ class NoteView extends StatelessWidget {
         child: DataTable(
           columnSpacing: 0,
           showCheckboxColumn: false,
-          columns: const [
+          dataRowHeight: screenAdapter.getAdaptiveHeight(48),
+          headingRowHeight: screenAdapter.getAdaptiveHeight(56),
+          columns: [
             DataColumn(
               label: SizedBox(
-                width: 300,
-                child: Text('题本名称'),
+                width: screenAdapter.getAdaptiveWidth(300),
+                child: Text(
+                  '题本名称',
+                  style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
+                ),
               ),
             ),
             DataColumn(
               label: SizedBox(
-                width: 200,
-                child: Text('专业'),
+                width: screenAdapter.getAdaptiveWidth(200),
+                child: Text(
+                  '专业',
+                  style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
+                ),
               ),
             ),
             DataColumn(
               label: SizedBox(
-                width: 100,
-                child: Text('题目数量'),
+                width: screenAdapter.getAdaptiveWidth(100),
+                child: Text(
+                  '题目数量',
+                  style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
+                ),
               ),
             ),
           ],
@@ -147,13 +179,15 @@ class NoteView extends StatelessWidget {
   }
 
   DataRow _buildBookRow(Map<String, dynamic> book, {required bool isChild}) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
     final isSelected = logic.selectedBookIds.contains(book['id'].toString());
+    
     return DataRow(
       color: isSelected ? MaterialStateProperty.all(const Color(0xFFE0F7FA)) : null,
       cells: [
         DataCell(
           SizedBox(
-            width: 300,
+            width: screenAdapter.getAdaptiveWidth(300),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -163,20 +197,20 @@ class NoteView extends StatelessWidget {
                     child: InkWell(
                       onTap: () => logic.toggleExpand(book['id']),
                       child: Container(
-                        width: 40,
-                        height: 40,
+                        width: screenAdapter.getAdaptiveWidth(40),
+                        height: screenAdapter.getAdaptiveHeight(40),
                         alignment: Alignment.center,
                         child: Text(
                           logic.expandedBookIds.contains(book['id'].toString()) ? '-' : '+',
-                          style: const TextStyle(
-                            fontSize: 24,
+                          style: TextStyle(
+                            fontSize: screenAdapter.getAdaptiveFontSize(24),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                     ),
                   ),
-                if (isChild) const SizedBox(width: 40),
+                if (isChild) SizedBox(width: screenAdapter.getAdaptiveWidth(40)),
                 Expanded(
                   child: Material(
                     color: Colors.transparent,
@@ -186,9 +220,10 @@ class NoteView extends StatelessWidget {
                         logic.updatePdfUrl(book['teacher_file_path'] ?? '');
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        padding: EdgeInsets.symmetric(vertical: screenAdapter.getAdaptivePadding(8)),
                         child: Text(
                           book['name'] ?? '',
+                          style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -208,9 +243,10 @@ class NoteView extends StatelessWidget {
                 logic.updatePdfUrl(book['teacher_file_path'] ?? '');
               },
               child: SizedBox(
-                width: 200,
+                width: screenAdapter.getAdaptiveWidth(200),
                 child: Text(
                   book['major_name'] ?? '',
+                  style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -226,8 +262,11 @@ class NoteView extends StatelessWidget {
                 logic.updatePdfUrl(book['teacher_file_path'] ?? '');
               },
               child: SizedBox(
-                width: 100,
-                child: Text(book['questions_number']?.toString() ?? '0'),
+                width: screenAdapter.getAdaptiveWidth(100),
+                child: Text(
+                  book['questions_number']?.toString() ?? '0',
+                  style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
+                ),
               ),
             ),
           ),

@@ -8,6 +8,7 @@ import '../home/view.dart';  // 假设主页面在这个路径
 import '../login/view.dart';
 import '../../api/user_api.dart';
 import 'package:bot_toast/bot_toast.dart';
+import '../../common/app_providers.dart';
 
 class LaunchPage extends StatefulWidget {
   const LaunchPage({Key? key}) : super(key: key);
@@ -81,16 +82,29 @@ class _LaunchPageState extends State<LaunchPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
+    return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            FlutterLogo(size: 100),
-            SizedBox(height: 24),
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('正在启动...', style: TextStyle(fontSize: 16)),
+            FlutterLogo(size: screenAdapter.getAdaptiveWidth(100)),
+            SizedBox(height: screenAdapter.getAdaptiveHeight(24)),
+            SizedBox(
+              width: screenAdapter.getAdaptiveWidth(24),
+              height: screenAdapter.getAdaptiveHeight(24),
+              child: CircularProgressIndicator(
+                strokeWidth: screenAdapter.getAdaptiveWidth(2),
+              ),
+            ),
+            SizedBox(height: screenAdapter.getAdaptiveHeight(16)),
+            Text(
+              '正在启动...', 
+              style: TextStyle(
+                fontSize: screenAdapter.getAdaptiveFontSize(16)
+              )
+            ),
           ],
         ),
       ),

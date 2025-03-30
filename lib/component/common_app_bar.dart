@@ -1,55 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:student_exam/common/screen_adapter.dart';
-import 'package:window_manager/window_manager.dart';
-import '../main.dart' show screenAdapter;
+import 'package:flutter/services.dart';
+import '../common/app_providers.dart';
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
+  final String titleStr;
   final List<Widget>? actions;
-  final Widget? flexibleSpace;
-  final double? toolbarHeight;
-  final Color? backgroundColor;
-  final bool automaticallyImplyLeading;
   final Widget? leading;
-
-  CommonAppBar({
+  final bool showBackButton;
+  final bool centerTitle;
+  final SystemUiOverlayStyle? systemOverlayStyle;
+  final Color backgroundColor;
+  final VoidCallback? onBackPressed;
+  
+  const CommonAppBar({
     super.key,
-    required this.title,
+    this.titleStr = '',
     this.actions,
-    this.flexibleSpace,
-    this.toolbarHeight,
-    this.backgroundColor,
-    this.automaticallyImplyLeading = true,
     this.leading,
+    this.backgroundColor = Colors.white,
+    this.showBackButton = true,
+    this.centerTitle = true,
+    this.systemOverlayStyle,
+    this.onBackPressed,
   });
-
-  final _screenAdapter = screenAdapter;
 
   @override
   Widget build(BuildContext context) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return AppBar(
-      automaticallyImplyLeading: automaticallyImplyLeading,
-      leading: leading ?? (automaticallyImplyLeading ? DragToMoveArea(
-        child: Icon(
-          Icons.menu,
-          size: _screenAdapter.getAdaptiveIconSize(24),
-        ),
-      ) : null),
+      systemOverlayStyle: systemOverlayStyle,
+      backgroundColor: backgroundColor,
+      centerTitle: centerTitle,
       title: Text(
-        title,
+        titleStr,
         style: TextStyle(
-          fontSize: _screenAdapter.getAdaptiveFontSize(18),
+          fontSize: screenAdapter.getAdaptiveFontSize(18),
+          color: Colors.black87,
+          fontWeight: FontWeight.w500,
         ),
       ),
+      elevation: 0,
+      leading: !showBackButton
+          ? leading
+          : IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios,
+                size: screenAdapter.getAdaptiveIconSize(24),
+                color: Colors.black,
+              ),
+              onPressed: onBackPressed ??
+                  () {
+                    Navigator.pop(context);
+                  },
+            ),
       actions: actions,
-      flexibleSpace: flexibleSpace,
-      toolbarHeight: toolbarHeight ?? _screenAdapter.getAdaptiveHeight(80),
-      backgroundColor: backgroundColor,
     );
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(
-        toolbarHeight ?? _screenAdapter.getAdaptiveHeight(80),
-      );
+  Size get preferredSize {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    return Size.fromHeight(screenAdapter.getAdaptiveHeight(56));
+  }
 } 

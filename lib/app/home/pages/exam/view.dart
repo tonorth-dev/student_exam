@@ -6,6 +6,7 @@ import 'package:student_exam/ex/ex_hint.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import '../../../../component/lottery.dart';
 import '../../../../theme/theme_util.dart';
+import '../../../../common/app_providers.dart';
 import '../../head/logic.dart';
 import '../../sidebar/logic.dart';
 import 'countdown_logic.dart';
@@ -35,6 +36,9 @@ class _ExamPageState extends State<ExamPage> {
   final wsLogic = Get.put(WSLogic());
   final examLogic = Get.put(ExamLogic());
   bool _isLoading = false;
+  
+  // 从 AppProviders 获取 screenAdapter
+  final screenAdapter = AppProviders.instance.screenAdapter;
 
   @override
   void initState() {
@@ -70,7 +74,7 @@ class _ExamPageState extends State<ExamPage> {
 
   PreferredSizeWidget _buildAppBar() {
     return PreferredSize(
-      preferredSize: const Size.fromHeight(80),
+      preferredSize: Size.fromHeight(screenAdapter.getAdaptiveHeight(80)),
       child: AppBar(
         title: const Text(''),
         centerTitle: true,
@@ -83,17 +87,17 @@ class _ExamPageState extends State<ExamPage> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: EdgeInsets.only(right: screenAdapter.getAdaptivePadding(16.0)),
             child: InkWell(
-              borderRadius: BorderRadius.circular(32),
+              borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(32)),
               onTap: () {
                 headerLogic.clickHeadImage();
               },
               child: ClipOval(
                 child: Image.asset(
                   "assets/images/cat.jpeg",
-                  height: 42,
-                  width: 42,
+                  height: screenAdapter.getAdaptiveHeight(42),
+                  width: screenAdapter.getAdaptiveWidth(42),
                 ),
               ),
             ),
@@ -118,14 +122,36 @@ class _ExamPageState extends State<ExamPage> {
                   ),
                 ),
               ),
-              width: 1440,
-              height: 702,
+              width: screenAdapter.getAdaptiveWidth(1440),
+              height: screenAdapter.getAdaptiveHeight(702),
               clipBehavior: Clip.antiAlias,
-              child: Stack(
-                children: [
-                  _buildMainContent(),
-                  _buildInfoPanel(),
-                ],
+              child: Padding(
+                padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 76, // 约76%的空间给主内容区
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: screenAdapter.getAdaptivePadding(100.0),
+                          left: screenAdapter.getAdaptivePadding(15.76),
+                        ),
+                        child: _buildMainContent(),
+                      ),
+                    ),
+                    SizedBox(width: screenAdapter.getAdaptiveWidth(32)),
+                    Expanded(
+                      flex: 24, // 约24%的空间给信息面板
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: screenAdapter.getAdaptivePadding(123.0),
+                        ),
+                        child: _buildInfoPanel(),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             )),
       ],
@@ -133,36 +159,30 @@ class _ExamPageState extends State<ExamPage> {
   }
 
   Widget _buildMainContent() {
-    return Positioned(
-      left: 31.76,
-      top: 116,
-      child: Container(
-        width: 1050,
-        height: 590,
-        decoration: ShapeDecoration(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              bottomLeft: Radius.circular(20),
-            ),
+    return Container(
+      decoration: ShapeDecoration(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(screenAdapter.getAdaptiveWidth(20)),
+            bottomLeft: Radius.circular(screenAdapter.getAdaptiveWidth(20)),
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            _buildWaitingRoom(),
-          ],
-        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Expanded(child: _buildWaitingRoom()),
+        ],
       ),
     );
   }
 
   Widget _buildWaitingRoom() {
     if (wsLogic.unitsList.value.isNotEmpty) {
-      return Padding(
-        padding: EdgeInsets.only(top: 135.22),
-        child: Center(
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.only(top: screenAdapter.getAdaptiveHeight(135.22)),
           child: SimpleRoulette(
             options: wsLogic.unitsList.value.map((unit) {
               return {'id': unit['id'], 'name': unit['name']};
@@ -183,10 +203,15 @@ class _ExamPageState extends State<ExamPage> {
       );
     } else if (examLogic.questions.isNotEmpty) {
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        padding: EdgeInsets.symmetric(
+          horizontal: screenAdapter.getAdaptivePadding(16.0), 
+          vertical: screenAdapter.getAdaptivePadding(8.0)
+        ),
         child: ConstrainedBox(
           // 确保SuperListView有一个明确的最大高度
-          constraints: BoxConstraints(maxHeight: 480), // 根据您的设计调整这个值
+          constraints: BoxConstraints(
+            maxHeight: screenAdapter.getAdaptiveHeight(480)
+          ),
           child: SuperListView.builder(
             listController: examLogic.listController,
             controller: examLogic.scrollController,
@@ -201,25 +226,26 @@ class _ExamPageState extends State<ExamPage> {
     } else {
       return Column(
         mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          SizedBox(height: screenAdapter.getAdaptiveHeight(80)),
           Container(
-            width: 189.78,
-            height: 189.78,
+            width: screenAdapter.getAdaptiveWidth(189.78),
+            height: screenAdapter.getAdaptiveHeight(189.78),
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/no_questions_bg.jpg'),
-                fit: BoxFit.fill,
+                fit: BoxFit.contain,
               ),
             ),
           ),
-          SizedBox(height: 20),
+          SizedBox(height: screenAdapter.getAdaptiveHeight(20)),
           Text(
             '等待教师下发试题',
             style: TextStyle(
               color: Color(0xFF383838),
-              fontSize: 18,
+              fontSize: screenAdapter.getAdaptiveFontSize(18),
               fontFamily: 'PingFang SC',
               fontWeight: FontWeight.w400,
               height: 1.50,
@@ -231,27 +257,23 @@ class _ExamPageState extends State<ExamPage> {
   }
 
   Widget _buildInfoPanel() {
-    return Positioned(
-      left: 1113.33,
-      top: 139,
-      child: Container(
-        width: 300, // 添加固定宽度
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildLoginInfo(),
-            SizedBox(height: 10),
-            ThemeUtil.lineH(height: 2),
-            SizedBox(height: 10),
-            _buildConnectionStatus(),
-            SizedBox(height: 10),
-            ThemeUtil.lineH(height: 2),
-            SizedBox(height: 30),
-            _buildTimerPanel(),
-          ],
-        ),
+    return Container(
+      width: screenAdapter.getAdaptiveWidth(300),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildLoginInfo(),
+          SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
+          ThemeUtil.lineH(height: screenAdapter.getAdaptiveHeight(2)),
+          SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
+          _buildConnectionStatus(),
+          SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
+          ThemeUtil.lineH(height: screenAdapter.getAdaptiveHeight(2)),
+          SizedBox(height: screenAdapter.getAdaptiveHeight(30)),
+          _buildTimerPanel(),
+        ],
       ),
     );
   }
@@ -269,14 +291,14 @@ class _ExamPageState extends State<ExamPage> {
           label,
           style: TextStyle(
             color: labelColor,
-            fontSize: 16,
+            fontSize: screenAdapter.getAdaptiveFontSize(16),
             fontWeight: FontWeight.w600,
           ),
         ),
-        SizedBox(width: 20),
+        SizedBox(width: screenAdapter.getAdaptiveWidth(20)),
         Container(
-          width: 120, // 设置宽度
-          height: 35, // 设置高度
+          width: screenAdapter.getAdaptiveWidth(120),
+          height: screenAdapter.getAdaptiveHeight(35),
           child: TextField(
             keyboardType: TextInputType.number,
             // 设置输入类型为数字
@@ -296,26 +318,31 @@ class _ExamPageState extends State<ExamPage> {
               hintStyle: TextStyle(
                 color: Colors.grey,
                 fontFamily: 'PingFang SC',
-                fontSize: 14,
+                fontSize: screenAdapter.getAdaptiveFontSize(14),
                 fontWeight: FontWeight.w400,
               ),
               // 设置提示文字颜色
-              contentPadding:
-                  EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+              contentPadding: EdgeInsets.symmetric(
+                vertical: screenAdapter.getAdaptivePadding(10), 
+                horizontal: screenAdapter.getAdaptivePadding(15)
+              ),
               // 内边距
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: textColor, width: 0.2),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(8)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: textColor, width: 0.8),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(8)),
               ),
             ),
-            style: TextStyle(color: Colors.orange, fontSize: 16), // 输入文字颜色和样式
+            style: TextStyle(
+              color: Colors.orange, 
+              fontSize: screenAdapter.getAdaptiveFontSize(16)
+            ), // 输入文字颜色和样式
           ),
         ),
-        SizedBox(width: 20),
+        SizedBox(width: screenAdapter.getAdaptiveWidth(20)),
         if (wsLogic.connStatusName.value == "未连接" ||
             wsLogic.connStatusName.value == "连接失败" ||
             wsLogic.connStatusName.value == "连接断开" ||
@@ -334,12 +361,12 @@ class _ExamPageState extends State<ExamPage> {
         Text('连接状态：',
             style: TextStyle(
                 color: Color(0xFFFFFBC7),
-                fontSize: 16,
+                fontSize: screenAdapter.getAdaptiveFontSize(16),
                 fontWeight: FontWeight.w600)),
         Text(
           wsLogic.connStatusName.value,
-          style: const TextStyle(
-            fontSize: 14.0,
+          style: TextStyle(
+            fontSize: screenAdapter.getAdaptiveFontSize(14.0),
             fontFamily: 'PingFang SC',
             color: Colors.white, // 连接状态颜色
           ),
@@ -359,8 +386,8 @@ class _ExamPageState extends State<ExamPage> {
         padding: EdgeInsets.zero, // 去掉默认的内边距，方便自定义样式
       ),
       child: Container(
-        width: 70,
-        height: 35,
+        width: screenAdapter.getAdaptiveWidth(70),
+        height: screenAdapter.getAdaptiveHeight(35),
         decoration: BoxDecoration(
           gradient: wsLogic.isConnecting
               ? LinearGradient(
@@ -373,7 +400,7 @@ class _ExamPageState extends State<ExamPage> {
                   end: Alignment.topCenter,
                   colors: [Color(0xFFFFD566), Colors.white], // 默认渐变色
                 ),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(10)),
         ),
         child: Center(
           child: Text(
@@ -381,7 +408,7 @@ class _ExamPageState extends State<ExamPage> {
             style: TextStyle(
                 color:
                     wsLogic.isConnecting ? Colors.white54 : Color(0xFFFF4F1A),
-                fontSize: 16),
+                fontSize: screenAdapter.getAdaptiveFontSize(16)),
           ),
         ),
       ),
@@ -397,8 +424,8 @@ class _ExamPageState extends State<ExamPage> {
         padding: EdgeInsets.zero, // 去掉默认的内边距，方便自定义样式
       ),
       child: Container(
-        width: 70,
-        height: 35,
+        width: screenAdapter.getAdaptiveWidth(70),
+        height: screenAdapter.getAdaptiveHeight(35),
         decoration: BoxDecoration(
           gradient: _isLoading
               ? LinearGradient(
@@ -409,12 +436,15 @@ class _ExamPageState extends State<ExamPage> {
                   end: Alignment.topCenter,
                   colors: [Color(0xFFFFD566), Colors.white], // 默认渐变色
                 ),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(10)),
         ),
         child: Center(
           child: Text(
             '断开',
-            style: TextStyle(color: Colors.blueGrey, fontSize: 16),
+            style: TextStyle(
+              color: Colors.blueGrey, 
+              fontSize: screenAdapter.getAdaptiveFontSize(16)
+            ),
           ),
         ),
       ),
@@ -446,31 +476,31 @@ class _ExamPageState extends State<ExamPage> {
         });
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
+        margin: EdgeInsets.symmetric(vertical: screenAdapter.getAdaptivePadding(8)),
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(2),
+          borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(2)),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 color: Colors.grey[50],
-                padding: const EdgeInsets.all(8.0),
+                padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8.0)),
                 child: Row(
                   children: [
                     Image.asset(
                       'assets/images/question_icon.png',
-                      width: 24,
-                      height: 24,
+                      width: screenAdapter.getAdaptiveWidth(24),
+                      height: screenAdapter.getAdaptiveHeight(24),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: screenAdapter.getAdaptiveWidth(10)),
                     Expanded(
                       child: Text(
                         question.title,
-                        style: const TextStyle(fontSize: 16),
+                        style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(16)),
                       ),
                     ),
                   ],
@@ -485,192 +515,140 @@ class _ExamPageState extends State<ExamPage> {
 
   Widget _buildTimerPanel() {
     return Container(
-      width: 320,
-      height: 406,
+      width: screenAdapter.getAdaptiveWidth(320),
+      height: screenAdapter.getAdaptiveHeight(406),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(
-            2), // Match with parent container
+            screenAdapter.getAdaptiveWidth(2)), // Match with parent container
       ),
       child: Padding(
         padding: const EdgeInsets.all(0),
         child: Column(
           children: [
-            SizedBox(height: 16),
+            SizedBox(height: screenAdapter.getAdaptiveHeight(16)),
             Center(
               child: Text(
                 '答题时间',
                 style: TextStyle(
                   color: Colors.red,
-                  fontSize: 30,
+                  fontSize: screenAdapter.getAdaptiveFontSize(30),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: screenAdapter.getAdaptiveHeight(8)),
             // All other elements wrapped in a new container
-            Container(
-              width: double.infinity,
-              height: 339, // Adjusted height for better layout
-              decoration: BoxDecoration(
-                color: Color(0xFFFFF1E8), // Background color
-                borderRadius: BorderRadius.circular(2),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    Center(
-                      child: RichText(
-                        text: TextSpan(
-                          style: TextStyle(
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                            fontFamily: 'Anton-Regular',
-                          ),
-                          children: [
-                            TextSpan(
-                                text: (countdownLogic.currentSeconds ~/ 60)
-                                    .toString()
-                                    .padLeft(2, '0')[0]),
-                            TextSpan(
-                              text: ' ',
-                              // Increase space between digits of minutes
-                              style: TextStyle(
-                                  color: Colors.transparent, fontSize: 54),
-                            ),
-                            TextSpan(
-                                text: (countdownLogic.currentSeconds ~/ 60)
-                                    .toString()
-                                    .padLeft(2, '0')[1]),
-                            TextSpan(text: ' : '),
-                            // Increase space around colon
-                            TextSpan(
-                                text: (countdownLogic.currentSeconds % 60)
-                                    .toString()
-                                    .padLeft(2, '0')[0]),
-                            TextSpan(
-                              text: ' ',
-                              // Increase space between digits of seconds
-                              style: TextStyle(
-                                  color: Colors.transparent, fontSize: 54),
-                            ),
-                            TextSpan(
-                                text: (countdownLogic.currentSeconds % 60)
-                                    .toString()
-                                    .padLeft(2, '0')[1]),
-                          ],
-                        ),
-                      ),
-                    ),
-                    if (countdownLogic.showElapsedTime)
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Color(0xFFFFF1E8), // Background color
+                  borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(2)),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
+                  child: Column(
+                    children: [
                       Center(
-                        child: Text(
-                          '本次共用时${(countdownLogic.totalDuration - countdownLogic.currentSeconds) ~/ 60}分${(countdownLogic.totalDuration - countdownLogic.currentSeconds) % 60}秒',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.orange,
-                            fontFamily: 'PingFang SC',
+                        child: RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              fontSize: screenAdapter.getAdaptiveFontSize(40),
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                              fontFamily: 'Anton-Regular',
+                            ),
+                            children: [
+                              TextSpan(
+                                  text: (countdownLogic.currentSeconds ~/ 60)
+                                      .toString()
+                                      .padLeft(2, '0')[0]),
+                              TextSpan(
+                                text: ' ',
+                                // Increase space between digits of minutes
+                                style: TextStyle(
+                                    color: Colors.transparent, fontSize: screenAdapter.getAdaptiveFontSize(54)),
+                              ),
+                              TextSpan(
+                                  text: (countdownLogic.currentSeconds ~/ 60)
+                                      .toString()
+                                      .padLeft(2, '0')[1]),
+                              TextSpan(text: ' : '),
+                              // Increase space around colon
+                              TextSpan(
+                                  text: (countdownLogic.currentSeconds % 60)
+                                      .toString()
+                                      .padLeft(2, '0')[0]),
+                              TextSpan(
+                                text: ' ',
+                                // Increase space between digits of seconds
+                                style: TextStyle(
+                                    color: Colors.transparent, fontSize: screenAdapter.getAdaptiveFontSize(54)),
+                              ),
+                              TextSpan(
+                                  text: (countdownLogic.currentSeconds % 60)
+                                      .toString()
+                                      .padLeft(2, '0')[1]),
+                            ],
                           ),
                         ),
                       ),
-                    const SizedBox(height: 20),
-                    // Space between time and button
-                    // Custom button directly below the time display
-                    Expanded(
-                      child: StreamBuilder<List<String>>(
-                        stream: countdownLogic.segmentsStream,
-                        initialData: [],
-                        builder: (context, snapshot) {
-                          final segments = snapshot.data ?? [];
-                          return ListView.builder(
-                            itemCount: segments.length,
-                            itemBuilder: (context, index) {
-                              return ListTile(
-                                leading: Text(
-                                  '第${index + 1}段用时：',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: 'PingFang SC',
-                                  ),
-                                ),
-                                title: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Text(
-                                    segments[index],
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.redAccent,
-                                      fontFamily: 'OPPOSans',
+                      if (countdownLogic.showElapsedTime)
+                        Center(
+                          child: Text(
+                            '本次共用时${(countdownLogic.totalDuration - countdownLogic.currentSeconds) ~/ 60}分${(countdownLogic.totalDuration - countdownLogic.currentSeconds) % 60}秒',
+                            style: TextStyle(
+                              fontSize: screenAdapter.getAdaptiveFontSize(18),
+                              color: Colors.orange,
+                              fontFamily: 'PingFang SC',
+                            ),
+                          ),
+                        ),
+                      SizedBox(height: screenAdapter.getAdaptiveHeight(20)),
+                      // Space between time and button
+                      // Custom button directly below the time display
+                      Expanded(
+                        child: StreamBuilder<List<String>>(
+                          stream: countdownLogic.segmentsStream,
+                          initialData: [],
+                          builder: (context, snapshot) {
+                            final segments = snapshot.data ?? [];
+                            return ListView.builder(
+                              itemCount: segments.length,
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                  leading: Text(
+                                    '第${index + 1}段用时：',
+                                    style: TextStyle(
+                                      fontSize: screenAdapter.getAdaptiveFontSize(18),
+                                      fontWeight: FontWeight.w400,
+                                      fontFamily: 'PingFang SC',
                                     ),
                                   ),
-                                ),
-                              );
-                            },
-                          );
-                        },
+                                  title: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      segments[index],
+                                      style: TextStyle(
+                                        fontSize: screenAdapter.getAdaptiveFontSize(18),
+                                        color: Colors.redAccent,
+                                        fontFamily: 'OPPOSans',
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTimerDetails() {
-    return Column(
-      children: [
-        _buildTimerDisplay(),
-        SizedBox(height: 20),
-        Text('分段计时', style: TextStyle(color: Colors.white, fontSize: 20)),
-        SizedBox(height: 20),
-        _buildTimeSegments(),
-      ],
-    );
-  }
-
-  Widget _buildTimerDisplay() {
-    return Stack(
-      children: [
-        // You would need to implement the actual timer display here
-      ],
-    );
-  }
-
-  Widget _buildTimeSegments() {
-    return Stack(
-      children: [
-        // Implement time segment display here
-      ],
-    );
-  }
-
-  Widget _buildInputField(String placeholder, Color textColor) {
-    return Container(
-      width: 160,
-      height: 40,
-      decoration: ShapeDecoration(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          side: BorderSide(width: 1, color: Color(0xFFF92D37)),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        shadows: [
-          BoxShadow(
-            color: Color(0x19871B03),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          )
-        ],
-      ),
-      child: Center(
-        child:
-            Text(placeholder, style: TextStyle(color: textColor, fontSize: 16)),
       ),
     );
   }

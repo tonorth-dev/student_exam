@@ -5,6 +5,7 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:student_exam/component/pagination/view.dart';
 import 'package:student_exam/component/table/ex.dart';
 import 'package:student_exam/component/widget.dart';
+import 'package:student_exam/common/app_providers.dart';
 import 'logic.dart';
 import 'package:student_exam/theme/theme_util.dart';
 import 'package:provider/provider.dart';
@@ -12,31 +13,33 @@ import 'package:provider/provider.dart';
 class LectureTableView extends StatelessWidget {
   final String title;
   final LectureLogic logic;
-
+  
   const LectureTableView({super.key, required this.title, required this.logic});
 
   @override
   Widget build(BuildContext context) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     return ChangeNotifierProvider<ButtonState>(
       create: (_) => ButtonState(),
       child: Column(
         children: [
           Row(
             children: [
-              SizedBox(width: 10),
+              SizedBox(width: screenAdapter.getAdaptiveWidth(10)),
               SearchBoxWidget(
                 key: Key('keywords'),
                 hint: '输入讲义名称',
-                width: 170,
+                width: screenAdapter.getAdaptiveWidth(170),
                 onTextChanged: (String value) {
                   logic.searchText.value = value;
                 },
                 searchText: logic.searchText,
               ),
-              SizedBox(width: 10),
+              SizedBox(width: screenAdapter.getAdaptiveWidth(10)),
               SearchButtonWidget(
-                width: 55,
-                height: 30,
+                width: screenAdapter.getAdaptiveWidth(55),
+                height: screenAdapter.getAdaptiveHeight(30),
                 key: Key('search'),
                 onPressed: () {
                   logic.selectedRows.clear();
@@ -50,29 +53,41 @@ class LectureTableView extends StatelessWidget {
           ThemeUtil.height(),
           Expanded(
             child: Obx(() => logic.loading.value
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(
+                    child: SizedBox(
+                      width: screenAdapter.getAdaptiveWidth(24),
+                      height: screenAdapter.getAdaptiveHeight(24),
+                      child: CircularProgressIndicator(
+                        strokeWidth: screenAdapter.getAdaptiveWidth(2),
+                      ),
+                    ),
+                  )
                 : SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SizedBox(
-                width: 250,
+                width: screenAdapter.getAdaptiveWidth(250),
                 child: SfDataGrid(
                   source: LectureDataSource(logic: logic, context: context),
                   headerGridLinesVisibility: GridLinesVisibility.none,
                   gridLinesVisibility: GridLinesVisibility.none,
                   columnWidthMode: ColumnWidthMode.fill,
-                  headerRowHeight: 35,
-                  rowHeight: 35,
+                  headerRowHeight: screenAdapter.getAdaptiveHeight(35),
+                  rowHeight: screenAdapter.getAdaptiveHeight(35),
                   columns: logic.columns.map((column) {
                     return GridColumn(
                       columnName: column.key,
-                      width: column.width,
+                      width: screenAdapter.getAdaptiveWidth(column.width),
                       label: Container(
                         color: Color(0xFFF3F4F8), // 自定义标题背景色
                         alignment: Alignment.center,
-                        padding: const EdgeInsets.all(8.0),
+                        padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8.0)),
                         child: Text( // 使用 SelectableText 使文本可选
                           column.title,
-                          style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w700),
+                          style: TextStyle(
+                            color: Colors.black87, 
+                            fontSize: screenAdapter.getAdaptiveFontSize(14), 
+                            fontWeight: FontWeight.w700
+                          ),
                         ),
                       ),
                     );
@@ -82,7 +97,7 @@ class LectureTableView extends StatelessWidget {
             )),
           ),
           Obx(() => Padding(
-            padding: EdgeInsets.only(right: 50),
+            padding: EdgeInsets.only(right: screenAdapter.getAdaptivePadding(50)),
             child: Column(
               children: [
                 PaginationPage(
@@ -95,7 +110,7 @@ class LectureTableView extends StatelessWidget {
               ],
             ),
           )),
-          ThemeUtil.height(height: 30),
+          ThemeUtil.height(height: screenAdapter.getAdaptiveHeight(30)),
         ],
       ),
     );
@@ -127,6 +142,8 @@ class LectureDataSource extends DataGridSource {
 
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
     final rowIndex = _rows.indexOf(row);
     final item = logic.list[rowIndex];
 
@@ -149,11 +166,14 @@ class LectureDataSource extends DataGridSource {
             cursor: SystemMouseCursors.click,
             child: Container(
               alignment: Alignment.center,
-              padding: const EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8.0)),
               child: Text(
                 value,
-                style: const TextStyle(color: Color(0xff26395f), fontWeight: FontWeight.w500
-                    , fontSize: 14),
+                style: TextStyle(
+                  color: Color(0xff26395f), 
+                  fontWeight: FontWeight.w500,
+                  fontSize: screenAdapter.getAdaptiveFontSize(14)
+                ),
               ),
             ),
           ),

@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../theme/theme_util.dart';
+import '../../../../common/app_providers.dart';
 import '../../sidebar/logic.dart';
 import 'file_view.dart';
 import 'lecture_view.dart';
@@ -10,28 +11,32 @@ import 'logic.dart';
 
 class LecturePage extends StatelessWidget {
   final logic = Get.put(LectureLogic());
+  // 获取 screenAdapter 实例
+  final screenAdapter = AppProviders.instance.screenAdapter;
+
+  LecturePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('assets/images/lecture_page_bg.png'), // Replace with your background image path
-          fit: BoxFit.fill, // Set the image fill method
+          image: AssetImage('assets/images/lecture_page_bg.png'),
+          fit: BoxFit.fill,
         ),
       ),
       child: Row(
         children: [
           SizedBox(
-            width: 300,
+            width: screenAdapter.getAdaptiveWidth(300),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start, // Align children to the top
-              crossAxisAlignment: CrossAxisAlignment.start, // Align children to the left
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 110), // Optional: Add some space
+                SizedBox(height: screenAdapter.getAdaptiveHeight(110)),
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
                     child: LectureTableView(
                       key: const Key("lectureT_table"),
                       title: "讲义列表",
@@ -42,18 +47,18 @@ class LecturePage extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(width: 30),
+          SizedBox(width: screenAdapter.getAdaptiveWidth(30)),
           SizedBox(
-            width: 260,
+            width: screenAdapter.getAdaptiveWidth(260),
             height: MediaQuery.of(context).size.height * 0.9,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start, // Align children to the top
-              crossAxisAlignment: CrossAxisAlignment.start, // Align children to the left
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 20), // Adjust the height as needed for spacing
+                SizedBox(height: screenAdapter.getAdaptiveHeight(20)),
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
                     child: LectureFileView(
                       key: const Key("file_table"),
                       title: "文件管理",
@@ -65,18 +70,23 @@ class LecturePage extends StatelessWidget {
             ),
           ),
           Container(
-            padding: const EdgeInsets.only(left: 0,right: 0,top: 0,bottom: 13),
-            height: 742, // Set the height constraint
-            child:ThemeUtil.lineVC(width: 10),
+            padding: EdgeInsets.only(
+              left: screenAdapter.getAdaptivePadding(0),
+              right: screenAdapter.getAdaptivePadding(0),
+              top: screenAdapter.getAdaptivePadding(0),
+              bottom: screenAdapter.getAdaptivePadding(13)
+            ),
+            height: screenAdapter.getAdaptiveHeight(742),
+            child: ThemeUtil.lineVC(width: screenAdapter.getAdaptiveWidth(10)),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                width: 820,
+                width: screenAdapter.getAdaptiveWidth(820),
                 height: MediaQuery.of(context).size.height * 0.95,
                 child: Container(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
                   child: PdfPreView(
                     key: const Key("pdf_review"),
                     title: "文件预览",
