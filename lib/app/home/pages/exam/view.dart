@@ -36,7 +36,7 @@ class _ExamPageState extends State<ExamPage> {
   final wsLogic = Get.put(WSLogic());
   final examLogic = Get.put(ExamLogic());
   bool _isLoading = false;
-  
+
   // 从 AppProviders 获取 screenAdapter
   final screenAdapter = AppProviders.instance.screenAdapter;
 
@@ -87,9 +87,11 @@ class _ExamPageState extends State<ExamPage> {
         ),
         actions: [
           Padding(
-            padding: EdgeInsets.only(right: screenAdapter.getAdaptivePadding(16.0)),
+            padding:
+                EdgeInsets.only(right: screenAdapter.getAdaptivePadding(16.0)),
             child: InkWell(
-              borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(32)),
+              borderRadius:
+                  BorderRadius.circular(screenAdapter.getAdaptiveWidth(32)),
               onTap: () {
                 headerLogic.clickHeadImage();
               },
@@ -123,10 +125,14 @@ class _ExamPageState extends State<ExamPage> {
                 ),
               ),
               width: screenAdapter.getAdaptiveWidth(1440),
-              height: screenAdapter.getAdaptiveHeight(702),
+              height: screenAdapter.getAdaptiveHeight(796),
               clipBehavior: Clip.antiAlias,
               child: Padding(
-                padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
+                padding: EdgeInsets.only(
+                    left: screenAdapter.getAdaptivePadding(11.0),
+                    top: screenAdapter.getAdaptivePadding(12.0),
+                    right: screenAdapter.getAdaptivePadding(16.0),
+                    bottom: screenAdapter.getAdaptivePadding(25.0)),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -143,7 +149,7 @@ class _ExamPageState extends State<ExamPage> {
                     SizedBox(width: screenAdapter.getAdaptiveWidth(32)),
                     Expanded(
                       flex: 24, // 约24%的空间给信息面板
-                      child: Padding(
+                      child: Container(
                         padding: EdgeInsets.only(
                           top: screenAdapter.getAdaptivePadding(123.0),
                         ),
@@ -182,7 +188,8 @@ class _ExamPageState extends State<ExamPage> {
     if (wsLogic.unitsList.value.isNotEmpty) {
       return Center(
         child: Padding(
-          padding: EdgeInsets.only(top: screenAdapter.getAdaptiveHeight(135.22)),
+          padding:
+              EdgeInsets.only(top: screenAdapter.getAdaptiveHeight(135.22)),
           child: SimpleRoulette(
             options: wsLogic.unitsList.value.map((unit) {
               return {'id': unit['id'], 'name': unit['name']};
@@ -204,14 +211,12 @@ class _ExamPageState extends State<ExamPage> {
     } else if (examLogic.questions.isNotEmpty) {
       return Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: screenAdapter.getAdaptivePadding(16.0), 
-          vertical: screenAdapter.getAdaptivePadding(8.0)
-        ),
+            horizontal: screenAdapter.getAdaptivePadding(16.0),
+            vertical: screenAdapter.getAdaptivePadding(8.0)),
         child: ConstrainedBox(
           // 确保SuperListView有一个明确的最大高度
-          constraints: BoxConstraints(
-            maxHeight: screenAdapter.getAdaptiveHeight(480)
-          ),
+          constraints:
+              BoxConstraints(maxHeight: screenAdapter.getAdaptiveHeight(480)),
           child: SuperListView.builder(
             listController: examLogic.listController,
             controller: examLogic.scrollController,
@@ -229,7 +234,6 @@ class _ExamPageState extends State<ExamPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(height: screenAdapter.getAdaptiveHeight(80)),
           Container(
             width: screenAdapter.getAdaptiveWidth(189.78),
             height: screenAdapter.getAdaptiveHeight(189.78),
@@ -251,6 +255,7 @@ class _ExamPageState extends State<ExamPage> {
               height: 1.50,
             ),
           ),
+          SizedBox(height: screenAdapter.getAdaptiveHeight(60)),
         ],
       );
     }
@@ -258,16 +263,18 @@ class _ExamPageState extends State<ExamPage> {
 
   Widget _buildInfoPanel() {
     return Container(
+      padding: EdgeInsets.only(right: screenAdapter.getAdaptiveWidth(14)),
       width: screenAdapter.getAdaptiveWidth(300),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
           _buildLoginInfo(),
           SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
           ThemeUtil.lineH(height: screenAdapter.getAdaptiveHeight(2)),
-          SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
+          SizedBox(height: screenAdapter.getAdaptiveHeight(20)),
           _buildConnectionStatus(),
           SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
           ThemeUtil.lineH(height: screenAdapter.getAdaptiveHeight(2)),
@@ -295,7 +302,7 @@ class _ExamPageState extends State<ExamPage> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        SizedBox(width: screenAdapter.getAdaptiveWidth(20)),
+        SizedBox(width: screenAdapter.getAdaptiveWidth(10)),
         Container(
           width: screenAdapter.getAdaptiveWidth(120),
           height: screenAdapter.getAdaptiveHeight(35),
@@ -323,23 +330,23 @@ class _ExamPageState extends State<ExamPage> {
               ),
               // 设置提示文字颜色
               contentPadding: EdgeInsets.symmetric(
-                vertical: screenAdapter.getAdaptivePadding(10), 
-                horizontal: screenAdapter.getAdaptivePadding(15)
-              ),
+                  vertical: screenAdapter.getAdaptivePadding(10),
+                  horizontal: screenAdapter.getAdaptivePadding(15)),
               // 内边距
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: textColor, width: 0.2),
-                borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(8)),
+                borderRadius:
+                    BorderRadius.circular(screenAdapter.getAdaptiveWidth(8)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: textColor, width: 0.8),
-                borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(8)),
+                borderRadius:
+                    BorderRadius.circular(screenAdapter.getAdaptiveWidth(8)),
               ),
             ),
             style: TextStyle(
-              color: Colors.orange, 
-              fontSize: screenAdapter.getAdaptiveFontSize(16)
-            ), // 输入文字颜色和样式
+                color: Colors.orange,
+                fontSize: screenAdapter.getAdaptiveFontSize(16)), // 输入文字颜色和样式
           ),
         ),
         SizedBox(width: screenAdapter.getAdaptiveWidth(20)),
@@ -400,7 +407,8 @@ class _ExamPageState extends State<ExamPage> {
                   end: Alignment.topCenter,
                   colors: [Color(0xFFFFD566), Colors.white], // 默认渐变色
                 ),
-          borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(10)),
+          borderRadius:
+              BorderRadius.circular(screenAdapter.getAdaptiveWidth(10)),
         ),
         child: Center(
           child: Text(
@@ -436,15 +444,15 @@ class _ExamPageState extends State<ExamPage> {
                   end: Alignment.topCenter,
                   colors: [Color(0xFFFFD566), Colors.white], // 默认渐变色
                 ),
-          borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(10)),
+          borderRadius:
+              BorderRadius.circular(screenAdapter.getAdaptiveWidth(10)),
         ),
         child: Center(
           child: Text(
             '断开',
             style: TextStyle(
-              color: Colors.blueGrey, 
-              fontSize: screenAdapter.getAdaptiveFontSize(16)
-            ),
+                color: Colors.blueGrey,
+                fontSize: screenAdapter.getAdaptiveFontSize(16)),
           ),
         ),
       ),
@@ -476,10 +484,12 @@ class _ExamPageState extends State<ExamPage> {
         });
       },
       child: Container(
-        margin: EdgeInsets.symmetric(vertical: screenAdapter.getAdaptivePadding(8)),
+        margin:
+            EdgeInsets.symmetric(vertical: screenAdapter.getAdaptivePadding(8)),
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(2)),
+          borderRadius:
+              BorderRadius.circular(screenAdapter.getAdaptiveWidth(2)),
         ),
         child: Padding(
           padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
@@ -500,7 +510,8 @@ class _ExamPageState extends State<ExamPage> {
                     Expanded(
                       child: Text(
                         question.title,
-                        style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(16)),
+                        style: TextStyle(
+                            fontSize: screenAdapter.getAdaptiveFontSize(16)),
                       ),
                     ),
                   ],
@@ -516,7 +527,7 @@ class _ExamPageState extends State<ExamPage> {
   Widget _buildTimerPanel() {
     return Container(
       width: screenAdapter.getAdaptiveWidth(320),
-      height: screenAdapter.getAdaptiveHeight(406),
+      height: screenAdapter.getAdaptiveHeight(476),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(
@@ -543,10 +554,12 @@ class _ExamPageState extends State<ExamPage> {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Color(0xFFFFF1E8), // Background color
-                  borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(2)),
+                  borderRadius:
+                      BorderRadius.circular(screenAdapter.getAdaptiveWidth(2)),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
+                  padding:
+                      EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
                   child: Column(
                     children: [
                       Center(
@@ -567,7 +580,9 @@ class _ExamPageState extends State<ExamPage> {
                                 text: ' ',
                                 // Increase space between digits of minutes
                                 style: TextStyle(
-                                    color: Colors.transparent, fontSize: screenAdapter.getAdaptiveFontSize(54)),
+                                    color: Colors.transparent,
+                                    fontSize:
+                                        screenAdapter.getAdaptiveFontSize(54)),
                               ),
                               TextSpan(
                                   text: (countdownLogic.currentSeconds ~/ 60)
@@ -583,7 +598,9 @@ class _ExamPageState extends State<ExamPage> {
                                 text: ' ',
                                 // Increase space between digits of seconds
                                 style: TextStyle(
-                                    color: Colors.transparent, fontSize: screenAdapter.getAdaptiveFontSize(54)),
+                                    color: Colors.transparent,
+                                    fontSize:
+                                        screenAdapter.getAdaptiveFontSize(54)),
                               ),
                               TextSpan(
                                   text: (countdownLogic.currentSeconds % 60)
@@ -620,7 +637,8 @@ class _ExamPageState extends State<ExamPage> {
                                   leading: Text(
                                     '第${index + 1}段用时：',
                                     style: TextStyle(
-                                      fontSize: screenAdapter.getAdaptiveFontSize(18),
+                                      fontSize:
+                                          screenAdapter.getAdaptiveFontSize(18),
                                       fontWeight: FontWeight.w400,
                                       fontFamily: 'PingFang SC',
                                     ),
@@ -630,7 +648,8 @@ class _ExamPageState extends State<ExamPage> {
                                     child: Text(
                                       segments[index],
                                       style: TextStyle(
-                                        fontSize: screenAdapter.getAdaptiveFontSize(18),
+                                        fontSize: screenAdapter
+                                            .getAdaptiveFontSize(18),
                                         color: Colors.redAccent,
                                         fontFamily: 'OPPOSans',
                                       ),
