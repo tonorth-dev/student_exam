@@ -8,12 +8,12 @@ import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
 import '../../../../theme/theme_util.dart';
 import '../../../../common/encr_util.dart';
 import '../../../../component/watermark.dart';
 import '../../../../common/app_providers.dart';
 import 'logic.dart';
-import 'package:path/path.dart' as p;
 
 class PdfPreView extends StatefulWidget {
   final String title;
@@ -47,10 +47,23 @@ class _PdfPreViewState extends State<PdfPreView> {
     super.initState();
     _pdfController = PdfViewerController();
     pdfLogic.selectedPdfUrl.listen((url) async {
-      if (url != null) {
+      if (url != null && mounted) {
         await _initializePdf(url);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _isPdfLoaded = false;
+    _isChangingPage = false;
+    _pdfController.dispose();
+    // 清理临时文件
+    if (_localFilePath != null) {
+      final tempFile = File(_localFilePath!);
+      tempFile.delete().catchError((e) => debugPrint('Error deleting temp file: $e'));
+    }
+    super.dispose();
   }
 
   Future<String> _getLocalFilePath(String url) async {
@@ -122,7 +135,7 @@ class _PdfPreViewState extends State<PdfPreView> {
 
       // 下载并处理文件
       await _downloadAndProcessFile(cleanUrl, localPath, decryptedPath);
-      
+
     } catch (e) {
       debugPrint('初始化 PDF 时出错: $e');
       _isLoading.value = false;
@@ -136,7 +149,7 @@ class _PdfPreViewState extends State<PdfPreView> {
       if (await file.exists()) {
         final fileSize = await file.length();
         if (fileSize == 0) return false;
-        
+
         final lastModified = await file.lastModified();
         final now = DateTime.now();
         final isValid = now.difference(lastModified).inDays < 7;
@@ -153,7 +166,7 @@ class _PdfPreViewState extends State<PdfPreView> {
       final encryptedFile = File(encryptedPath);
       final encryptedBytes = await encryptedFile.readAsBytes();
       final decryptedBytes = EncryptionUtil.decryptBytes(encryptedBytes);
-      
+
       final decryptedFile = File(decryptedPath);
       await decryptedFile.writeAsBytes(decryptedBytes);
     } catch (e) {
@@ -168,7 +181,7 @@ class _PdfPreViewState extends State<PdfPreView> {
       if (await file.exists()) {
         final fileSize = await file.length();
         if (fileSize == 0) return false;
-        
+
         final lastModified = await file.lastModified();
         final now = DateTime.now();
         final isValid = now.difference(lastModified).inDays < 7;
@@ -185,7 +198,7 @@ class _PdfPreViewState extends State<PdfPreView> {
     try {
       final request = http.Request('GET', Uri.parse(url));
       final response = await client.send(request);
-      
+
       if (response.statusCode != 200) {
         throw Exception('下载 PDF 失败: HTTP ${response.statusCode}');
       }
@@ -292,72 +305,42 @@ class _PdfPreViewState extends State<PdfPreView> {
     });
   }
 
-  @override
-  void dispose() {
-    _isPdfLoaded = false;
-    _isChangingPage = false;
-    _pdfController.dispose();
-    // 清理临时文件
-    if (_localFilePath != null) {
-      final tempFile = File(_localFilePath!);
-      tempFile.delete().catchError((e) => debugPrint('Error deleting temp file: $e'));
+  void _handleZoom(bool zoomIn) {
+    if (!mounted) return;
+
+    double newZoom = _currentZoom.value;
+    if (zoomIn) {
+      if (newZoom < (1 + _zoomStep * _maxZoomClicks)) {
+        newZoom += _zoomStep;
+      }
+    } else {
+      if (newZoom > _minZoom) {
+        newZoom -= _zoomStep;
+      }
     }
-    super.dispose();
+
+    // 直接更新缩放值和控制器
+    _currentZoom.value = newZoom;
+    _pdfController.zoomLevel = newZoom;
   }
 
   @override
   Widget build(BuildContext context) {
-    // 无需重复计算屏幕尺寸，直接使用全局的 screenAdapter
-    return Column(
+    return Row(
       children: [
-        ThemeUtil.height(),
+        SizedBox(width: screenAdapter.getAdaptiveWidth(25)),
         Expanded(
-          child: Obx(() {
-            final selectedPdfUrl = pdfLogic.selectedPdfUrl.value;
-            if (selectedPdfUrl == null || selectedPdfUrl.isEmpty) {
-              return Container(
-                padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                ),
-                child: Center(
-                  child: Text(
-                    "请点击要学习的章节",
-                    style: TextStyle(
-                      fontSize: screenAdapter.getAdaptiveFontSize(16.0),
-                      color: Colors.red.shade700,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              );
-            }
-
-            if (_localFilePath == null || !_localFilePath!.isNotEmpty) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            return FutureBuilder<bool>(
-              future: Future.wait([
-                File(_localFilePath!).exists(),
-                Future.delayed(const Duration(milliseconds: 100)),
-              ]).then((results) => results[0]),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData || !snapshot.data!) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                return Stack(
-                  children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: _buildPdfContent(),
-                    ),
-                  ],
-                );
-              },
-            );
-          }),
+          child: Column(
+            children: [
+              SizedBox(height: screenAdapter.getAdaptiveHeight(8)),
+              ThemeUtil.lineH(),
+              ThemeUtil.height(),
+              Expanded(
+                child: _buildPdfContent(),
+              ),
+              SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
+            ],
+          ),
         ),
       ],
     );
@@ -371,14 +354,14 @@ class _PdfPreViewState extends State<PdfPreView> {
         return Container(
           padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: Colors.white,
           ),
           child: Center(
             child: Text(
-              "请点击要学习的章节",
+              "请选择一个文件",
               style: TextStyle(
                 fontSize: screenAdapter.getAdaptiveFontSize(16.0),
-                color: Colors.red.shade700,
+                color: Colors.blue.shade700,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -393,13 +376,12 @@ class _PdfPreViewState extends State<PdfPreView> {
             children: [
               CircularProgressIndicator(
                 value: _loadingProgress.value > 0 ? _loadingProgress.value : null,
+                strokeWidth: screenAdapter.getAdaptiveWidth(2.0),
               ),
-              SizedBox(height: screenAdapter.getAdaptiveHeight(16.0)),
+              SizedBox(height: screenAdapter.getAdaptiveHeight(16)),
               Text(
                 '正在加载 PDF (${(_loadingProgress.value * 100).toInt()}%)',
-                style: TextStyle(
-                  fontSize: screenAdapter.getAdaptiveFontSize(14.0),
-                ),
+                style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
               ),
             ],
           ),
@@ -407,7 +389,15 @@ class _PdfPreViewState extends State<PdfPreView> {
       }
 
       if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
-        return const Center(child: CircularProgressIndicator());
+        return Center(
+          child: SizedBox(
+            width: screenAdapter.getAdaptiveWidth(24),
+            height: screenAdapter.getAdaptiveHeight(24),
+            child: CircularProgressIndicator(
+              strokeWidth: screenAdapter.getAdaptiveWidth(2.0),
+            ),
+          ),
+        );
       }
 
       return Stack(
@@ -436,9 +426,6 @@ class _PdfPreViewState extends State<PdfPreView> {
             enableDoubleTapZooming: true,
             canShowScrollHead: true,
           ),
-          const IgnorePointer(
-            child: WatermarkWidget(),
-          ),
           _buildZoomControls(),
         ],
       );
@@ -451,25 +438,26 @@ class _PdfPreViewState extends State<PdfPreView> {
     }
 
     return Positioned(
-      right: screenAdapter.getAdaptivePadding(16.0),
-      bottom: screenAdapter.getAdaptivePadding(16.0),
+      right: screenAdapter.getAdaptivePadding(16),
+      bottom: screenAdapter.getAdaptivePadding(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(24)),
+              borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(24)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
-                  blurRadius: screenAdapter.getAdaptiveWidth(4),
+                  blurRadius: screenAdapter.getAdaptivePadding(4),
                   offset: Offset(0, screenAdapter.getAdaptiveHeight(2)),
                 ),
               ],
             ),
             child: Column(
               children: [
+                // 全屏按钮
                 IconButton(
                   icon: Obx(() => Icon(
                     isFullScreen.value ? Icons.fullscreen_exit : Icons.fullscreen,
@@ -484,7 +472,31 @@ class _PdfPreViewState extends State<PdfPreView> {
                       Get.to(
                         () => Scaffold(
                           body: SafeArea(
-                            child: _buildPdfContent(),
+                            child: Stack(
+                              children: [
+                                SfPdfViewer.file(
+                                  File(_localFilePath!),
+                                  controller: _pdfController,
+                                  enableTextSelection: false,
+                                  enableDocumentLinkAnnotation: false,
+                                  onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
+                                    debugPrint('PDF 加载失败: ${details.error}');
+                                    _initializePdf(pdfLogic.selectedPdfUrl.value ?? '');
+                                  },
+                                  onPageChanged: _handlePdfPageChanged,
+                                  onDocumentLoaded: _onDocumentLoaded,
+                                  scrollDirection: PdfScrollDirection.vertical,
+                                  pageSpacing: 0,
+                                  enableDoubleTapZooming: true,
+                                  canShowScrollHead: true,
+                                ),
+                                // 添加水印组件到全屏模式
+                                const IgnorePointer(
+                                  child: WatermarkWidget(),
+                                ),
+                                _buildZoomControls(),
+                              ],
+                            ),
                           ),
                         ),
                         fullscreenDialog: true,
@@ -507,19 +519,15 @@ class _PdfPreViewState extends State<PdfPreView> {
                   padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8)),
                 ),
                 Obx(() => Container(
-                  padding: EdgeInsets.symmetric(
-                    vertical: screenAdapter.getAdaptivePadding(4),
-                  ),
+                  padding: EdgeInsets.symmetric(vertical: screenAdapter.getAdaptivePadding(4)),
                   child: Text(
                     '${(_currentZoom.value * 100).toInt()}%',
-                    style: TextStyle(
-                      fontSize: screenAdapter.getAdaptiveFontSize(12),
-                    ),
+                    style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(12)),
                   ),
                 )),
                 IconButton(
                   icon: Icon(Icons.remove, size: screenAdapter.getAdaptiveIconSize(24)),
-                  onPressed: _currentZoom.value > 1.0
+                  onPressed: _currentZoom.value > _minZoom
                       ? () => _handleZoom(false)
                       : null,
                   tooltip: '缩小',
@@ -532,25 +540,6 @@ class _PdfPreViewState extends State<PdfPreView> {
         ],
       ),
     );
-  }
-
-  void _handleZoom(bool zoomIn) {
-    if (!mounted) return;
-    
-    double newZoom = _currentZoom.value;
-    if (zoomIn) {
-      if (newZoom < (1 + _zoomStep * _maxZoomClicks)) {
-        newZoom += _zoomStep;
-      }
-    } else {
-      if (newZoom > 1.0) {  // 修改这里，限制最小缩放为 1.0
-        newZoom -= _zoomStep;
-      }
-    }
-    
-    // 直接更新缩放值和控制器
-    _currentZoom.value = newZoom;
-    _pdfController.zoomLevel = newZoom;
   }
 
   void _showError(String message) {
@@ -579,9 +568,7 @@ class _PdfPreViewState extends State<PdfPreView> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               '确定',
-              style: TextStyle(
-                fontSize: screenAdapter.getAdaptiveFontSize(14),
-              ),
+              style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
             ),
             style: TextButton.styleFrom(
               padding: EdgeInsets.symmetric(

@@ -12,6 +12,7 @@ import '../../sidebar/logic.dart';
 import 'countdown_logic.dart';
 import 'exam_logic.dart';
 import 'ws_logic.dart';
+import '../common/app_bar.dart';
 
 class ExamPage extends StatefulWidget {
   const ExamPage({super.key});
@@ -63,48 +64,11 @@ class _ExamPageState extends State<ExamPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
+      appBar: CommonAppBar.buildExamAppBar(),
       body: SafeArea(
         child: Container(
           child: _buildPanel(),
         ),
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar() {
-    return PreferredSize(
-      preferredSize: Size.fromHeight(screenAdapter.getAdaptiveHeight(80)),
-      child: AppBar(
-        title: const Text(''),
-        centerTitle: true,
-        elevation: 0,
-        flexibleSpace: FlexibleSpaceBar(
-          background: Image.asset(
-            'assets/images/exam_banner_logo.png',
-            fit: BoxFit.fill,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding:
-                EdgeInsets.only(right: screenAdapter.getAdaptivePadding(16.0)),
-            child: InkWell(
-              borderRadius:
-                  BorderRadius.circular(screenAdapter.getAdaptiveWidth(32)),
-              onTap: () {
-                headerLogic.clickHeadImage();
-              },
-              child: ClipOval(
-                child: Image.asset(
-                  "assets/images/cat.jpeg",
-                  height: screenAdapter.getAdaptiveHeight(42),
-                  width: screenAdapter.getAdaptiveWidth(42),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

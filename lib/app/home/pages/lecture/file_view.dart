@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
-import 'package:file_picker/file_picker.dart';
-import '../../../../component/table/ex.dart';
 import '../../../../theme/theme_util.dart';
 import '../../../../common/app_providers.dart';
 import 'logic.dart';
@@ -106,7 +104,7 @@ class _LectureFileViewState extends State<LectureFileView> {
     
     return Container(
       padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
-      decoration: BoxDecoration(color: Colors.grey.shade50),
+      decoration: BoxDecoration(color: Colors.white),
       child: Center(
         child: Text(
           "请点击讲义进行学习",

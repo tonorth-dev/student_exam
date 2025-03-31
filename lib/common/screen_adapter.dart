@@ -80,13 +80,11 @@ class ScreenAdapter {
   // 根据基准尺寸计算实际尺寸
   double getAdaptiveWidth(double width) {
     var size = width * currentSize.value.width / medium.width;
-    debugPrint("getAdaptiveHeight: $width, ${currentSize.value.width}, $size");
     return  size;
   }
 
   double getAdaptiveHeight(double height) {
     var size = height * currentSize.value.height / medium.height;
-    debugPrint("getAdaptiveHeight: $height, ${currentSize.value.height}, $size");
     return size;
   }
 

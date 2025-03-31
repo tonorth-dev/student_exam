@@ -5,45 +5,17 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:student_exam/app/home/pages/note/logic.dart';
 import 'package:student_exam/common/app_providers.dart';
+import '../common/app_bar.dart';
 
 import '../../sidebar/logic.dart';
 import 'note_view.dart';
+import '../../head/logic.dart';
 
-class NotePage extends StatelessWidget {
-  final logic = Get.put(NoteLogic());
+class NotePage extends StatefulWidget {
+  const NotePage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final screenAdapter = AppProviders.instance.screenAdapter;
-    
-    return Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/note_page_bg.png'),
-            fit: BoxFit.fill, // Set the image fill method
-          ),
-        ),
-    child: Row(
-      children: [
-        SizedBox(width: screenAdapter.getAdaptiveWidth(8)),
-        Expanded(
-          flex: 4,
-          child: Container(
-            padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
-            child: NoteView(),
-          ),
-        ),
-        Expanded(
-          flex: 5,
-          child: Container(
-            padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
-            child: PdfPreView(
-                key: const Key("pdf_review"), title: "文件预览"),
-          ),
-        ),
-      ],
-    ));
-  }
+  _NotePageState createState() => _NotePageState();
 
   static SidebarTree newThis() {
     return SidebarTree(
@@ -51,6 +23,54 @@ class NotePage extends StatelessWidget {
       icon: Icons.app_registration_outlined,
       page: NotePage(),
     );
+  }
+}
+
+class _NotePageState extends State<NotePage> {
+  final logic = Get.put(NoteLogic());
+  final headerLogic = Get.put(HeadLogic());
+
+  @override
+  Widget build(BuildContext context) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+    
+    return Scaffold(
+      appBar: CommonAppBar.buildExamAppBar(),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/note_page_bg.png'),
+            fit: BoxFit.fill, // Set the image fill method
+          ),
+        ),
+        child: Row(
+          children: [
+            SizedBox(width: screenAdapter.getAdaptiveWidth(8)),
+            Expanded(
+              flex: 4,
+              child: Container(
+                padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
+                child: NoteView(),
+              ),
+            ),
+            Expanded(
+              flex: 5,
+              child: Container(
+                padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
+                child: PdfPreView(
+                    key: const Key("pdf_review"), title: "文件预览"),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    Get.delete<HeadLogic>();
+    super.dispose();
   }
 }
 
