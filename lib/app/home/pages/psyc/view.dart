@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../theme/theme_util.dart';
+import '../../head/logic.dart';
 import '../../sidebar/logic.dart';
 import 'logic.dart';
 import '../../../../api/student_api.dart';
@@ -23,11 +24,12 @@ class PsychologyPage extends StatefulWidget {
 
 class _PsychologyPageState extends State<PsychologyPage> {
   final logic = Get.put(PsychologyLogic());
+  final headerLogic = Get.find<HeadLogic>();
 
   @override
   Widget build(BuildContext context) {
     final screenAdapter = AppProviders.instance.screenAdapter;
-    
+
     return Scaffold(
       body: Stack(
         children: [
@@ -42,11 +44,37 @@ class _PsychologyPageState extends State<PsychologyPage> {
           Column(
             children: [
               ThemeUtil.height(),
-              SizedBox(height: screenAdapter.getAdaptiveHeight(150)),
+              Container(
+                padding: EdgeInsets.only(
+                  bottom: screenAdapter.getAdaptivePadding(30),
+                  right: screenAdapter.getAdaptivePadding(20),
+                ),
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                      right: screenAdapter.getAdaptivePadding(16.0)),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(
+                        screenAdapter.getAdaptiveWidth(32)),
+                    onTap: () {
+                      headerLogic.clickHeadImage();
+                    },
+                    child: ClipOval(
+                      child: Image.asset(
+                        "assets/images/cat.jpeg",
+                        height: screenAdapter.getAdaptiveHeight(42),
+                        width: screenAdapter.getAdaptiveWidth(42),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: screenAdapter.getAdaptiveHeight(110)),
               Expanded(
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(24.0)),
+                    padding:
+                        EdgeInsets.all(screenAdapter.getAdaptivePadding(24.0)),
                     child: _buildContent(),
                   ),
                 ),
@@ -60,7 +88,7 @@ class _PsychologyPageState extends State<PsychologyPage> {
 
   Widget _buildContent() {
     final screenAdapter = AppProviders.instance.screenAdapter;
-    
+
     return Obx(() {
       if (logic.isLoading.value) {
         return Center(child: CircularProgressIndicator());
@@ -81,7 +109,8 @@ class _PsychologyPageState extends State<PsychologyPage> {
 
       return Center(
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: screenAdapter.getAdaptiveWidth(1000)),
+          constraints:
+              BoxConstraints(maxWidth: screenAdapter.getAdaptiveWidth(1000)),
           child: Container(
             padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(24)),
             child: Column(
@@ -92,7 +121,8 @@ class _PsychologyPageState extends State<PsychologyPage> {
                   padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(20)),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(10)),
+                    borderRadius: BorderRadius.circular(
+                        screenAdapter.getAdaptivePadding(10)),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.grey.withOpacity(0.1),
@@ -113,20 +143,27 @@ class _PsychologyPageState extends State<PsychologyPage> {
                 ),
                 SizedBox(height: screenAdapter.getAdaptiveHeight(60)),
                 // 答案按钮 - 只在答案不为空时显示
-                if (logic.currentQuestion.value!['answer_a']?.isNotEmpty ?? false) ...[
-                  _buildAnswerButton('A', logic.currentQuestion.value!['answer_a']!),
+                if (logic.currentQuestion.value!['answer_a']?.isNotEmpty ??
+                    false) ...[
+                  _buildAnswerButton(
+                      'A', logic.currentQuestion.value!['answer_a']!),
                   SizedBox(height: screenAdapter.getAdaptiveHeight(20)),
                 ],
-                if (logic.currentQuestion.value!['answer_b']?.isNotEmpty ?? false) ...[
-                  _buildAnswerButton('B', logic.currentQuestion.value!['answer_b']!),
+                if (logic.currentQuestion.value!['answer_b']?.isNotEmpty ??
+                    false) ...[
+                  _buildAnswerButton(
+                      'B', logic.currentQuestion.value!['answer_b']!),
                   SizedBox(height: screenAdapter.getAdaptiveHeight(20)),
                 ],
-                if (logic.currentQuestion.value!['answer_c']?.isNotEmpty ?? false)
-                  _buildAnswerButton('C', logic.currentQuestion.value!['answer_c']!),
+                if (logic.currentQuestion.value!['answer_c']?.isNotEmpty ??
+                    false)
+                  _buildAnswerButton(
+                      'C', logic.currentQuestion.value!['answer_c']!),
                 // 添加提示文字
                 SizedBox(height: screenAdapter.getAdaptiveHeight(100)),
                 Container(
-                  padding: EdgeInsets.only(bottom: screenAdapter.getAdaptivePadding(30)),
+                  padding: EdgeInsets.only(
+                      bottom: screenAdapter.getAdaptivePadding(30)),
                   child: Text(
                     "心理测试过程，最好一次性完成，以方便导师准确判断您的测试情况",
                     style: TextStyle(
@@ -147,18 +184,19 @@ class _PsychologyPageState extends State<PsychologyPage> {
 
   Widget _buildAnswerButton(String option, String answer) {
     final screenAdapter = AppProviders.instance.screenAdapter;
-    
+
     return ElevatedButton(
       onPressed: () => logic.submitAnswer(option),
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
         backgroundColor: Colors.blue.shade600,
         padding: EdgeInsets.symmetric(
-          vertical: screenAdapter.getAdaptivePadding(20), 
+          vertical: screenAdapter.getAdaptivePadding(20),
           horizontal: screenAdapter.getAdaptivePadding(30),
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(10)),
+          borderRadius:
+              BorderRadius.circular(screenAdapter.getAdaptivePadding(10)),
           side: BorderSide(
             color: Colors.blue.shade400,
             width: 1,
@@ -179,7 +217,7 @@ class _PsychologyPageState extends State<PsychologyPage> {
 
   Widget _buildCompletionScreen() {
     final screenAdapter = AppProviders.instance.screenAdapter;
-    
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -214,11 +252,12 @@ class _PsychologyPageState extends State<PsychologyPage> {
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.blue.shade600,
                 padding: EdgeInsets.symmetric(
-                  vertical: screenAdapter.getAdaptivePadding(15), 
+                  vertical: screenAdapter.getAdaptivePadding(15),
                   horizontal: screenAdapter.getAdaptivePadding(40),
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(10)),
+                  borderRadius: BorderRadius.circular(
+                      screenAdapter.getAdaptivePadding(10)),
                   side: BorderSide(
                     color: Colors.blue.shade400,
                     width: 1,
