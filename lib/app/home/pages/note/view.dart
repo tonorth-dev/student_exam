@@ -45,25 +45,24 @@ class _NotePageState extends State<NotePage> {
             fit: BoxFit.fill, // Set the image fill method
           ),
         ),
-    child: Row(
-      children: [
+        child: Row(
+          children: [
             SizedBox(width: screenAdapter.getAdaptiveWidth(8)),
-        Expanded(
-          flex: 3,
-          child: Container(
-                padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
+            Expanded(
+              flex: 9,
+              child: Container(
+                padding: EdgeInsets.only(left: 10, right: 0, top: 32,bottom: 16),
                 child: NoteView(),
-          ),
-        ),
-        Expanded(
-          flex: 5,
-          child: Container(
-                padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
-            child: PdfPreView(
-                key: const Key("pdf_review"), title: "文件预览"),
-          ),
-        ),
-      ],
+              ),
+            ),
+            Expanded(
+              flex: 17,
+              child: Container(
+                padding: EdgeInsets.only(left: 20, right: 16, top: 16,bottom: 16),
+                child: PdfPreView(key: const Key("pdf_review"), title: "文件预览"),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -82,10 +81,10 @@ class NoteView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: Column(
         children: [
           _buildSearchBar(),
-          ThemeUtil.height(),
           ThemeUtil.lineH(),
           ThemeUtil.height(),
           Expanded(
@@ -101,21 +100,11 @@ class NoteView extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: screenAdapter.getAdaptivePadding(16),
+        horizontal: screenAdapter.getAdaptivePadding(8),
         vertical: screenAdapter.getAdaptivePadding(8),
       ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.grey[200]!,
-            width: 1,
-          ),
-        ),
-      ),
-      child:  Row(
+      child: Row(
         children: [
-          SizedBox(width: screenAdapter.getAdaptiveWidth(10)),
           SearchBoxWidget(
             key: Key('keywords'),
             hint: '输入题本名称',
@@ -149,32 +138,91 @@ class NoteView extends StatelessWidget {
       return Container(
         color: Colors.white,
         child: SingleChildScrollView(
-          child: Table(
-            columnWidths: {
-              0: FixedColumnWidth(screenAdapter.getAdaptiveWidth(300)),
-              1: FixedColumnWidth(screenAdapter.getAdaptiveWidth(200)),
-              2: FixedColumnWidth(screenAdapter.getAdaptiveWidth(100)),
-            },
+          child: Column(
             children: [
-              TableRow(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
-                  border: Border(
-                    bottom: BorderSide(color: Colors.grey[200]!),
-                  ),
-                ),
+              Table(
+                columnWidths: {
+                  0: FixedColumnWidth(screenAdapter.getAdaptiveWidth(260)),
+                  1: FixedColumnWidth(screenAdapter.getAdaptiveWidth(130)),
+                  2: FixedColumnWidth(screenAdapter.getAdaptiveWidth(90)),
+                },
                 children: [
-                  _buildHeaderCell('题本名称'),
-                  _buildHeaderCell('专业'),
-                  _buildHeaderCell('题目数量'),
+                  TableRow(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5F5F5),
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey[200]!),
+                      ),
+                    ),
+                    children: [
+                      _buildHeaderCell('题本名称'),
+                      _buildHeaderCell('专业'),
+                      _buildHeaderCell('题目数量'),
+                    ],
+                  ),
                 ],
               ),
-              ..._buildTableRows(books),
+              ...books.expand((book) {
+                final rows = [
+                  _buildBookRowWidget(book, false),
+                ];
+
+                if (book['Children'] != null &&
+                    logic.expandedBookIds.contains(book['id'].toString())) {
+                  final children = List<Map<String, dynamic>>.from(book['Children']);
+                  rows.addAll(
+                    children.map((childBook) => _buildBookRowWidget(childBook, true)),
+                  );
+                }
+
+                return rows;
+              }).toList(),
             ],
           ),
         ),
       );
     });
+  }
+
+  Widget _buildBookRowWidget(Map<String, dynamic> book, bool isChild) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: logic.selectedBookIds.contains(book['id'].toString())
+            ? const Color(0xFFE3F2FD)
+            : Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Colors.grey[200]!),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            logic.selectBook(book);
+            logic.updatePdfUrl(book['teacher_file_path'] ?? '');
+          },
+          hoverColor: Color(0x1C26395f),
+          child: Row(
+            children: [
+              SizedBox(
+                width: screenAdapter.getAdaptiveWidth(260),
+                child: _buildNameCell(book, isChild),
+              ),
+              SizedBox(
+                width: screenAdapter.getAdaptiveWidth(130),
+                child: _buildClickableCell(book['major_name'] ?? '', book),
+              ),
+              SizedBox(
+                width: screenAdapter.getAdaptiveWidth(90),
+                child: _buildClickableCell(book['questions_number']?.toString() ?? '0', book),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildHeaderCell(String text) {
@@ -193,43 +241,6 @@ class NoteView extends StatelessWidget {
           color: Colors.black87,
         ),
       ),
-    );
-  }
-
-  List<TableRow> _buildTableRows(List<Map<String, dynamic>> books) {
-    final List<TableRow> rows = [];
-
-    for (var book in books) {
-      rows.add(_buildBookRow(book, isChild: false));
-
-      if (book['Children'] != null &&
-          logic.expandedBookIds.contains(book['id'].toString())) {
-        final children = List<Map<String, dynamic>>.from(book['Children']);
-        for (var childBook in children) {
-          rows.add(_buildBookRow(childBook, isChild: true));
-        }
-      }
-    }
-
-    return rows;
-  }
-
-  TableRow _buildBookRow(Map<String, dynamic> book, {required bool isChild}) {
-    final screenAdapter = AppProviders.instance.screenAdapter;
-    final isSelected = logic.selectedBookIds.contains(book['id'].toString());
-
-    return TableRow(
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFFE3F2FD) : Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[200]!),
-        ),
-      ),
-      children: [
-        _buildNameCell(book, isChild),
-        _buildClickableCell(book['major_name'] ?? '', book),
-        _buildClickableCell(book['questions_number']?.toString() ?? '0', book),
-      ],
     );
   }
 
@@ -265,22 +276,15 @@ class NoteView extends StatelessWidget {
                 ),
               ),
             ),
-          if (isChild)
-            SizedBox(width: screenAdapter.getAdaptiveWidth(32)),
+          if (isChild) SizedBox(width: screenAdapter.getAdaptiveWidth(32)),
           Expanded(
-            child: InkWell(
-              onTap: () {
-                logic.selectBook(book);
-                logic.updatePdfUrl(book['teacher_file_path'] ?? '');
-              },
-              child: Text(
-                book['name'] ?? '',
-                style: TextStyle(
-                  fontSize: screenAdapter.getAdaptiveFontSize(14),
-                  color: Colors.black87,
-                ),
-                overflow: TextOverflow.ellipsis,
+            child: Text(
+              book['name'] ?? '',
+              style: TextStyle(
+                fontSize: screenAdapter.getAdaptiveFontSize(14),
+                color: Colors.black87,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -291,24 +295,18 @@ class NoteView extends StatelessWidget {
   Widget _buildClickableCell(String text, Map<String, dynamic> book) {
     final screenAdapter = AppProviders.instance.screenAdapter;
 
-    return InkWell(
-      onTap: () {
-        logic.selectBook(book);
-        logic.updatePdfUrl(book['teacher_file_path'] ?? '');
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          vertical: screenAdapter.getAdaptivePadding(8),
-          horizontal: screenAdapter.getAdaptivePadding(16),
+    return Container(
+      padding: EdgeInsets.symmetric(
+        vertical: screenAdapter.getAdaptivePadding(8),
+        horizontal: screenAdapter.getAdaptivePadding(16),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: screenAdapter.getAdaptiveFontSize(14),
+          color: Colors.black87,
         ),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: screenAdapter.getAdaptiveFontSize(14),
-            color: Colors.black87,
-          ),
-          overflow: TextOverflow.ellipsis,
-        ),
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }

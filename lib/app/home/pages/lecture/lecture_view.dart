@@ -64,8 +64,9 @@ class LectureTableView extends StatelessWidget {
                   )
                 : SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: screenAdapter.getAdaptiveWidth(250),
+              child: Container(
+                color: Colors.white,
+                width: screenAdapter.getAdaptiveWidth(270),
                 child: SfDataGrid(
                   source: LectureDataSource(logic: logic, context: context),
                   headerGridLinesVisibility: GridLinesVisibility.none,
@@ -143,13 +144,13 @@ class LectureDataSource extends DataGridSource {
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
     final screenAdapter = AppProviders.instance.screenAdapter;
-
+    
     final rowIndex = _rows.indexOf(row);
     final item = logic.list[rowIndex];
 
     return DataGridRowAdapter(
       color: _selectedRowIndex == rowIndex
-          ? const Color(0x70FFFFFF)
+          ? const Color(0xFFE3F2FD)
           : Colors.white,
       cells: row.getCells().map((cell) {
         final value = cell.value.toString();
@@ -163,6 +164,11 @@ class LectureDataSource extends DataGridSource {
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
             child: Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey[200]!),
+                ),
+              ),
               alignment: Alignment.center,
               padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8.0)),
               child: Text(

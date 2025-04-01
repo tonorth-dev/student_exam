@@ -243,7 +243,7 @@ class _PdfPreViewState extends State<PdfPreView> {
           TextSpan(
             text: message,
             style: TextStyle(
-              color: Colors.red, 
+              color: Colors.red,
               fontSize: screenAdapter.getAdaptiveFontSize(14),
             ),
           ),
@@ -387,10 +387,11 @@ class _PdfPreViewState extends State<PdfPreView> {
                   padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8)),
                 ),
                 Obx(() => Container(
-                  padding: EdgeInsets.symmetric(vertical: screenAdapter.getAdaptivePadding(4)),
                   child: Text(
                     '${(_currentZoom.value * 100).toInt()}%',
-                    style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(12)),
+                    style: TextStyle(
+                        fontSize: screenAdapter.getAdaptiveFontSize(12)
+                    ),
                   ),
                 )),
                 IconButton(
@@ -444,7 +445,7 @@ class _PdfPreViewState extends State<PdfPreView> {
         return Container(
           padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: Colors.white,
           ),
           child: Center(
             child: Text(
@@ -484,6 +485,7 @@ class _PdfPreViewState extends State<PdfPreView> {
       return Stack(
         children: [
           Container(
+            padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/note_page_bg.png'),

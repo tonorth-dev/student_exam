@@ -122,8 +122,8 @@ class LectureLogic extends GetxController {
 
     columns = [
       ColumnData(title: "ID", key: "id", width: 0),
-      ColumnData(title: "讲义名称", key: "name", width: 150),
-      ColumnData(title: "专业", key: "major_name", width: 100),
+      ColumnData(title: "讲义名称", key: "name", width: 160),
+      ColumnData(title: "专业", key: "major_name", width: 110),
       ColumnData(title: "岗位代码", key: "job_code", width: 0),
       ColumnData(title: "排序", key: "sort", width: 0),
       ColumnData(title: "创建者", key: "creator"),
