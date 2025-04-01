@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:student_exam/app/home/pages/note/logic.dart';
 import 'package:student_exam/common/app_providers.dart';
+import '../../../../component/widget.dart';
+import '../../../../theme/theme_util.dart';
 import '../common/app_bar.dart';
 
 import '../../sidebar/logic.dart';
@@ -33,7 +35,7 @@ class _NotePageState extends State<NotePage> {
   @override
   Widget build(BuildContext context) {
     final screenAdapter = AppProviders.instance.screenAdapter;
-    
+
     return Scaffold(
       appBar: CommonAppBar.buildExamAppBar(),
       body: Container(
@@ -43,25 +45,25 @@ class _NotePageState extends State<NotePage> {
             fit: BoxFit.fill, // Set the image fill method
           ),
         ),
-        child: Row(
-          children: [
+    child: Row(
+      children: [
             SizedBox(width: screenAdapter.getAdaptiveWidth(8)),
-            Expanded(
-              flex: 4,
-              child: Container(
+        Expanded(
+          flex: 3,
+          child: Container(
                 padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
                 child: NoteView(),
-              ),
-            ),
-            Expanded(
-              flex: 5,
-              child: Container(
+          ),
+        ),
+        Expanded(
+          flex: 5,
+          child: Container(
                 padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
-                child: PdfPreView(
-                    key: const Key("pdf_review"), title: "文件预览"),
-              ),
-            ),
-          ],
+            child: PdfPreView(
+                key: const Key("pdf_review"), title: "文件预览"),
+          ),
+        ),
+      ],
         ),
       ),
     );
@@ -83,6 +85,9 @@ class NoteView extends StatelessWidget {
       body: Column(
         children: [
           _buildSearchBar(),
+          ThemeUtil.height(),
+          ThemeUtil.lineH(),
+          ThemeUtil.height(),
           Expanded(
             child: _buildDataTable(),
           ),
@@ -93,40 +98,42 @@ class NoteView extends StatelessWidget {
 
   Widget _buildSearchBar() {
     final screenAdapter = AppProviders.instance.screenAdapter;
-    
+
     return Container(
-      padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16)),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: logic.searchController,
-              style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
-              decoration: InputDecoration(
-                hintText: '搜索题本',
-                prefixIcon: Icon(Icons.search, size: screenAdapter.getAdaptiveIconSize(24)),
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(
-                  vertical: screenAdapter.getAdaptivePadding(8),
-                  horizontal: screenAdapter.getAdaptivePadding(12),
-                ),
-              ),
-              onChanged: logic.onSearchChanged,
-            ),
+      padding: EdgeInsets.symmetric(
+        horizontal: screenAdapter.getAdaptivePadding(16),
+        vertical: screenAdapter.getAdaptivePadding(8),
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey[200]!,
+            width: 1,
           ),
-          SizedBox(width: screenAdapter.getAdaptiveWidth(16)),
-          ElevatedButton(
-            onPressed: logic.onSearch,
-            style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.symmetric(
-                vertical: screenAdapter.getAdaptivePadding(10),
-                horizontal: screenAdapter.getAdaptivePadding(16),
-              ),
-            ),
-            child: Text(
-              '搜索', 
-              style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
-            ),
+        ),
+      ),
+      child:  Row(
+        children: [
+          SizedBox(width: screenAdapter.getAdaptiveWidth(10)),
+          SearchBoxWidget(
+            key: Key('keywords'),
+            hint: '输入题本名称',
+            width: screenAdapter.getAdaptiveWidth(170),
+            onTextChanged: (String value) {
+              logic.searchText.value = value;
+            },
+            searchText: logic.searchText,
+          ),
+          SizedBox(width: screenAdapter.getAdaptiveWidth(10)),
+          SearchButtonWidget(
+            width: screenAdapter.getAdaptiveWidth(55),
+            height: screenAdapter.getAdaptiveHeight(30),
+            key: Key('search'),
+            onPressed: () {
+              logic.selectedBookIds.clear();
+              logic.fetchData();
+            },
           ),
         ],
       ),
@@ -135,58 +142,67 @@ class NoteView extends StatelessWidget {
 
   Widget _buildDataTable() {
     final screenAdapter = AppProviders.instance.screenAdapter;
-    
+
     return Obx(() {
       final books = logic.list;
-      
-      return SingleChildScrollView(
-        child: DataTable(
-          columnSpacing: 0,
-          showCheckboxColumn: false,
-          dataRowHeight: screenAdapter.getAdaptiveHeight(48),
-          headingRowHeight: screenAdapter.getAdaptiveHeight(56),
-          columns: [
-            DataColumn(
-              label: SizedBox(
-                width: screenAdapter.getAdaptiveWidth(300),
-                child: Text(
-                  '题本名称',
-                  style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
+
+      return Container(
+        color: Colors.white,
+        child: SingleChildScrollView(
+          child: Table(
+            columnWidths: {
+              0: FixedColumnWidth(screenAdapter.getAdaptiveWidth(300)),
+              1: FixedColumnWidth(screenAdapter.getAdaptiveWidth(200)),
+              2: FixedColumnWidth(screenAdapter.getAdaptiveWidth(100)),
+            },
+            children: [
+              TableRow(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F5),
+                  border: Border(
+                    bottom: BorderSide(color: Colors.grey[200]!),
+                  ),
                 ),
+                children: [
+                  _buildHeaderCell('题本名称'),
+                  _buildHeaderCell('专业'),
+                  _buildHeaderCell('题目数量'),
+                ],
               ),
-            ),
-            DataColumn(
-              label: SizedBox(
-                width: screenAdapter.getAdaptiveWidth(200),
-                child: Text(
-                  '专业',
-                  style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
-                ),
-              ),
-            ),
-            DataColumn(
-              label: SizedBox(
-                width: screenAdapter.getAdaptiveWidth(100),
-                child: Text(
-                  '题目数量',
-                  style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
-                ),
-              ),
-            ),
-          ],
-          rows: _buildTableRows(books),
+              ..._buildTableRows(books),
+            ],
+          ),
         ),
       );
     });
   }
 
-  List<DataRow> _buildTableRows(List<Map<String, dynamic>> books) {
-    final List<DataRow> rows = [];
-    
+  Widget _buildHeaderCell(String text) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+        vertical: screenAdapter.getAdaptivePadding(12),
+        horizontal: screenAdapter.getAdaptivePadding(16),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: screenAdapter.getAdaptiveFontSize(14),
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
+        ),
+      ),
+    );
+  }
+
+  List<TableRow> _buildTableRows(List<Map<String, dynamic>> books) {
+    final List<TableRow> rows = [];
+
     for (var book in books) {
       rows.add(_buildBookRow(book, isChild: false));
-      
-      if (book['Children'] != null && 
+
+      if (book['Children'] != null &&
           logic.expandedBookIds.contains(book['id'].toString())) {
         final children = List<Map<String, dynamic>>.from(book['Children']);
         for (var childBook in children) {
@@ -194,104 +210,106 @@ class NoteView extends StatelessWidget {
         }
       }
     }
-    
+
     return rows;
   }
 
-  DataRow _buildBookRow(Map<String, dynamic> book, {required bool isChild}) {
+  TableRow _buildBookRow(Map<String, dynamic> book, {required bool isChild}) {
     final screenAdapter = AppProviders.instance.screenAdapter;
     final isSelected = logic.selectedBookIds.contains(book['id'].toString());
-    
-    return DataRow(
-      color: isSelected ? MaterialStateProperty.all(const Color(0xFFE0F7FA)) : null,
-      cells: [
-        DataCell(
-          SizedBox(
-            width: screenAdapter.getAdaptiveWidth(300),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (!isChild && book['Children'] != null && (book['Children'] as List).isNotEmpty)
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => logic.toggleExpand(book['id']),
-                      child: Container(
-                        width: screenAdapter.getAdaptiveWidth(40),
-                        height: screenAdapter.getAdaptiveHeight(40),
-                        alignment: Alignment.center,
-                        child: Text(
-                          logic.expandedBookIds.contains(book['id'].toString()) ? '-' : '+',
-                          style: TextStyle(
-                            fontSize: screenAdapter.getAdaptiveFontSize(24),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                if (isChild) SizedBox(width: screenAdapter.getAdaptiveWidth(40)),
-                Expanded(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        logic.selectBook(book);
-                        logic.updatePdfUrl(book['teacher_file_path'] ?? '');
-                      },
-                      child: Container(
-                        padding: EdgeInsets.symmetric(vertical: screenAdapter.getAdaptivePadding(8)),
-                        child: Text(
-                          book['name'] ?? '',
-                          style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+
+    return TableRow(
+      decoration: BoxDecoration(
+        color: isSelected ? const Color(0xFFE3F2FD) : Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Colors.grey[200]!),
         ),
-        DataCell(
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                logic.selectBook(book);
-                logic.updatePdfUrl(book['teacher_file_path'] ?? '');
-              },
-              child: SizedBox(
-                width: screenAdapter.getAdaptiveWidth(200),
-                child: Text(
-                  book['major_name'] ?? '',
-                  style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-          ),
-        ),
-        DataCell(
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                logic.selectBook(book);
-                logic.updatePdfUrl(book['teacher_file_path'] ?? '');
-              },
-              child: SizedBox(
-                width: screenAdapter.getAdaptiveWidth(100),
-                child: Text(
-                  book['questions_number']?.toString() ?? '0',
-                  style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
-                ),
-              ),
-            ),
-          ),
-        ),
+      ),
+      children: [
+        _buildNameCell(book, isChild),
+        _buildClickableCell(book['major_name'] ?? '', book),
+        _buildClickableCell(book['questions_number']?.toString() ?? '0', book),
       ],
+    );
+  }
+
+  Widget _buildNameCell(Map<String, dynamic> book, bool isChild) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+        vertical: screenAdapter.getAdaptivePadding(8),
+        horizontal: screenAdapter.getAdaptivePadding(16),
+      ),
+      child: Row(
+        children: [
+          if (!isChild && book['Children'] != null && (book['Children'] as List).isNotEmpty)
+            InkWell(
+              onTap: () => logic.toggleExpand(book['id']),
+              child: Container(
+                width: screenAdapter.getAdaptiveWidth(24),
+                height: screenAdapter.getAdaptiveHeight(24),
+                margin: EdgeInsets.only(right: screenAdapter.getAdaptivePadding(8)),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(4)),
+                ),
+                child: Center(
+                  child: Text(
+                    logic.expandedBookIds.contains(book['id'].toString()) ? '-' : '+',
+                    style: TextStyle(
+                      fontSize: screenAdapter.getAdaptiveFontSize(16),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          if (isChild)
+            SizedBox(width: screenAdapter.getAdaptiveWidth(32)),
+          Expanded(
+            child: InkWell(
+              onTap: () {
+                logic.selectBook(book);
+                logic.updatePdfUrl(book['teacher_file_path'] ?? '');
+              },
+              child: Text(
+                book['name'] ?? '',
+                style: TextStyle(
+                  fontSize: screenAdapter.getAdaptiveFontSize(14),
+                  color: Colors.black87,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClickableCell(String text, Map<String, dynamic> book) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+
+    return InkWell(
+      onTap: () {
+        logic.selectBook(book);
+        logic.updatePdfUrl(book['teacher_file_path'] ?? '');
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          vertical: screenAdapter.getAdaptivePadding(8),
+          horizontal: screenAdapter.getAdaptivePadding(16),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: screenAdapter.getAdaptiveFontSize(14),
+            color: Colors.black87,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     );
   }
 }

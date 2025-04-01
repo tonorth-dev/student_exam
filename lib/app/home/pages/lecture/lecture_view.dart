@@ -13,13 +13,13 @@ import 'package:provider/provider.dart';
 class LectureTableView extends StatelessWidget {
   final String title;
   final LectureLogic logic;
-  
+
   const LectureTableView({super.key, required this.title, required this.logic});
 
   @override
   Widget build(BuildContext context) {
     final screenAdapter = AppProviders.instance.screenAdapter;
-    
+
     return ChangeNotifierProvider<ButtonState>(
       create: (_) => ButtonState(),
       child: Column(
@@ -84,8 +84,8 @@ class LectureTableView extends StatelessWidget {
                         child: Text( // 使用 SelectableText 使文本可选
                           column.title,
                           style: TextStyle(
-                            color: Colors.black87, 
-                            fontSize: screenAdapter.getAdaptiveFontSize(14), 
+                            color: Colors.black87,
+                            fontSize: screenAdapter.getAdaptiveFontSize(14),
                             fontWeight: FontWeight.w700
                           ),
                         ),
@@ -143,16 +143,14 @@ class LectureDataSource extends DataGridSource {
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
     final screenAdapter = AppProviders.instance.screenAdapter;
-    
+
     final rowIndex = _rows.indexOf(row);
     final item = logic.list[rowIndex];
 
     return DataGridRowAdapter(
       color: _selectedRowIndex == rowIndex
-          ? const Color(0xFFE0F7FA)
-          : rowIndex.isEven
-              ? const Color(0x50F1FDFC)
-              : Color(0x70FFFFFF),
+          ? const Color(0x70FFFFFF)
+          : Colors.white,
       cells: row.getCells().map((cell) {
         final value = cell.value.toString();
         return GestureDetector(
@@ -170,7 +168,7 @@ class LectureDataSource extends DataGridSource {
               child: Text(
                 value,
                 style: TextStyle(
-                  color: Color(0xff26395f), 
+                  color: Color(0xff26395f),
                   fontWeight: FontWeight.w500,
                   fontSize: screenAdapter.getAdaptiveFontSize(14)
                 ),
