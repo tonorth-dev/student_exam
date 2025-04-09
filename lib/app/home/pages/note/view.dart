@@ -162,47 +162,67 @@ class NoteView extends StatelessWidget {
                   ),
                 ],
               ),
-              ...books.map((book) => Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    logic.selectBook(book);
-                    logic.updatePdfUrl(book['teacher_file_path'] ?? '');
-                  },
-                  hoverColor: Color(0x1A26395f),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: logic.selectedBookIds.contains(book['id'].toString())
-                          ? const Color(0xFFE3F2FD)
-                          : Colors.white,
-                      border: Border(
-                        bottom: BorderSide(color: Colors.grey[200]!),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: screenAdapter.getAdaptiveWidth(260),
-                          child: _buildNameCell(book, false),
-                        ),
-                        SizedBox(
-                          width: screenAdapter.getAdaptiveWidth(130),
-                          child: _buildClickableCell(book['major_name'] ?? '', book),
-                        ),
-                        SizedBox(
-                          width: screenAdapter.getAdaptiveWidth(90),
-                          child: _buildClickableCell(book['questions_number']?.toString() ?? '0', book),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              )).toList(),
+              ...books.expand((book) {
+                final rows = [
+                  _buildBookRowWidget(book, false),
+                ];
+
+                if (book['Children'] != null &&
+                    logic.expandedBookIds.contains(book['id'].toString())) {
+                  final children = List<Map<String, dynamic>>.from(book['Children']);
+                  rows.addAll(
+                    children.map((childBook) => _buildBookRowWidget(childBook, true)),
+                  );
+                }
+
+                return rows;
+              }).toList(),
             ],
           ),
         ),
       );
     });
+  }
+
+  Widget _buildBookRowWidget(Map<String, dynamic> book, bool isChild) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: logic.selectedBookIds.contains(book['id'].toString())
+            ? const Color(0xFFE3F2FD)
+            : Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Colors.grey[200]!),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            logic.selectBook(book);
+            logic.updatePdfUrl(book['teacher_file_path'] ?? '');
+          },
+          hoverColor: Color(0x1C26395f),
+          child: Row(
+            children: [
+              SizedBox(
+                width: screenAdapter.getAdaptiveWidth(260),
+                child: _buildNameCell(book, isChild),
+              ),
+              SizedBox(
+                width: screenAdapter.getAdaptiveWidth(130),
+                child: _buildClickableCell(book['major_name'] ?? '', book),
+              ),
+              SizedBox(
+                width: screenAdapter.getAdaptiveWidth(90),
+                child: _buildClickableCell(book['questions_number']?.toString() ?? '0', book),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildHeaderCell(String text) {

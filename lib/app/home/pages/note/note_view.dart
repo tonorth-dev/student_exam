@@ -176,5 +176,5 @@ class NoteDataSource extends DataGridSource {
         );
       }).toList(),
     );
-  }
+}
 }
