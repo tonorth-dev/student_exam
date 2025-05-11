@@ -30,18 +30,18 @@ if [ "$OS" = "Darwin" ]; then
     fi
     
     # 应用路径
-    APP_PATH="build/macos/Build/Products/Release/红师教育教师端.app"
-    DMG_PATH="build/红师教育教师端.dmg"
+    APP_PATH="build/macos/Build/Products/Release/红师教育学生端.app"
+    DMG_PATH="build/红师教育学生端.dmg"
     
     # 创建 DMG
     echo "创建 DMG 安装包..."
     create-dmg \
-        --volname "红师教育教师端" \
+        --volname "红师教育学生端" \
         --window-pos 200 120 \
         --window-size 800 400 \
         --icon-size 100 \
-        --icon "红师教育教师端.app" 200 190 \
-        --hide-extension "红师教育教师端.app" \
+        --icon "红师教育学生端.app" 200 190 \
+        --hide-extension "红师教育学生端.app" \
         --app-drop-link 600 185 \
         "$DMG_PATH" \
         "$APP_PATH"
@@ -61,10 +61,10 @@ elif [ "$OS" = "MINGW64_NT-10.0" ] || [ "$OS" = "MINGW32_NT-10.0" ]; then
     
     # 创建 Inno Setup 脚本
     cat > installer.iss << EOF
-#define MyAppName "红师教育教师端"
+#define MyAppName "红师教育学生端"
 #define MyAppVersion "1.1.0"
 #define MyAppPublisher "红师教育"
-#define MyAppExeName "红师教育教师端.exe"
+#define MyAppExeName "红师教育学生端.exe"
 
 [Setup]
 AppName={#MyAppName}
@@ -73,7 +73,7 @@ AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 OutputDir=build
-OutputBaseFilename=红师教育教师端_setup
+OutputBaseFilename=红师教育学生端_setup
 Compression=lzma
 SolidCompression=yes
 SetupIconFile=assets\images\logo.png
@@ -95,7 +95,7 @@ EOF
     # 编译安装程序
     "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
     
-    echo "Windows 安装程序已生成: build/红师教育教师端_setup.exe"
+    echo "Windows 安装程序已生成: build/红师教育学生端_setup.exe"
 else
     echo "不支持的操作系统"
     exit 1
