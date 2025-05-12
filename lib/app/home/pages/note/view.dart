@@ -1,8 +1,6 @@
 import 'package:student_exam/app/home/pages/note/pdf_pre_view.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:student_exam/app/home/pages/note/logic.dart';
 import 'package:student_exam/common/app_providers.dart';
 import '../../../../component/widget.dart';
@@ -10,7 +8,6 @@ import '../../../../theme/theme_util.dart';
 import '../common/app_bar.dart';
 
 import '../../sidebar/logic.dart';
-import 'note_view.dart';
 import '../../head/logic.dart';
 
 class NotePage extends StatefulWidget {
@@ -51,14 +48,16 @@ class _NotePageState extends State<NotePage> {
             Expanded(
               flex: 9,
               child: Container(
-                padding: EdgeInsets.only(left: 10, right: 0, top: 32,bottom: 16),
+                padding:
+                    EdgeInsets.only(left: 10, right: 0, top: 32, bottom: 16),
                 child: NoteView(),
               ),
             ),
             Expanded(
               flex: 17,
               child: Container(
-                padding: EdgeInsets.only(left: 20, right: 16, top: 16,bottom: 16),
+                padding:
+                    EdgeInsets.only(left: 20, right: 16, top: 16, bottom: 16),
                 child: PdfPreView(key: const Key("pdf_review"), title: "文件预览"),
               ),
             ),
@@ -169,9 +168,11 @@ class NoteView extends StatelessWidget {
 
                 if (book['Children'] != null &&
                     logic.expandedBookIds.contains(book['id'].toString())) {
-                  final children = List<Map<String, dynamic>>.from(book['Children']);
+                  final children =
+                      List<Map<String, dynamic>>.from(book['Children']);
                   rows.addAll(
-                    children.map((childBook) => _buildBookRowWidget(childBook, true)),
+                    children.map(
+                        (childBook) => _buildBookRowWidget(childBook, true)),
                   );
                 }
 
@@ -216,7 +217,8 @@ class NoteView extends StatelessWidget {
               ),
               SizedBox(
                 width: screenAdapter.getAdaptiveWidth(90),
-                child: _buildClickableCell(book['questions_number']?.toString() ?? '0', book),
+                child: _buildClickableCell(
+                    book['questions_number']?.toString() ?? '0', book),
               ),
             ],
           ),
@@ -254,20 +256,26 @@ class NoteView extends StatelessWidget {
       ),
       child: Row(
         children: [
-          if (!isChild && book['Children'] != null && (book['Children'] as List).isNotEmpty)
+          if (!isChild &&
+              book['Children'] != null &&
+              (book['Children'] as List).isNotEmpty)
             InkWell(
               onTap: () => logic.toggleExpand(book['id']),
               child: Container(
                 width: screenAdapter.getAdaptiveWidth(24),
                 height: screenAdapter.getAdaptiveHeight(24),
-                margin: EdgeInsets.only(right: screenAdapter.getAdaptivePadding(8)),
+                margin:
+                    EdgeInsets.only(right: screenAdapter.getAdaptivePadding(8)),
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(4)),
+                  borderRadius:
+                      BorderRadius.circular(screenAdapter.getAdaptiveWidth(4)),
                 ),
                 child: Center(
                   child: Text(
-                    logic.expandedBookIds.contains(book['id'].toString()) ? '-' : '+',
+                    logic.expandedBookIds.contains(book['id'].toString())
+                        ? '-'
+                        : '+',
                     style: TextStyle(
                       fontSize: screenAdapter.getAdaptiveFontSize(16),
                       fontWeight: FontWeight.bold,

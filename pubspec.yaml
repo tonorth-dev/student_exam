@@ -1,7 +1,7 @@
 name: student_exam
 description: "红师教育学生端"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.2.0+1
+version: 1.2.1+1
 environment:
   sdk: '>=3.2.0 <4.0.0'
 dependencies:
@@ -106,9 +106,9 @@ flutter:
         - asset: assets/fonts/Anton-Regular.ttf
 
 msix_config:
-  display_name: 红师教育教师端
+  display_name: 红师教育学生端
   publisher_display_name: 红师教育
-  identity_name: com.hongshijiaoyu.teacher
+  identity_name: com.hongshijiaoyu.student
   logo_path: assets/images/logo.png
   capabilities: internetClient
 
@@ -120,5 +120,5 @@ macos:
   info:
     plist:
       CFBundleIconFile: AppIcon
-      CFBundleDisplayName: 红师教育教师端
-      CFBundleIdentifier: com.hongshijiaoyu.teacher
+      CFBundleDisplayName: 红师教育学生端
+      CFBundleIdentifier: com.hongshijiaoyu.student
