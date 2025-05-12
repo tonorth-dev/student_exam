@@ -7,6 +7,7 @@ import 'package:student_exam/theme/ui_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../common/app_providers.dart';
 import 'logic.dart';
 
 class HeadView extends StatefulWidget {
@@ -16,6 +17,7 @@ class HeadView extends StatefulWidget {
 
 class _HeadViewState extends State<HeadView> {
   final HeadLogic controller = Get.put(HeadLogic());
+  final screenAdapter = AppProviders.instance.screenAdapter;
 
   @override
   void didChangeDependencies() {
@@ -45,6 +47,13 @@ class _HeadViewState extends State<HeadView> {
               ThemeUtil.width(),
               _breadcrumb(),
               const Spacer(),
+        Padding(
+          padding: EdgeInsets.only(
+              left: screenAdapter.getAdaptivePadding(10.0),
+              top: screenAdapter.getAdaptivePadding(20.0),
+              right: screenAdapter.getAdaptivePadding(20.0),
+              bottom: screenAdapter.getAdaptivePadding(10.0)),
+          child:
               InkWell(
                 borderRadius: BorderRadius.circular(32),
                 onTap: () {
@@ -54,6 +63,7 @@ class _HeadViewState extends State<HeadView> {
                   // 圆形头像
                     child: Image.asset("assets/images/cat.jpeg",height: 42,width: 42,)),
               ),
+        ),
               ThemeUtil.width(),
             ],
           ),

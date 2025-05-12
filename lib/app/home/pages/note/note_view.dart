@@ -167,7 +167,8 @@ class NoteDataSource extends DataGridSource {
               child: Text(
                 value,
                 style: TextStyle(
-                  color: Colors.black87, 
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
                   fontSize: screenAdapter.getAdaptiveFontSize(14),
                 ),
               ),

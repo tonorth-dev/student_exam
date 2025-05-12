@@ -24,7 +24,7 @@ class PsychologyPage extends StatefulWidget {
 
 class _PsychologyPageState extends State<PsychologyPage> {
   final logic = Get.put(PsychologyLogic());
-  final headerLogic = Get.find<HeadLogic>();
+  final headerLogic = Get.put(HeadLogic());
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +136,8 @@ class _PsychologyPageState extends State<PsychologyPage> {
                     logic.currentQuestion.value!['question'] ?? "",
                     style: TextStyle(
                       fontSize: screenAdapter.getAdaptiveFontSize(20),
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'PingFang SC',
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -168,7 +169,7 @@ class _PsychologyPageState extends State<PsychologyPage> {
                     "心理测试过程，最好一次性完成，以方便导师准确判断您的测试情况",
                     style: TextStyle(
                       fontSize: screenAdapter.getAdaptiveFontSize(16),
-                      color: Colors.grey.shade400,
+                      color: Colors.grey.shade600,
                       fontStyle: FontStyle.italic,
                     ),
                     textAlign: TextAlign.center,

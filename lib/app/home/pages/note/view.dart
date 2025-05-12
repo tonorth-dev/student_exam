@@ -237,7 +237,7 @@ class NoteView extends StatelessWidget {
         text,
         style: TextStyle(
           fontSize: screenAdapter.getAdaptiveFontSize(14),
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
           color: Colors.black87,
         ),
       ),

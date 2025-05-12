@@ -98,6 +98,7 @@ class SidebarPage extends StatelessWidget {
                       style: TextStyle(
                         color: UiTheme.getOnPrimary(selected),
                         fontSize: screenAdapter.getAdaptiveFontSize(14),
+                        fontWeight: FontWeight.w600
                       ),
                     ),
                     const Spacer(),

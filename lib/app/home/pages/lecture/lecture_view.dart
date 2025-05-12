@@ -175,7 +175,7 @@ class LectureDataSource extends DataGridSource {
                 value,
                 style: TextStyle(
                   color: Color(0xff26395f),
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   fontSize: screenAdapter.getAdaptiveFontSize(14)
                 ),
               ),
