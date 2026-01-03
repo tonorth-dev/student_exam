@@ -14,7 +14,7 @@ abstract class MyTheme {
     return ThemeData(
       fontFamily: fontFamily,
       scaffoldBackgroundColor: background(), // 背景颜色
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
           labelColor: onBackground(),
           indicatorColor: primary(),
       ),

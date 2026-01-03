@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
@@ -15,197 +14,196 @@ import '../../../../component/watermark.dart';
 import '../../../../common/app_providers.dart';
 import 'logic.dart';
 
+/// PDF 预览组件
 class PdfPreView extends StatefulWidget {
   final String title;
 
-  const PdfPreView({Key? key, required this.title}) : super(key: key);
+  const PdfPreView({super.key, required this.title});
 
   @override
-  _PdfPreViewState createState() => _PdfPreViewState();
+  State<PdfPreView> createState() => _PdfPreViewState();
 }
 
 class _PdfPreViewState extends State<PdfPreView> {
-  final LectureLogic pdfLogic = Get.put(LectureLogic());
-  late PdfViewerController _pdfController;
-  final screenAdapter = AppProviders.instance.screenAdapter;
+  // 依赖和控制器
+  final LectureLogic _lectureLogic = Get.put(LectureLogic());
+  final _screenAdapter = AppProviders.instance.screenAdapter;
+  late final PdfViewerController _pdfController;
+
+  // PDF 状态
   String? _currentUrl;
-  String? _localFilePath;
   String? _decryptedFilePath;
+  bool _isPdfLoaded = false;
   int _lastPageNumber = 1;
   bool _isChangingPage = false;
-  bool _isPdfLoaded = false;
-  final RxDouble _currentZoom = 1.0.obs;
-  static const double _zoomStep = 0.1;
-  static const int _maxZoomClicks = 8;
-  static const double _minZoom = 0.5;
-  final RxBool isFullScreen = false.obs;
+
+  // 缩放状态
+  final RxDouble _zoomLevel = 1.0.obs;
+  static const double _minZoom = 1.0;  // 最小 100%
+  static const double _maxZoom = 2.0;  // 最大 200%
+
+  // 加载状态
   final RxBool _isLoading = false.obs;
   final RxDouble _loadingProgress = 0.0.obs;
+
+  // 全屏状态
+  final RxBool _isFullScreen = false.obs;
+
+  // 记录每个PDF的阅读进度（URL -> 页码）
+  final Map<String, int> _readingProgress = {};
 
   @override
   void initState() {
     super.initState();
     _pdfController = PdfViewerController();
-    pdfLogic.selectedPdfUrl.listen((url) async {
+
+    // 监听 PDF URL 变化
+    _lectureLogic.selectedPdfUrl.listen((url) async {
       if (url != null && mounted) {
-        await _initializePdf(url);
+        // 切换PDF时，保存当前页码
+        if (_currentUrl != null && _isPdfLoaded) {
+          _readingProgress[_currentUrl!] = _pdfController.pageNumber;
+        }
+        // 重置缩放为100%
+        _zoomLevel.value = 1.0;
+        await _loadPdf(url);
       }
     });
   }
 
   @override
   void dispose() {
-    _isPdfLoaded = false;
-    _isChangingPage = false;
-    _pdfController.dispose();
-    // 清理临时文件
-    if (_localFilePath != null) {
-      final tempFile = File(_localFilePath!);
-      tempFile.delete().catchError((e) => debugPrint('Error deleting temp file: $e'));
+    // 保存当前阅读进度
+    if (_currentUrl != null && _isPdfLoaded) {
+      _readingProgress[_currentUrl!] = _pdfController.pageNumber;
     }
+    _pdfController.dispose();
+    _cleanupTempFiles();
     super.dispose();
   }
 
-  Future<String> _getLocalFilePath(String url) async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final cachePath = p.join(directory.path, 'pdf_cache');
-      final cacheDir = Directory(cachePath);
-
-      if (!await cacheDir.exists()) {
-        await cacheDir.create(recursive: true);
-      }
-
-      final urlBytes = utf8.encode(url);
-      final urlHash = base64Url.encode(urlBytes).replaceAll(RegExp(r'[/\\?%*:|"<>]'), '_');
-      return p.join(cachePath, '$urlHash.encrypted');
-    } catch (e) {
-      debugPrint('生成文件路径时出错: $e');
-      rethrow;
+  /// 清理临时文件
+  void _cleanupTempFiles() {
+    if (_decryptedFilePath != null) {
+      File(_decryptedFilePath!).delete().catchError((e) {
+        debugPrint('清理临时文件失败: $e');
+        return File(_decryptedFilePath!);
+      });
     }
   }
 
-  Future<String> _getDecryptedFilePath(String url) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final decryptedPath = p.join(directory.path, 'pdf_decrypted');
-    final decryptedDir = Directory(decryptedPath);
+  // ========== PDF 加载相关 ==========
 
-    if (!await decryptedDir.exists()) {
-      await decryptedDir.create(recursive: true);
-    }
-
-    final urlBytes = utf8.encode(url);
-    final urlHash = base64Url.encode(urlBytes).replaceAll(RegExp(r'[/\\?%*:|"<>]'), '_');
-    return p.join(decryptedPath, '$urlHash.pdf');
-  }
-
-  Future<void> _initializePdf(String url) async {
+  /// 加载 PDF
+  Future<void> _loadPdf(String url) async {
     if (url.isEmpty || _currentUrl == url) return;
 
     try {
       _isLoading.value = true;
       _loadingProgress.value = 0.0;
+      _isPdfLoaded = false;
 
       final cleanUrl = url.trim();
-      String? localPath = await _getLocalFilePath(cleanUrl);
-      String decryptedPath = await _getDecryptedFilePath(cleanUrl);
+      final decryptedPath = await _getDecryptedFilePath(cleanUrl);
 
-      // 检查解密后的文件是否存在且有效
-      if (await _isDecryptedFileValid(decryptedPath)) {
-        setState(() {
-          _currentUrl = cleanUrl;
-          _decryptedFilePath = decryptedPath;
-          _localFilePath = decryptedPath;
-        });
-        _isLoading.value = false;
+      // 检查解密文件缓存
+      if (await _isFileValid(decryptedPath)) {
+        _updatePdfPath(cleanUrl, decryptedPath);
         return;
       }
 
-      // 检查加密文件是否存在且有效
-      if (await _isCacheValid(localPath)) {
-        await _decryptFile(localPath, decryptedPath);
-        setState(() {
-          _currentUrl = cleanUrl;
-          _decryptedFilePath = decryptedPath;
-          _localFilePath = decryptedPath;
-        });
-        _isLoading.value = false;
+      // 检查加密文件缓存
+      final encryptedPath = await _getEncryptedFilePath(cleanUrl);
+      if (await _isFileValid(encryptedPath)) {
+        await _decryptFile(encryptedPath, decryptedPath);
+        _updatePdfPath(cleanUrl, decryptedPath);
         return;
       }
 
-      // 下载并处理文件
-      await _downloadAndProcessFile(cleanUrl, localPath, decryptedPath);
-
+      // 下载并处理新文件
+      await _downloadAndDecryptFile(cleanUrl, encryptedPath, decryptedPath);
+      _updatePdfPath(cleanUrl, decryptedPath);
     } catch (e) {
-      debugPrint('初始化 PDF 时出错: $e');
+      debugPrint('加载 PDF 失败: $e');
+      if (mounted) _showError('PDF 加载失败：$e');
+    } finally {
       _isLoading.value = false;
-      if (mounted) _showError('PDF 加载失败：${e.toString()}');
     }
   }
 
-  Future<bool> _isDecryptedFileValid(String filePath) async {
+  /// 更新 PDF 路径
+  void _updatePdfPath(String url, String path) {
+    if (!mounted) return;
+    setState(() {
+      _currentUrl = url;
+      _decryptedFilePath = path;
+    });
+  }
+
+  /// 获取加密文件路径
+  Future<String> _getEncryptedFilePath(String url) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final cachePath = p.join(directory.path, 'pdf_cache');
+    await Directory(cachePath).create(recursive: true);
+    final urlHash = _generateUrlHash(url);
+    return p.join(cachePath, '$urlHash.encrypted');
+  }
+
+  /// 获取解密文件路径
+  Future<String> _getDecryptedFilePath(String url) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final decryptedPath = p.join(directory.path, 'pdf_decrypted');
+    await Directory(decryptedPath).create(recursive: true);
+    final urlHash = _generateUrlHash(url);
+    return p.join(decryptedPath, '$urlHash.pdf');
+  }
+
+  /// 生成 URL 哈希值
+  String _generateUrlHash(String url) {
+    final urlBytes = utf8.encode(url);
+    return base64Url.encode(urlBytes).replaceAll(RegExp(r'[/\\?%*:|"<>]'), '_');
+  }
+
+  /// 检查文件是否有效（存在且未过期）
+  Future<bool> _isFileValid(String path) async {
     try {
-      final file = File(filePath);
-      if (await file.exists()) {
-        final fileSize = await file.length();
-        if (fileSize == 0) return false;
+      final file = File(path);
+      if (!await file.exists()) return false;
+      if (await file.length() == 0) return false;
 
-        final lastModified = await file.lastModified();
-        final now = DateTime.now();
-        final isValid = now.difference(lastModified).inDays < 7;
-        return isValid;
-      }
+      final lastModified = await file.lastModified();
+      final daysSinceModified = DateTime.now().difference(lastModified).inDays;
+      return daysSinceModified < 7;
     } catch (e) {
-      debugPrint('检查解密文件时出错: $e');
+      debugPrint('检查文件有效性失败: $e');
+      return false;
     }
-    return false;
   }
 
+  /// 解密文件
   Future<void> _decryptFile(String encryptedPath, String decryptedPath) async {
-    try {
-      final encryptedFile = File(encryptedPath);
-      final encryptedBytes = await encryptedFile.readAsBytes();
-      final decryptedBytes = EncryptionUtil.decryptBytes(encryptedBytes);
-
-      final decryptedFile = File(decryptedPath);
-      await decryptedFile.writeAsBytes(decryptedBytes);
-    } catch (e) {
-      debugPrint('解密文件时出错: $e');
-      rethrow;
-    }
+    final encryptedBytes = await File(encryptedPath).readAsBytes();
+    final decryptedBytes = EncryptionUtil.decryptBytes(encryptedBytes);
+    await File(decryptedPath).writeAsBytes(decryptedBytes);
   }
 
-  Future<bool> _isCacheValid(String filePath) async {
-    try {
-      final file = File(filePath);
-      if (await file.exists()) {
-        final fileSize = await file.length();
-        if (fileSize == 0) return false;
-
-        final lastModified = await file.lastModified();
-        final now = DateTime.now();
-        final isValid = now.difference(lastModified).inDays < 7;
-        return isValid;
-      }
-    } catch (e) {
-      debugPrint('检查缓存文件时出错: $e');
-    }
-    return false;
-  }
-
-  Future<void> _downloadAndProcessFile(String url, String localPath, String decryptedPath) async {
+  /// 下载并解密文件
+  Future<void> _downloadAndDecryptFile(
+    String url,
+    String encryptedPath,
+    String decryptedPath,
+  ) async {
     final client = http.Client();
     try {
-      final request = http.Request('GET', Uri.parse(url));
-      final response = await client.send(request);
+      final response = await client.send(http.Request('GET', Uri.parse(url)));
 
       if (response.statusCode != 200) {
-        throw Exception('下载 PDF 失败: HTTP ${response.statusCode}');
+        throw Exception('下载失败: HTTP ${response.statusCode}');
       }
 
       final totalBytes = response.contentLength ?? 0;
       var receivedBytes = 0;
-      final List<int> bytes = [];
+      final bytes = <int>[];
 
       await for (var chunk in response.stream) {
         bytes.addAll(chunk);
@@ -213,132 +211,167 @@ class _PdfPreViewState extends State<PdfPreView> {
         _loadingProgress.value = totalBytes > 0 ? receivedBytes / totalBytes : 0;
       }
 
-      if (bytes.isEmpty) {
-        throw Exception('下载的文件为空');
-      }
+      if (bytes.isEmpty) throw Exception('下载的文件为空');
 
-      // 保存加密文件
-      final encryptedBytes = EncryptionUtil.encryptBytes(Uint8List.fromList(bytes));
-      await File(localPath).writeAsBytes(encryptedBytes);
-
-      // 保存解密文件
-      await File(decryptedPath).writeAsBytes(Uint8List.fromList(bytes));
-
-      setState(() {
-        _currentUrl = url;
-        _decryptedFilePath = decryptedPath;
-        _localFilePath = decryptedPath;
-      });
-
+      // 保存加密和解密文件
+      final originalBytes = Uint8List.fromList(bytes);
+      await File(encryptedPath).writeAsBytes(
+        EncryptionUtil.encryptBytes(originalBytes),
+      );
+      await File(decryptedPath).writeAsBytes(originalBytes);
     } finally {
       client.close();
-      _isLoading.value = false;
     }
   }
 
-  void _handlePdfPageChanged(PdfPageChangedDetails details) {
-    if (!mounted || _isChangingPage || !_isPdfLoaded) return;
+  // ========== PDF 交互相关 ==========
 
-    try {
-      final currentPage = details.newPageNumber;
-      final totalPages = _pdfController.pageCount;
-
-      if (totalPages == 0) return;
-
-      // 检测滚动方向
-      final isScrollingDown = currentPage > _lastPageNumber;
-      final isScrollingUp = currentPage < _lastPageNumber;
-
-      // 检测是否在最后一页并且是向下滚动
-      if (currentPage == totalPages && isScrollingDown) {
-        // 获取下一个章节的节点信息
-        final nextNode = pdfLogic.getNextNode();
-        final isNextNodeValid = nextNode?.filePath != null &&
-            nextNode!.filePath!.isNotEmpty &&
-            nextNode.children.isEmpty;
-
-        if (isNextNodeValid) {
-          setState(() {
-            _isChangingPage = true;
-          });
-          pdfLogic.moveToNextChapter();
-          if (mounted) {
-            setState(() {
-              _isChangingPage = false;
-            });
-          }
-        }
-      }
-      // 检测是否在第一页并且是向上滚动
-      else if (currentPage <= 2 && isScrollingUp) {
-        // 获取上一个章节的节点信息
-        final previousNode = pdfLogic.getPreviousNode();
-        final isPreviousNodeValid = previousNode?.filePath != null &&
-            previousNode!.filePath!.isNotEmpty &&
-            previousNode.children.isEmpty;
-
-        if (isPreviousNodeValid) {
-          setState(() {
-            _isChangingPage = true;
-          });
-          pdfLogic.moveToPreviousChapter();
-          if (mounted) {
-            setState(() {
-              _isChangingPage = false;
-            });
-          }
-        }
-      }
-
-      _lastPageNumber = currentPage;
-    } catch (e) {
-      debugPrint('Error handling page change: $e');
-    }
-  }
-
+  /// PDF 文档加载完成
   void _onDocumentLoaded(PdfDocumentLoadedDetails details) {
     if (!mounted) return;
     setState(() {
       _isPdfLoaded = true;
-      _lastPageNumber = 1;
       _isChangingPage = false;
     });
+
+    // 应用缩放级别
+    _pdfController.zoomLevel = _zoomLevel.value;
+
+    // 恢复阅读进度
+    if (_currentUrl != null && _readingProgress.containsKey(_currentUrl!)) {
+      final savedPage = _readingProgress[_currentUrl!]!;
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted && _isPdfLoaded) {
+          _pdfController.jumpToPage(savedPage);
+          _lastPageNumber = savedPage;
+        }
+      });
+    } else {
+      _lastPageNumber = 1;
+    }
   }
 
-  void _handleZoom(bool zoomIn) {
-    if (!mounted) return;
+  /// PDF 页面变化
+  void _onPageChanged(PdfPageChangedDetails details) {
+    if (!mounted || _isChangingPage || !_isPdfLoaded) return;
 
-    double newZoom = _currentZoom.value;
-    if (zoomIn) {
-      if (newZoom < (1 + _zoomStep * _maxZoomClicks)) {
-        newZoom += _zoomStep;
-      }
-    } else {
-      if (newZoom > _minZoom) {
-        newZoom -= _zoomStep;
-      }
+    final currentPage = details.newPageNumber;
+    final totalPages = _pdfController.pageCount;
+    if (totalPages == 0) return;
+
+    final isScrollingDown = currentPage > _lastPageNumber;
+    final isScrollingUp = currentPage < _lastPageNumber;
+
+    // 滚动到最后一页时切换到下一章
+    if (currentPage == totalPages && isScrollingDown) {
+      _tryNavigateToNextChapter();
+    }
+    // 滚动到第一页时切换到上一章
+    else if (currentPage <= 2 && isScrollingUp) {
+      _tryNavigateToPreviousChapter();
     }
 
-    // 直接更新缩放值和控制器
-    _currentZoom.value = newZoom;
+    _lastPageNumber = currentPage;
+  }
+
+  /// 尝试导航到下一章
+  void _tryNavigateToNextChapter() {
+    final nextNode = _lectureLogic.getNextNode();
+    if (_isNodeValid(nextNode)) {
+      setState(() => _isChangingPage = true);
+      _lectureLogic.moveToNextChapter();
+      if (mounted) setState(() => _isChangingPage = false);
+    }
+  }
+
+  /// 尝试导航到上一章
+  void _tryNavigateToPreviousChapter() {
+    final previousNode = _lectureLogic.getPreviousNode();
+    if (_isNodeValid(previousNode)) {
+      setState(() => _isChangingPage = true);
+      _lectureLogic.moveToPreviousChapter();
+      if (mounted) setState(() => _isChangingPage = false);
+    }
+  }
+
+  /// 检查节点是否有效
+  bool _isNodeValid(dynamic node) {
+    return node?.filePath != null &&
+        node.filePath!.isNotEmpty &&
+        node.children.isEmpty;
+  }
+
+  // ========== 缩放控制 ==========
+
+  /// 处理缩放
+  void _handleZoom(bool zoomIn) {
+    if (!mounted || !_isPdfLoaded) return;
+
+    double newZoom = _zoomLevel.value;
+    if (zoomIn) {
+      newZoom = (newZoom + 0.1).clamp(_minZoom, _maxZoom);
+    } else {
+      newZoom = (newZoom - 0.1).clamp(_minZoom, _maxZoom);
+    }
+
+    _zoomLevel.value = newZoom;
     _pdfController.zoomLevel = newZoom;
   }
 
+  /// 重置缩放
+  void _resetZoom() {
+    if (!mounted || !_isPdfLoaded) return;
+    _zoomLevel.value = 1.0;
+    _pdfController.zoomLevel = 1.0;
+  }
+
+  // ========== 全屏控制 ==========
+
+  /// 切换全屏
+  void _toggleFullScreen() {
+    if (_isFullScreen.value) {
+      _isFullScreen.value = false;
+      Get.back();
+    } else {
+      _isFullScreen.value = true;
+      Get.to(
+        () => _buildFullScreenView(),
+        fullscreenDialog: true,
+        transition: Transition.fade,
+      );
+    }
+  }
+
+  /// 构建全屏视图
+  Widget _buildFullScreenView() {
+    return Stack(
+      children: [
+        _buildMainContent(),
+        const IgnorePointer(child: WatermarkWidget()),
+      ],
+    );
+  }
+
+  // ========== UI 构建 ==========
+
   @override
   Widget build(BuildContext context) {
+    return _buildMainContent();
+  }
+
+  /// 构建主内容
+  Widget _buildMainContent() {
     return Row(
       children: [
-        SizedBox(width: screenAdapter.getAdaptiveWidth(25)),
+        SizedBox(width: _screenAdapter.getAdaptiveWidth(25)),
         Expanded(
           child: Column(
             children: [
-              SizedBox(height: screenAdapter.getAdaptiveHeight(8)),
+              SizedBox(height: _screenAdapter.getAdaptiveHeight(8)),
               ThemeUtil.lineH(),
               ThemeUtil.height(),
-              Expanded(
-                child: _buildPdfContent(),
-              ),
-              SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
+              Expanded(child: _buildPdfContent()),
+              SizedBox(height: _screenAdapter.getAdaptiveHeight(10)),
             ],
           ),
         ),
@@ -346,246 +379,237 @@ class _PdfPreViewState extends State<PdfPreView> {
     );
   }
 
+  /// 构建 PDF 内容
   Widget _buildPdfContent() {
     return Obx(() {
-      final selectedPdfUrl = pdfLogic.selectedPdfUrl.value;
+      final selectedUrl = _lectureLogic.selectedPdfUrl.value;
 
-      if (selectedPdfUrl == null || selectedPdfUrl.isEmpty) {
-        return Container(
-          padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16.0)),
-          decoration: BoxDecoration(
-            color: Colors.white,
-          ),
-          child: Center(
-            child: Text(
-              "请选择一个文件",
-              style: TextStyle(
-                fontSize: screenAdapter.getAdaptiveFontSize(16.0),
-                color: Colors.blue.shade700,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        );
+      // 未选择文件
+      if (selectedUrl == null || selectedUrl.isEmpty) {
+        return _buildEmptyState();
       }
 
+      // 加载中
       if (_isLoading.value) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(
-                value: _loadingProgress.value > 0 ? _loadingProgress.value : null,
-                strokeWidth: screenAdapter.getAdaptiveWidth(2.0),
-              ),
-              SizedBox(height: screenAdapter.getAdaptiveHeight(16)),
-              Text(
-                '正在加载 PDF (${(_loadingProgress.value * 100).toInt()}%)',
-                style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
-              ),
-            ],
-          ),
-        );
+        return _buildLoadingState();
       }
 
-      if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
-        return Center(
-          child: SizedBox(
-            width: screenAdapter.getAdaptiveWidth(24),
-            height: screenAdapter.getAdaptiveHeight(24),
-            child: CircularProgressIndicator(
-              strokeWidth: screenAdapter.getAdaptiveWidth(2.0),
-            ),
-          ),
-        );
+      // 文件不存在
+      if (_decryptedFilePath == null || !File(_decryptedFilePath!).existsSync()) {
+        return _buildLoadingState();
       }
 
-      return Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/note_page_bg.png'),
-                fit: BoxFit.fill,
-              ),
-            ),
-          ),
-          SfPdfViewer.file(
-            File(_localFilePath!),
-            controller: _pdfController,
-            enableTextSelection: false,
-            enableDocumentLinkAnnotation: false,
-            onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
-              debugPrint('PDF load failed: ${details.error}');
-              _initializePdf(selectedPdfUrl);
-            },
-            onPageChanged: _handlePdfPageChanged,
-            onDocumentLoaded: _onDocumentLoaded,
-            scrollDirection: PdfScrollDirection.vertical,
-            pageSpacing: 0,
-            enableDoubleTapZooming: true,
-            canShowScrollHead: true,
-          ),
-          _buildZoomControls(),
-        ],
-      );
+      return _buildPdfViewer();
     });
   }
 
-  Widget _buildZoomControls() {
-    final screenAdapter = AppProviders.instance.screenAdapter;
-    
-    if (_localFilePath == null || !File(_localFilePath!).existsSync()) {
-      return const SizedBox.shrink();
-    }
+  /// 构建空状态
+  Widget _buildEmptyState() {
+    return Container(
+      padding: EdgeInsets.all(_screenAdapter.getAdaptivePadding(16.0)),
+      decoration: const BoxDecoration(color: Colors.white),
+      child: Center(
+        child: Text(
+          "请选择一个文件",
+          style: TextStyle(
+            fontSize: _screenAdapter.getAdaptiveFontSize(16.0),
+            color: Colors.blue.shade700,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
 
-    return Positioned(
-      right: screenAdapter.getAdaptivePadding(16),
-      bottom: screenAdapter.getAdaptivePadding(16),
+  /// 构建加载状态
+  Widget _buildLoadingState() {
+    return Center(
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(24)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: screenAdapter.getAdaptivePadding(4),
-                  offset: Offset(0, screenAdapter.getAdaptiveHeight(2)),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                // 全屏按钮
-                IconButton(
-                  icon: Obx(() => Icon(
-                    isFullScreen.value ? Icons.fullscreen_exit : Icons.fullscreen,
-                    size: screenAdapter.getAdaptiveIconSize(24),
-                  )),
-                  onPressed: () {
-                    if (isFullScreen.value) {
-                      isFullScreen.value = false;
-                      Get.back();
-                    } else {
-                      isFullScreen.value = true;
-                      Get.to(
-                        () => Stack(
-                          children: [
-                            Row(
-                              children: [
-                                SizedBox(width: screenAdapter.getAdaptiveWidth(25)),
-                                Expanded(
-                                  child: Column(
-                                    children: [
-                                      SizedBox(height: screenAdapter.getAdaptiveHeight(8)),
-                                      ThemeUtil.lineH(),
-                                      ThemeUtil.height(),
-                                      Expanded(
-                                        child: Stack(
-                                          children: [
-                                            Container(
-                                              decoration: const BoxDecoration(
-                                                image: DecorationImage(
-                                                  image: AssetImage('assets/images/note_page_bg.png'),
-                                                  fit: BoxFit.fill,
-                                                ),
-                                              ),
-                                            ),
-                                            _buildPdfContent(),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const IgnorePointer(
-                              child: WatermarkWidget(),
-                            ),
-                          ],
-                        ),
-                        fullscreenDialog: true,
-                        transition: Transition.fade,
-                      );
-                    }
-                  },
-                  tooltip: isFullScreen.value ? '退出全屏' : '全屏',
-                  iconSize: screenAdapter.getAdaptiveIconSize(24),
-                  padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8)),
-                ),
-                Divider(height: screenAdapter.getAdaptiveHeight(1)),
-                IconButton(
-                  icon: Icon(Icons.add, size: screenAdapter.getAdaptiveIconSize(24)),
-                  onPressed: _currentZoom.value < (1 + _zoomStep * _maxZoomClicks)
-                      ? () => _handleZoom(true)
-                      : null,
-                  tooltip: '放大',
-                  iconSize: screenAdapter.getAdaptiveIconSize(24),
-                  padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8)),
-                ),
-                Obx(() => Container(
-                  child: Text(
-                    '${(_currentZoom.value * 100).toInt()}%',
-                    style: TextStyle(
-                        fontSize: screenAdapter.getAdaptiveFontSize(12)
-                    ),
-                  ),
-                )),
-                IconButton(
-                  icon: Icon(Icons.remove, size: screenAdapter.getAdaptiveIconSize(24)),
-                  onPressed: _currentZoom.value > 1.0
-                      ? () => _handleZoom(false)
-                      : null,
-                  tooltip: '缩小',
-                  iconSize: screenAdapter.getAdaptiveIconSize(24),
-                  padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(8)),
-                ),
-              ],
-            ),
+          CircularProgressIndicator(
+            value: _loadingProgress.value > 0 ? _loadingProgress.value : null,
+            strokeWidth: _screenAdapter.getAdaptiveWidth(2.0),
+          ),
+          SizedBox(height: _screenAdapter.getAdaptiveHeight(16)),
+          Text(
+            '正在加载 PDF (${(_loadingProgress.value * 100).toInt()}%)',
+            style: TextStyle(fontSize: _screenAdapter.getAdaptiveFontSize(14)),
           ),
         ],
       ),
     );
   }
 
+  /// 构建 PDF 查看器
+  Widget _buildPdfViewer() {
+    return Stack(
+      fit: StackFit.expand,
+      clipBehavior: Clip.hardEdge,
+      children: [
+        // 背景图片
+        Image.asset('assets/images/note_page_bg.png', fit: BoxFit.fill),
+
+        // PDF 查看器（使用内置缩放，所有页面统一缩放）
+        SfPdfViewer.file(
+          File(_decryptedFilePath!),
+          controller: _pdfController,
+          enableTextSelection: false,
+          enableDocumentLinkAnnotation: false,
+          pageLayoutMode: PdfPageLayoutMode.single,
+          scrollDirection: PdfScrollDirection.vertical,
+          pageSpacing: 0,
+          enableDoubleTapZooming: false,
+          canShowScrollHead: true,
+          onDocumentLoadFailed: (details) {
+            debugPrint('PDF 加载失败: ${details.error}');
+            final url = _lectureLogic.selectedPdfUrl.value;
+            if (url != null) _loadPdf(url);
+          },
+          onPageChanged: _onPageChanged,
+          onDocumentLoaded: _onDocumentLoaded,
+        ),
+
+        // 控制按钮
+        _buildControls(),
+      ],
+    );
+  }
+
+  /// 构建控制按钮
+  Widget _buildControls() {
+    if (_decryptedFilePath == null || !File(_decryptedFilePath!).existsSync()) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned(
+      right: _screenAdapter.getAdaptivePadding(16),
+      bottom: _screenAdapter.getAdaptivePadding(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(_screenAdapter.getAdaptivePadding(24)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: _screenAdapter.getAdaptivePadding(8),
+              offset: Offset(0, _screenAdapter.getAdaptiveHeight(2)),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 全屏按钮
+            _buildControlButton(
+              icon: Obx(() => Icon(
+                _isFullScreen.value ? Icons.fullscreen_exit : Icons.fullscreen,
+                size: _screenAdapter.getAdaptiveIconSize(24),
+              )),
+              onPressed: _toggleFullScreen,
+              tooltip: _isFullScreen.value ? '退出全屏' : '全屏',
+            ),
+
+            _buildDivider(),
+
+            // 放大按钮
+            Obx(() => _buildControlButton(
+              icon: Icon(Icons.add, size: _screenAdapter.getAdaptiveIconSize(24)),
+              onPressed: _zoomLevel.value < _maxZoom ? () => _handleZoom(true) : null,
+              tooltip: '放大 (最大 200%)',
+            )),
+
+            // 缩放比例显示
+            Obx(() => Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: _screenAdapter.getAdaptivePadding(4),
+              ),
+              child: Text(
+                '${(_zoomLevel.value * 100).toInt()}%',
+                style: TextStyle(
+                  fontSize: _screenAdapter.getAdaptiveFontSize(12),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )),
+
+            // 缩小按钮
+            Obx(() => _buildControlButton(
+              icon: Icon(Icons.remove, size: _screenAdapter.getAdaptiveIconSize(24)),
+              onPressed: _zoomLevel.value > _minZoom ? () => _handleZoom(false) : null,
+              tooltip: '缩小 (最小 100%)',
+            )),
+
+            _buildDivider(),
+
+            // 重置按钮
+            _buildControlButton(
+              icon: Icon(Icons.refresh, size: _screenAdapter.getAdaptiveIconSize(24)),
+              onPressed: _resetZoom,
+              tooltip: '重置缩放',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 构建控制按钮
+  Widget _buildControlButton({
+    required Widget icon,
+    required VoidCallback? onPressed,
+    required String tooltip,
+  }) {
+    return IconButton(
+      icon: icon,
+      onPressed: onPressed,
+      tooltip: tooltip,
+      iconSize: _screenAdapter.getAdaptiveIconSize(24),
+      padding: EdgeInsets.all(_screenAdapter.getAdaptivePadding(8)),
+    );
+  }
+
+  /// 构建分割线
+  Widget _buildDivider() {
+    return Divider(
+      height: _screenAdapter.getAdaptiveHeight(1),
+      thickness: 1,
+    );
+  }
+
+  /// 显示错误提示
   void _showError(String message) {
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
           '错误',
           style: TextStyle(
-            fontSize: screenAdapter.getAdaptiveFontSize(18),
+            fontSize: _screenAdapter.getAdaptiveFontSize(18),
             fontWeight: FontWeight.bold,
           ),
         ),
-        content: SelectableText.rich(
-          TextSpan(
-            text: message,
-            style: TextStyle(
-              color: Colors.red,
-              fontSize: screenAdapter.getAdaptiveFontSize(14),
-            ),
+        content: SelectableText(
+          message,
+          style: TextStyle(
+            color: Colors.red,
+            fontSize: _screenAdapter.getAdaptiveFontSize(14),
           ),
         ),
-        contentPadding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16)),
+        contentPadding: EdgeInsets.all(_screenAdapter.getAdaptivePadding(16)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              '确定',
-              style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
-            ),
             style: TextButton.styleFrom(
               padding: EdgeInsets.symmetric(
-                horizontal: screenAdapter.getAdaptivePadding(16),
-                vertical: screenAdapter.getAdaptivePadding(8),
+                horizontal: _screenAdapter.getAdaptivePadding(16),
+                vertical: _screenAdapter.getAdaptivePadding(8),
               ),
+            ),
+            child: Text(
+              '确定',
+              style: TextStyle(fontSize: _screenAdapter.getAdaptiveFontSize(14)),
             ),
           ),
         ],
