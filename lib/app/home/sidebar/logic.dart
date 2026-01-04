@@ -3,9 +3,14 @@ import 'package:student_exam/app/home/pages/note/view.dart';
 import 'package:student_exam/ex/ex_int.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../pages/exam/view.dart';
-import '../pages/lecture/view.dart';
+import '../pages/note/view.dart';
 import '../pages/psyc/view.dart';
+import '../pages/lecture/view.dart';
+import '../pages/subject_bank/view.dart';
+import '../pages/subject_bank/self_research/view.dart';
+import '../pages/subject_bank/ai_subject/view.dart';
+import '../pages/settings/view.dart';
+import '../pages/exam/view.dart';
 
 class SidebarLogic extends GetxController {
   static var selectName = "".obs;
@@ -35,10 +40,28 @@ class SidebarLogic extends GetxController {
       page: NotePage(),
     ),
     SidebarTree(
+      name: "自研题库",
+      icon: Icons.library_books,
+      color: Colors.blue[700],
+      page: SelfResearchPage(),
+    ),
+    SidebarTree(
+      name: "AI题库",
+      icon: Icons.smart_toy,
+      color: Colors.purple[400],
+      page: AISubjectPage(),
+    ),
+    SidebarTree(
       name: "心理测试",
-      icon: Icons.psychology_outlined, // Apply color here
-      color: Colors.purple[400], // Set desired color
+      icon: Icons.psychology_outlined,
+      color: Colors.purple[400],
       page: PsychologyPage(),
+    ),
+    SidebarTree(
+      name: "设置",
+      icon: Icons.settings_outlined,
+      color: Colors.grey[600],
+      page: SettingsPage(),
     )
   ];
 
@@ -49,7 +72,7 @@ class SidebarLogic extends GetxController {
     }
     breadcrumbList.clear();
     32.toDelay(() {
-      findSidebarTree(sel,treeList);
+      findSidebarTree(sel, treeList);
     });
   }
 
@@ -88,7 +111,6 @@ class SidebarTree {
     Color? color, // 修改为可选参数
   }) : color = color ?? Colors.black; // 使用 ?? 运算符提供默认颜色
 }
-
 
 SidebarTree newThis(String name) {
   return SidebarTree(

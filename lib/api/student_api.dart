@@ -40,9 +40,31 @@ class StudentApi {
   }
 
   // 获取题目
+  /// 获取当前学生信息
+  static Future<dynamic> getStudentInfo() async {
+    try {
+      return await HttpUtil.get("/student/info");
+    } catch (e) {
+      print('Error getting student info: $e');
+      rethrow;
+    }
+  }
+
+  /// 更新工作内容
+  static Future<dynamic> updateWorkContent(String workContent) async {
+    try {
+      return await HttpUtil.post(
+        "/student/update_work_content",
+        params: {'work_content': workContent},
+      );
+    } catch (e) {
+      print('Error updating work content: $e');
+      rethrow;
+    }
+  }
+
   static Future<dynamic> studentRecord({Map<String, dynamic>? params}) async {
     try {
-
       // 最多重试3次
       const maxRetries = 3;
       for (int attempt = 1; attempt <= maxRetries; attempt++) {

@@ -78,30 +78,30 @@ class ScreenAdapter {
   }
 
   // 根据基准尺寸计算实际尺寸
-  double getAdaptiveWidth(double width) {
+  double getAdaptiveWidth(num width) {
     var size = width * currentSize.value.width / medium.width;
     return  size;
   }
 
-  double getAdaptiveHeight(double height) {
+  double getAdaptiveHeight(num height) {
     var size = height * currentSize.value.height / medium.height;
     return size;
   }
 
   // 获取字体大小
-  double getAdaptiveFontSize(double fontSize) {
+  double getAdaptiveFontSize(num fontSize) {
     final ratio = currentSize.value.width / medium.width;
     return fontSize * ratio;
   }
 
   // 获取边距
-  double getAdaptivePadding(double padding) {
+  double getAdaptivePadding(num padding) {
     final ratio = currentSize.value.width / medium.width;
     return padding * ratio;
   }
 
   // 获取图标大小
-  double getAdaptiveIconSize(double size) {
+  double getAdaptiveIconSize(num size) {
     final ratio = currentSize.value.width / medium.width;
     return size * ratio;
   }

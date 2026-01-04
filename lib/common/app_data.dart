@@ -8,6 +8,7 @@ class LoginData {
   String role = "";
   String user = "";
   String code = "";
+  String? workContent;
   int id = 0;
   DateTime? expiryDate;
 
@@ -19,6 +20,7 @@ class LoginData {
       "id": id,
       "themeName": themeName,
       "examCode": code,
+      "workContent": workContent,
       "expiryDate": expiryDate != null
           ? DateFormat('yyyy-MM-dd HH:mm:ss').format(expiryDate!)
           : null,
@@ -32,6 +34,7 @@ class LoginData {
     data.themeName = map["themeName"] ?? "";
     data.user = map["user"] ?? "";
     data.code = map["examCode"] ?? "";
+    data.workContent = map["workContent"];
     data.id = map["id"] ?? 0;
     if (map["expiryDate"] != null) {
       data.expiryDate =

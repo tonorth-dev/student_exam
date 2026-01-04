@@ -33,10 +33,15 @@ class HttpUtil {
     ));
 
   static Future<dynamic> get(String url,
-      {Map<String, dynamic>? params, bool showMsg = true}) async {
+      {Map<String, dynamic>? params, bool showMsg = true, Duration? timeout}) async {
     var map = await header();
     Response response = await dio.get(url,
-        queryParameters: params, options: Options(headers: map));
+        queryParameters: params,
+        options: Options(
+          headers: map,
+          receiveTimeout: timeout,
+          sendTimeout: timeout,
+        ));
     return await verify(response.data, showMsg);
   }
 
