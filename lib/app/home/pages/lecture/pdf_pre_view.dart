@@ -234,9 +234,6 @@ class _PdfPreViewState extends State<PdfPreView> {
       _isChangingPage = false;
     });
 
-    // 应用缩放级别
-    _pdfController.zoomLevel = _zoomLevel.value;
-
     // 恢复阅读进度
     if (_currentUrl != null && _readingProgress.containsKey(_currentUrl!)) {
       final savedPage = _readingProgress[_currentUrl!]!;
@@ -303,11 +300,12 @@ class _PdfPreViewState extends State<PdfPreView> {
 
   // ========== 缩放控制 ==========
 
-  /// 处理缩放
+  /// 处理缩放（使用 Transform.scale 自动从中心缩放）
   void _handleZoom(bool zoomIn) {
     if (!mounted || !_isPdfLoaded) return;
 
     double newZoom = _zoomLevel.value;
+
     if (zoomIn) {
       newZoom = (newZoom + 0.1).clamp(_minZoom, _maxZoom);
     } else {
@@ -315,14 +313,12 @@ class _PdfPreViewState extends State<PdfPreView> {
     }
 
     _zoomLevel.value = newZoom;
-    _pdfController.zoomLevel = newZoom;
   }
 
   /// 重置缩放
   void _resetZoom() {
     if (!mounted || !_isPdfLoaded) return;
     _zoomLevel.value = 1.0;
-    _pdfController.zoomLevel = 1.0;
   }
 
   // ========== 全屏控制 ==========
@@ -445,32 +441,50 @@ class _PdfPreViewState extends State<PdfPreView> {
   Widget _buildPdfViewer() {
     return Stack(
       fit: StackFit.expand,
-      clipBehavior: Clip.hardEdge,
       children: [
-        // 背景图片
-        Image.asset('assets/images/note_page_bg.png', fit: BoxFit.fill),
-
-        // PDF 查看器（使用内置缩放，所有页面统一缩放）
-        SfPdfViewer.file(
-          File(_decryptedFilePath!),
-          controller: _pdfController,
-          enableTextSelection: false,
-          enableDocumentLinkAnnotation: false,
-          pageLayoutMode: PdfPageLayoutMode.single,
-          scrollDirection: PdfScrollDirection.vertical,
-          pageSpacing: 0,
-          enableDoubleTapZooming: false,
-          canShowScrollHead: true,
-          onDocumentLoadFailed: (details) {
-            debugPrint('PDF 加载失败: ${details.error}');
-            final url = _lectureLogic.selectedPdfUrl.value;
-            if (url != null) _loadPdf(url);
-          },
-          onPageChanged: _onPageChanged,
-          onDocumentLoaded: _onDocumentLoaded,
+        // 紫色背景图片（底层）
+        Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/note_page_bg.png'),
+              fit: BoxFit.fill,
+            ),
+          ),
         ),
 
-        // 控制按钮
+        // 添加内边距，确保紫色背景始终可见
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: _screenAdapter.getAdaptivePadding(16),
+            vertical: _screenAdapter.getAdaptivePadding(8),
+          ),
+          child: ClipRect(
+            child: Obx(() => Transform.scale(
+              scale: _zoomLevel.value,
+              alignment: Alignment.center,
+              child: SfPdfViewer.file(
+                File(_decryptedFilePath!),
+                controller: _pdfController,
+                enableTextSelection: false,
+                enableDocumentLinkAnnotation: false,
+                pageLayoutMode: PdfPageLayoutMode.single,
+                scrollDirection: PdfScrollDirection.vertical,
+                pageSpacing: 0,
+                enableDoubleTapZooming: false,
+                canShowScrollHead: true,
+                onDocumentLoadFailed: (details) {
+                  debugPrint('PDF 加载失败: ${details.error}');
+                  final url = _lectureLogic.selectedPdfUrl.value;
+                  if (url != null) _loadPdf(url);
+                },
+                onPageChanged: _onPageChanged,
+                onDocumentLoaded: _onDocumentLoaded,
+              ),
+            )),
+          ),
+        ),
+
+        // 控制按钮（最上层）
         _buildControls(),
       ],
     );
