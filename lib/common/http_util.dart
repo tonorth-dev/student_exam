@@ -80,7 +80,7 @@ class HttpUtil {
     };
   }
 
-  /// 上传文件处理
+  /// 上传文件处理1
   static Future<dynamic> uploadByte(String url, Uint8List file, String name,
       {bool showMsg = true,
         Function(int count, int total)? onSendProgress}) async {
