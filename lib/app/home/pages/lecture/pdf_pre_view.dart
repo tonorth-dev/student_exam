@@ -10,7 +10,6 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import '../../../../theme/theme_util.dart';
 import '../../../../common/encr_util.dart';
-import '../../../../component/watermark.dart';
 import '../../../../common/app_providers.dart';
 import 'logic.dart';
 
@@ -325,27 +324,47 @@ class _PdfPreViewState extends State<PdfPreView> {
 
   /// 切换全屏
   void _toggleFullScreen() {
+    if (!mounted || !_isPdfLoaded) return;
+
     if (_isFullScreen.value) {
       _isFullScreen.value = false;
       Get.back();
     } else {
       _isFullScreen.value = true;
+
+      // 保存当前页码和缩放
+      final currentPage = _pdfController.pageNumber;
+      final currentZoom = _zoomLevel.value;
+
       Get.to(
-        () => _buildFullScreenView(),
+        () => _PdfFullScreenPage(
+          filePath: _decryptedFilePath!,
+          initialPage: currentPage,
+          initialZoom: currentZoom,
+          onPageChanged: (page) {
+            // 更新主页面的页码（当用户在全屏模式翻页时）
+            if (mounted) {
+              _lastPageNumber = page;
+            }
+          },
+          onExit: (exitPage, exitZoom) {
+            _isFullScreen.value = false;
+            // 退出全屏时，跳转到全屏页面的当前页码
+            if (mounted && exitPage != currentPage) {
+              Future.delayed(const Duration(milliseconds: 100), () {
+                if (mounted) {
+                  _pdfController.jumpToPage(exitPage);
+                }
+              });
+            }
+            // 恢复缩放
+            _zoomLevel.value = exitZoom;
+          },
+        ),
         fullscreenDialog: true,
         transition: Transition.fade,
       );
     }
-  }
-
-  /// 构建全屏视图
-  Widget _buildFullScreenView() {
-    return Stack(
-      children: [
-        _buildMainContent(),
-        const IgnorePointer(child: WatermarkWidget()),
-      ],
-    );
   }
 
   // ========== UI 构建 ==========
@@ -463,6 +482,7 @@ class _PdfPreViewState extends State<PdfPreView> {
               scale: _zoomLevel.value,
               alignment: Alignment.center,
               child: SfPdfViewer.file(
+                key: ValueKey('pdf_$_currentUrl'),
                 File(_decryptedFilePath!),
                 controller: _pdfController,
                 enableTextSelection: false,
@@ -627,6 +647,189 @@ class _PdfPreViewState extends State<PdfPreView> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 全屏 PDF 查看页面
+class _PdfFullScreenPage extends StatefulWidget {
+  final String filePath;
+  final int initialPage;
+  final double initialZoom;
+  final Function(int page) onPageChanged;
+  final Function(int exitPage, double exitZoom) onExit;
+
+  const _PdfFullScreenPage({
+    required this.filePath,
+    required this.initialPage,
+    required this.initialZoom,
+    required this.onPageChanged,
+    required this.onExit,
+  });
+
+  @override
+  State<_PdfFullScreenPage> createState() => _PdfFullScreenPageState();
+}
+
+class _PdfFullScreenPageState extends State<_PdfFullScreenPage> {
+  final _screenAdapter = AppProviders.instance.screenAdapter;
+  late final PdfViewerController _controller;
+  final RxDouble _zoomLevel = 1.0.obs;
+  int _currentPage = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = PdfViewerController();
+    _zoomLevel.value = widget.initialZoom;
+    _currentPage = widget.initialPage;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onDocumentLoaded(PdfDocumentLoadedDetails details) {
+    // 跳转到初始页码
+    if (widget.initialPage > 1) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) {
+          _controller.jumpToPage(widget.initialPage);
+        }
+      });
+    }
+  }
+
+  void _onPageChanged(PdfPageChangedDetails details) {
+    _currentPage = details.newPageNumber;
+    widget.onPageChanged(_currentPage);
+  }
+
+  void _exitFullScreen() {
+    widget.onExit(_currentPage, _zoomLevel.value);
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _exitFullScreen();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            // PDF 查看器
+            Center(
+              child: Container(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.98,
+                  maxHeight: MediaQuery.of(context).size.height * 0.98,
+                ),
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/note_page_bg.png'),
+                    fit: BoxFit.fill,
+                  ),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(_screenAdapter.getAdaptivePadding(16)),
+                  child: ClipRect(
+                    child: Obx(() => Transform.scale(
+                      scale: _zoomLevel.value,
+                      alignment: Alignment.center,
+                      child: SfPdfViewer.file(
+                        File(widget.filePath),
+                        controller: _controller,
+                        enableTextSelection: false,
+                        enableDocumentLinkAnnotation: false,
+                        pageLayoutMode: PdfPageLayoutMode.single,
+                        scrollDirection: PdfScrollDirection.vertical,
+                        pageSpacing: 0,
+                        enableDoubleTapZooming: false,
+                        canShowScrollHead: true,
+                        onPageChanged: _onPageChanged,
+                        onDocumentLoaded: _onDocumentLoaded,
+                      ),
+                    )),
+                  ),
+                ),
+              ),
+            ),
+
+            // 控制按钮
+            Positioned(
+              top: 40,
+              right: 40,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 退出全屏按钮
+                    IconButton(
+                      icon: Icon(Icons.fullscreen_exit, size: 28),
+                      onPressed: _exitFullScreen,
+                      tooltip: '退出全屏',
+                    ),
+
+                    Divider(height: 1),
+
+                    // 放大按钮
+                    Obx(() => IconButton(
+                      icon: Icon(Icons.add, size: 28),
+                      onPressed: _zoomLevel.value < 2.0
+                          ? () => _zoomLevel.value = (_zoomLevel.value + 0.1).clamp(1.0, 2.0)
+                          : null,
+                      tooltip: '放大',
+                    )),
+
+                    // 缩放显示
+                    Obx(() => Text(
+                      '${(_zoomLevel.value * 100).toInt()}%',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    )),
+
+                    // 缩小按钮
+                    Obx(() => IconButton(
+                      icon: Icon(Icons.remove, size: 28),
+                      onPressed: _zoomLevel.value > 1.0
+                          ? () => _zoomLevel.value = (_zoomLevel.value - 0.1).clamp(1.0, 2.0)
+                          : null,
+                      tooltip: '缩小',
+                    )),
+
+                    Divider(height: 1),
+
+                    // 重置缩放
+                    IconButton(
+                      icon: Icon(Icons.refresh, size: 28),
+                      onPressed: () => _zoomLevel.value = 1.0,
+                      tooltip: '重置缩放',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
