@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../common/app_providers.dart';
+import '../../../../../component/star_rating.dart';
 import 'logic.dart';
 
-/// AI题库学习页面
+/// 红师AI题库学习页面
 class AISubjectPage extends StatelessWidget {
   const AISubjectPage({super.key});
 
@@ -42,8 +43,24 @@ class AISubjectPage extends StatelessWidget {
               ),
               child: Obx(() {
                 if (logic.isLoading.value) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
+                  return Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '红师AI出题中',
+                          style: TextStyle(
+                            fontSize: screenAdapter.getAdaptiveFontSize(18),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple[700],
+                          ),
+                        ),
+                        SizedBox(width: screenAdapter.getAdaptiveHeight(20)),
+                        CircularProgressIndicator(
+                          color: Colors.purple,
+                        ),
+                      ],
+                    ),
                   );
                 }
 
@@ -172,7 +189,7 @@ class AISubjectPage extends StatelessWidget {
               ),
               SizedBox(width: screenAdapter.getAdaptiveWidth(12)),
               Text(
-                'AI题库学习',
+                '红师AI题库学习',
                 style: TextStyle(
                   fontSize: screenAdapter.getAdaptiveFontSize(24),
                   fontWeight: FontWeight.bold,
@@ -305,31 +322,32 @@ class AISubjectPage extends StatelessWidget {
             children: [
               // 题目标题行
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenAdapter.getAdaptivePadding(8),
-                      vertical: screenAdapter.getAdaptivePadding(4),
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.purple[100],
-                      borderRadius: BorderRadius.circular(
-                        screenAdapter.getAdaptivePadding(4),
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenAdapter.getAdaptivePadding(8),
+                          vertical: screenAdapter.getAdaptivePadding(4),
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.purple[100],
+                          borderRadius: BorderRadius.circular(
+                            screenAdapter.getAdaptivePadding(4),
+                          ),
+                        ),
+                        child: Text(
+                          '第 ${index + 1} 题',
+                          style: TextStyle(
+                            fontSize: screenAdapter.getAdaptiveFontSize(10),
+                            color: Colors.purple[700],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      '第 ${index + 1} 题',
-                      style: TextStyle(
-                        fontSize: screenAdapter.getAdaptiveFontSize(10),
-                        color: Colors.purple[700],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    ],
                   ),
-                  SizedBox(width: screenAdapter.getAdaptiveWidth(8)),
-                  _buildTag(screenAdapter, _getCateLabel(subject.cate), Colors.orange),
-                  SizedBox(width: screenAdapter.getAdaptiveWidth(8)),
-                  _buildTag(screenAdapter, _getLevelLabel(subject.level), Colors.purple),
                 ],
               ),
               SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
@@ -495,12 +513,12 @@ class AISubjectPage extends StatelessWidget {
           onPressed: () => logic.refresh(),
           icon: Icon(
             Icons.refresh,
-            size: screenAdapter.getAdaptiveIconSize(20),
+            size: screenAdapter.getAdaptiveIconSize(24),
           ),
           label: Text(
             '换一换',
             style: TextStyle(
-              fontSize: screenAdapter.getAdaptiveFontSize(16),
+              fontSize: screenAdapter.getAdaptiveFontSize(18),
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -508,8 +526,8 @@ class AISubjectPage extends StatelessWidget {
             backgroundColor: Colors.purple,
             foregroundColor: Colors.white,
             padding: EdgeInsets.symmetric(
-              horizontal: screenAdapter.getAdaptivePadding(40),
-              vertical: screenAdapter.getAdaptivePadding(16),
+              horizontal: screenAdapter.getAdaptivePadding(50),
+              vertical: screenAdapter.getAdaptivePadding(20),
             ),
             elevation: 2,
           ),

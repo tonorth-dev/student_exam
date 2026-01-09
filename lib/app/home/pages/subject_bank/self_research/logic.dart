@@ -2,20 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../api/subject_api.dart';
 import '../../../../../common/encr_util.dart';
+import '../../../../../ex/ex_hint.dart';
 
-/// 自研题库Logic
-class SelfResearchLogic extends GetxController {
-  // 题目列表
-  final RxList<SubjectModel> subjects = <SubjectModel>[].obs;
+/// 专业题库Logic
+class SelfResearchLogic extends GetxController with GetSingleTickerProviderStateMixin {
+  // TabController
+  TabController? tabController;
 
-  // 每页数量（固定5题）
-  final int pageSize = 5;
+  // Category列表
+  final RxList<int> categories = <int>[].obs;
 
-  // 总数
-  final RxInt total = 0.obs;
+  // 当前选中的category索引
+  final RxInt currentCategoryIndex = 0.obs;
+
+  // 每个category的题目列表 (key: category, value: subjects)
+  final RxMap<int, List<SubjectModel>> categorySubjects = <int, List<SubjectModel>>{}.obs;
+
+  // 每个category的总数 (key: category, value: total)
+  final RxMap<int, int> categoryTotals = <int, int>{}.obs;
+
+  // 每个category的当前页码 (key: category, value: page)
+  final RxMap<int, int> categoryPages = <int, int>{}.obs;
+
+  // 每页数量
+  final int pageSize = 20;
 
   // 加载状态
   final RxBool isLoading = false.obs;
+  final RxBool isCategoriesLoading = true.obs;
 
   // 错误信息
   final RxString errorMessage = ''.obs;
@@ -26,22 +40,68 @@ class SelfResearchLogic extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadSubjects();
+    loadCategories();
   }
 
-  /// 加载题目列表
-  Future<void> loadSubjects({int retryCount = 0}) async {
+  /// 加载Categories
+  Future<void> loadCategories() async {
+    try {
+      isCategoriesLoading.value = true;
+      final data = await SubjectApi.getSubjectCategories();
+
+      if (data != null && data is List && data.isNotEmpty) {
+        categories.value = data.cast<int>();
+
+        // 初始化TabController
+        tabController?.dispose();
+        tabController = TabController(
+          length: categories.length,
+          vsync: this,
+        );
+
+        // 监听tab切换
+        tabController?.addListener(() {
+          if (!tabController!.indexIsChanging) {
+            currentCategoryIndex.value = tabController!.index;
+            final category = categories[currentCategoryIndex.value];
+            if (!categorySubjects.containsKey(category)) {
+              loadSubjects(category);
+            }
+          }
+        });
+
+        // 加载第一个category的题目
+        if (categories.isNotEmpty) {
+          loadSubjects(categories[0]);
+        }
+      } else {
+        errorMessage.value = '未找到题库分类';
+      }
+    } catch (e) {
+      debugPrint('加载题库分类失败: $e');
+      errorMessage.value = '加载题库分类失败';
+    } finally {
+      isCategoriesLoading.value = false;
+    }
+  }
+
+  /// 加载指定category的题目
+  Future<void> loadSubjects(int category, {int? page}) async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
 
-      final data = await SubjectApi.getSubjectList(params: {
-        'page': 1,  // 服务端随机给题，页码固定为1
-        'pageSize': pageSize,
-      });
+      final currentPage = page ?? categoryPages[category] ?? 1;
+
+      final data = await SubjectApi.getSubjectList(
+        subjectCategory: category,
+        page: currentPage,
+        pageSize: pageSize,
+      );
 
       if (data != null) {
-        total.value = data['total'] ?? 0;
+        categoryTotals[category] = data['total'] ?? 0;
+        categoryPages[category] = currentPage;
 
         if (data['list'] != null) {
           final rawSubjects = (data['list'] as List)
@@ -55,30 +115,48 @@ class SelfResearchLogic extends GetxController {
             decryptedSubjects.add(decrypted);
           }
 
-          subjects.value = decryptedSubjects;
+          categorySubjects[category] = decryptedSubjects;
         } else {
-          subjects.value = [];
+          categorySubjects[category] = [];
         }
 
         // 清空展开状态
         expandedAnswers.clear();
       }
     } catch (e) {
-      debugPrint('加载题目失败 (尝试 ${retryCount + 1}/2): $e');
-
-      // 如果是第一次失败，自动重试一次
-      if (retryCount == 0) {
-        debugPrint('正在重试...');
-        await Future.delayed(const Duration(milliseconds: 500));
-        return loadSubjects(retryCount: 1);
-      }
-
-      // 第二次也失败了，显示错误信息
+      debugPrint('加载题目失败: $e');
       errorMessage.value = '加载题目失败';
-      subjects.value = [];
+      categorySubjects[category] = [];
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// 获取当前category的题目列表
+  List<SubjectModel> get currentSubjects {
+    if (categories.isEmpty) return [];
+    final category = categories[currentCategoryIndex.value];
+    return categorySubjects[category] ?? [];
+  }
+
+  /// 获取当前category的总数
+  int get currentTotal {
+    if (categories.isEmpty) return 0;
+    final category = categories[currentCategoryIndex.value];
+    return categoryTotals[category] ?? 0;
+  }
+
+  /// 获取当前category的页码
+  int get currentPage {
+    if (categories.isEmpty) return 1;
+    final category = categories[currentCategoryIndex.value];
+    return categoryPages[category] ?? 1;
+  }
+
+  /// 获取总页数
+  int get totalPages {
+    if (currentTotal == 0) return 0;
+    return (currentTotal / pageSize).ceil();
   }
 
   /// 切换答案展开状态
@@ -90,10 +168,62 @@ class SelfResearchLogic extends GetxController {
     }
   }
 
-  /// 刷新题目（换一换）
+  /// 上一页
+  void previousPage() {
+    if (currentPage > 1) {
+      final category = categories[currentCategoryIndex.value];
+      loadSubjects(category, page: currentPage - 1);
+    }
+  }
+
+  /// 下一页
+  void nextPage() {
+    if (currentPage < totalPages) {
+      final category = categories[currentCategoryIndex.value];
+      loadSubjects(category, page: currentPage + 1);
+    }
+  }
+
+  /// 跳转到指定页
+  void goToPage(int page) {
+    if (page >= 1 && page <= totalPages) {
+      final category = categories[currentCategoryIndex.value];
+      loadSubjects(category, page: page);
+    }
+  }
+
+  /// 对题目进行评分
+  Future<void> rateSubject(int subjectId, int rating) async {
+    try {
+      await SubjectApi.rateSubject(
+        subjectId: subjectId,
+        rating: rating,
+      );
+
+      '评分成功'.toHint();
+      
+      // 重新加载当前category的题目以获取最新的平均评分
+      final category = categories[currentCategoryIndex.value];
+      loadSubjects(category, page: currentPage);
+    } catch (e) {
+      debugPrint('评分失败: $e');
+      '评分失败'.toHint();
+    }
+  }
+
+  /// 刷新当前category的题目
   @override
   void refresh() {
-    loadSubjects();
+    if (categories.isNotEmpty) {
+      final category = categories[currentCategoryIndex.value];
+      loadSubjects(category, page: currentPage);
+    }
+  }
+
+  @override
+  void onClose() {
+    tabController?.dispose();
+    super.onClose();
   }
 }
 
@@ -111,6 +241,8 @@ class SubjectModel {
   final String tag;          // 标签
   final String author;       // 作者
   final String belongYear;   // 所属年份
+  final double avgRating;    // 平均评分 (0.0-5.0)
+  final int ratingCount;     // 评分人数
 
   SubjectModel({
     required this.id,
@@ -125,6 +257,8 @@ class SubjectModel {
     required this.tag,
     required this.author,
     required this.belongYear,
+    this.avgRating = 0.0,
+    this.ratingCount = 0,
   });
 
   factory SubjectModel.fromJson(Map<String, dynamic> json) {
@@ -141,6 +275,43 @@ class SubjectModel {
       tag: json['tag'] ?? '',
       author: json['author'] ?? '',
       belongYear: json['belong_year'] ?? '',
+      avgRating: (json['avg_rating'] ?? 0.0).toDouble(),
+      ratingCount: json['rating_count'] ?? 0,
+    );
+  }
+
+  /// 复制并修改部分字段
+  SubjectModel copyWith({
+    int? id,
+    String? title,
+    String? titleEncr,
+    String? answer,
+    String? answerEncr,
+    String? cate,
+    String? level,
+    String? majorCode,
+    int? subjectCategory,
+    String? tag,
+    String? author,
+    String? belongYear,
+    double? avgRating,
+    int? ratingCount,
+  }) {
+    return SubjectModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      titleEncr: titleEncr ?? this.titleEncr,
+      answer: answer ?? this.answer,
+      answerEncr: answerEncr ?? this.answerEncr,
+      cate: cate ?? this.cate,
+      level: level ?? this.level,
+      majorCode: majorCode ?? this.majorCode,
+      subjectCategory: subjectCategory ?? this.subjectCategory,
+      tag: tag ?? this.tag,
+      author: author ?? this.author,
+      belongYear: belongYear ?? this.belongYear,
+      avgRating: avgRating ?? this.avgRating,
+      ratingCount: ratingCount ?? this.ratingCount,
     );
   }
 
@@ -182,6 +353,8 @@ class SubjectModel {
       tag: tag,
       author: author,
       belongYear: belongYear,
+      avgRating: avgRating,
+      ratingCount: ratingCount,
     );
   }
 }

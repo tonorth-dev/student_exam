@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../api/subject_api.dart';
 import '../../../../../common/encr_util.dart';
+import '../../../../../ex/ex_hint.dart';
 
-/// AI题库Logic
+/// 红师AI题库Logic
 class AISubjectLogic extends GetxController {
   // 题目列表
   final RxList<SubjectModel> subjects = <SubjectModel>[].obs;
+
+  // 缓存两种类型的题目数据
+  final Map<int, List<SubjectModel>> _cachedSubjects = {};
+  final Map<int, int> _cachedTotals = {};
 
   // 每页数量（固定5题）
   final int pageSize = 5;
@@ -36,7 +41,15 @@ class AISubjectLogic extends GetxController {
   void switchType(int type) {
     if (currentType.value != type) {
       currentType.value = type;
-      loadSubjects();
+      
+      // 如果已经缓存了该类型的数据，直接使用缓存
+      if (_cachedSubjects.containsKey(type) && _cachedSubjects[type]!.isNotEmpty) {
+        subjects.value = _cachedSubjects[type]!;
+        total.value = _cachedTotals[type] ?? 0;
+      } else {
+        // 否则重新加载
+        loadSubjects();
+      }
     }
   }
 
@@ -68,6 +81,10 @@ class AISubjectLogic extends GetxController {
           }
 
           subjects.value = decryptedSubjects;
+          
+          // 缓存当前类型的数据
+          _cachedSubjects[currentType.value] = decryptedSubjects;
+          _cachedTotals[currentType.value] = total.value;
         } else {
           subjects.value = [];
         }
@@ -102,6 +119,24 @@ class AISubjectLogic extends GetxController {
     }
   }
 
+  /// 对题目进行评分
+  Future<void> rateSubject(int subjectId, int rating) async {
+    try {
+      await SubjectApi.rateSubject(
+        subjectId: subjectId,
+        rating: rating,
+      );
+
+      '评分成功'.toHint();
+      
+      // 重新加载题目以获取最新的平均评分
+      loadSubjects();
+    } catch (e) {
+      debugPrint('评分失败: $e');
+      '评分失败'.toHint();
+    }
+  }
+
   /// 刷新题目（换一换）
   @override
   void refresh() {
@@ -123,6 +158,8 @@ class SubjectModel {
   final String tag;          // 标签
   final String author;       // 作者
   final String belongYear;   // 所属年份
+  final double avgRating;    // 平均评分 (0.0-5.0)
+  final int ratingCount;     // 评分人数
 
   SubjectModel({
     required this.id,
@@ -137,6 +174,8 @@ class SubjectModel {
     required this.tag,
     required this.author,
     required this.belongYear,
+    this.avgRating = 0.0,
+    this.ratingCount = 0,
   });
 
   factory SubjectModel.fromJson(Map<String, dynamic> json) {
@@ -153,6 +192,43 @@ class SubjectModel {
       tag: json['tag'] ?? '',
       author: json['author'] ?? '',
       belongYear: json['belong_year'] ?? '',
+      avgRating: (json['avg_rating'] ?? 0.0).toDouble(),
+      ratingCount: json['rating_count'] ?? 0,
+    );
+  }
+
+  /// 复制并修改部分字段
+  SubjectModel copyWith({
+    int? id,
+    String? title,
+    String? titleEncr,
+    String? answer,
+    String? answerEncr,
+    String? cate,
+    String? level,
+    String? majorCode,
+    int? subjectCategory,
+    String? tag,
+    String? author,
+    String? belongYear,
+    double? avgRating,
+    int? ratingCount,
+  }) {
+    return SubjectModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      titleEncr: titleEncr ?? this.titleEncr,
+      answer: answer ?? this.answer,
+      answerEncr: answerEncr ?? this.answerEncr,
+      cate: cate ?? this.cate,
+      level: level ?? this.level,
+      majorCode: majorCode ?? this.majorCode,
+      subjectCategory: subjectCategory ?? this.subjectCategory,
+      tag: tag ?? this.tag,
+      author: author ?? this.author,
+      belongYear: belongYear ?? this.belongYear,
+      avgRating: avgRating ?? this.avgRating,
+      ratingCount: ratingCount ?? this.ratingCount,
     );
   }
 
@@ -194,6 +270,8 @@ class SubjectModel {
       tag: tag,
       author: author,
       belongYear: belongYear,
+      avgRating: avgRating,
+      ratingCount: ratingCount,
     );
   }
 }

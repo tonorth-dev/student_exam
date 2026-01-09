@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../common/app_providers.dart';
 
-/// 题库学习主页面 - 选择自研题库或AI题库
+/// 题库学习主页面 - 选择专业题库或红师AI题库
 class SubjectBankPage extends StatelessWidget {
   const SubjectBankPage({super.key});
 
@@ -30,24 +30,24 @@ class SubjectBankPage extends StatelessWidget {
               children: [
                 _buildOptionCard(
                   screenAdapter: screenAdapter,
-                  title: '自研题库',
+                  title: '专业题库',
                   description: '精选自研题目，助你高效备考',
                   icon: Icons.library_books,
                   color: Colors.blue,
                   onTap: () {
-                    // 导航到自研题库学习页面
+                    // 导航到专业题库学习页面
                     Get.toNamed('/subject-bank/self-research');
                   },
                 ),
                 SizedBox(width: screenAdapter.getAdaptiveWidth(40)),
                 _buildOptionCard(
                   screenAdapter: screenAdapter,
-                  title: 'AI题库',
+                  title: '红师AI题库',
                   description: '智能推荐，个性化学习',
                   icon: Icons.smart_toy,
                   color: Colors.purple,
                   onTap: () {
-                    // 导航到AI题库学习页面
+                    // 导航到红师AI题库学习页面
                     Get.toNamed('/subject-bank/ai-subject');
                   },
                 ),

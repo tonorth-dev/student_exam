@@ -40,13 +40,13 @@ class SidebarLogic extends GetxController {
       page: NotePage(),
     ),
     SidebarTree(
-      name: "自研题库",
+      name: "专业题库",
       icon: Icons.library_books,
       color: Colors.blue[700],
       page: SelfResearchPage(),
     ),
     SidebarTree(
-      name: "AI题库",
+      name: "红师AI题库",
       icon: Icons.smart_toy,
       color: Colors.purple[400],
       page: AISubjectPage(),
