@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../common/app_providers.dart';
 import '../common/app_bar.dart';
 import '../../head/logic.dart';
@@ -97,8 +99,148 @@ class _UserGuidePageState extends State<UserGuidePage> {
 
           debugPrint('准备加载用户手册URL: ${logic.guideUrl.value}');
 
+          // Windows平台提示：直接在浏览器中打开
+          if (Platform.isWindows) {
+            return Center(
+              child: Container(
+                constraints: BoxConstraints(
+                  maxWidth: screenAdapter.getAdaptiveWidth(600),
+                ),
+                child: Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(16)),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(40)),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 图标
+                        Container(
+                          padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(24)),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.open_in_browser,
+                            size: screenAdapter.getAdaptiveIconSize(64),
+                            color: Colors.blue[700],
+                          ),
+                        ),
+                        SizedBox(height: screenAdapter.getAdaptiveHeight(24)),
+
+                        // 标题
+                        Text(
+                          '用户手册',
+                          style: TextStyle(
+                            fontSize: screenAdapter.getAdaptiveFontSize(28),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue[700],
+                          ),
+                        ),
+                        SizedBox(height: screenAdapter.getAdaptiveHeight(16)),
+
+                        // 描述
+                        Text(
+                          '点击下方按钮在浏览器中打开用户手册',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: screenAdapter.getAdaptiveFontSize(16),
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        SizedBox(height: screenAdapter.getAdaptiveHeight(32)),
+
+                        // 打开按钮
+                        SizedBox(
+                          width: double.infinity,
+                          height: screenAdapter.getAdaptiveHeight(56),
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              final url = Uri.parse(logic.guideUrl.value);
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(url, mode: LaunchMode.externalApplication);
+                              } else {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('无法打开链接')),
+                                  );
+                                }
+                              }
+                            },
+                            icon: Icon(
+                              Icons.open_in_browser,
+                              size: screenAdapter.getAdaptiveIconSize(24),
+                            ),
+                            label: Text(
+                              '在浏览器中打开',
+                              style: TextStyle(
+                                fontSize: screenAdapter.getAdaptiveFontSize(18),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue[700],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(12)),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: screenAdapter.getAdaptiveHeight(16)),
+
+                        // 显示URL
+                        Container(
+                          padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(12)),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(8)),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.link,
+                                size: screenAdapter.getAdaptiveIconSize(16),
+                                color: Colors.grey[600],
+                              ),
+                              SizedBox(width: screenAdapter.getAdaptiveWidth(8)),
+                              Expanded(
+                                child: Text(
+                                  logic.guideUrl.value,
+                                  style: TextStyle(
+                                    fontSize: screenAdapter.getAdaptiveFontSize(12),
+                                    color: Colors.grey[600],
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+
           // 直接嵌入显示WebView
-          return Container(
+          return _buildWebView(screenAdapter, logic, context);
+              }),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建WebView组件
+  Widget _buildWebView(dynamic screenAdapter, UserGuideLogic logic, BuildContext ctx) {
+    return Container(
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(8)),
@@ -211,11 +353,5 @@ class _UserGuidePageState extends State<UserGuidePage> {
               ),
             ),
           );
-              }),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
