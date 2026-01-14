@@ -10,32 +10,51 @@ set "PUBLISHER=红师教育"
 set "VERSION=1.3.0"
 :: ============================================
 
-:: 获取当前脚本所在目录的绝对路径
-set "PROJECT_DIR=%~dp0"
-set "RELEASE_DIR=%PROJECT_DIR%build\windows\x64\runner\Release"
-set "OUTPUT_DIR=%PROJECT_DIR%build\windows\installer"
+:: 自动定位项目根目录 (假设脚本在 scripts/ 目录下，寻找上一级)
+set "SCRIPT_DIR=%~dp0"
+cd /d "%SCRIPT_DIR%.."
+set "PROJECT_ROOT=%cd%"
 
-echo [*] 正在检查编译产物...
+set "RELEASE_DIR=%PROJECT_ROOT%\build\windows\x64\runner\Release"
+set "OUTPUT_DIR=%PROJECT_ROOT%\build\windows\installer"
+
+echo [*] 当前项目根目录: %PROJECT_ROOT%
+
+:: --- 第一步：检查并编译 ---
 if not exist "%RELEASE_DIR%\%EXE_NAME%" (
-    echo [!] 错误: 找不到生成的 EXE 文件，请确认路径:
-    echo %RELEASE_DIR%\%EXE_NAME%
-    pause
-    exit /b 1
+    echo [!] 未检测到编译产物，正在开始全流程构建...
+
+    echo [*] 正在获取 Flutter 依赖...
+    call flutter pub get
+
+    echo [*] 正在执行 Flutter 编译 (Windows Release)...
+    call flutter build windows --release
+
+    if !errorlevel! neq 0 (
+        echo [!] Flutter 编译失败，请检查代码错误。
+        pause
+        exit /b 1
+    )
+) else (
+    echo [OK] 检测到现有编译产物，跳过编译步骤直接打包。
+    echo [Tips] 如果需要重新编译，请先运行 flutter clean 或删除 build 目录。
 )
 
-echo [*] 正在创建安装包输出目录...
+:: --- 第二步：准备打包 ---
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
-echo [*] 正在生成打包配置文件...
+echo [*] 正在生成 Inno Setup 配置文件...
+set "ISS_FILE=%PROJECT_ROOT%\temp_installer.iss"
+
 (
 echo [Setup]
-echo AppId={{HONGSHI-STUDENT-APP-UNIQUE-ID}}
+echo AppId={{HONGSHI-STUDENT-APP-ID-2026}}
 echo AppName=%APP_NAME%
 echo AppVersion=%VERSION%
 echo AppPublisher=%PUBLISHER%
 echo DefaultDirName={autopf}\%APP_NAME%
 echo OutputDir=%OUTPUT_DIR%
-echo OutputBaseFilename=%APP_NAME%_Setup
+echo OutputBaseFilename=%APP_NAME%_v%VERSION%_Setup
 echo Compression=lzma
 echo SolidCompression=yes
 echo WizardStyle=modern
@@ -51,21 +70,22 @@ echo Name: "{autodesktop}\%APP_NAME%"; Filename: "{app}\%EXE_NAME%"
 
 echo [Run]
 echo Description: "运行 %APP_NAME%"; Filename: "{app}\%EXE_NAME%"; Flags: nowait postinstall skipifsilent
-) > "%PROJECT_DIR%temp_build.iss"
+) > "%ISS_FILE%"
 
-echo [*] 正在执行打包程序 (ISCC)...
-iscc "%PROJECT_DIR%temp_build.iss"
+:: --- 第三步：执行打包 ---
+echo [*] 正在调用 ISCC 生成安装包...
+iscc "%ISS_FILE%"
 
-if %errorlevel% neq 0 (
-    echo [!] 打包失败，请检查上面 ISCC 的错误提示。
-) else (
+if %errorlevel% equ 0 (
     echo.
     echo ========================================
-    echo [OK] 打包成功！
-    echo 安装包位于: %OUTPUT_DIR%
+    echo [OK] 任务圆满完成！
+    echo 安装包位置: %OUTPUT_DIR%\%APP_NAME%_v%VERSION%_Setup.exe
     echo ========================================
+) else (
+    echo [!] 打包过程出现异常。
 )
 
-:: 清理临时文件
-if exist "%PROJECT_DIR%temp_build.iss" del "%PROJECT_DIR%temp_build.iss"
+:: 清理
+if exist "%ISS_FILE%" del "%ISS_FILE%"
 pause
