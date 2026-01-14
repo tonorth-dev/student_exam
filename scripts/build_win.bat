@@ -1,10 +1,9 @@
 @echo off
-:: 强制 CMD 使用 UTF-8 编码
+:: 强制 CMD 使用 UTF-8 编码，确保能正确处理中文变量
 chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 :: ================= 配置区域 =================
-:: 确保 EXE_NAME 和你 build 文件夹下生成的一致
 set "APP_NAME=红师学生端"
 set "EXE_NAME=hongshi_student_app.exe"
 set "PUBLISHER=红师教育"
@@ -31,26 +30,26 @@ if not exist "%RELEASE_DIR%\%EXE_NAME%" (
     )
 )
 
-:: 3. 准备输出目录并生成正确的 ISS 配置
+:: 3. 生成安装配置文件 (关键：给中文字符加上双引号)
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
 echo [*] 正在生成 Inno Setup 配置...
 (
 echo [Setup]
-echo AppId={{HONGSHI-STUDENT-APP-ID}}
-echo AppName=%APP_NAME%
-echo AppVersion=%VERSION%
-echo AppPublisher=%PUBLISHER%
-echo DefaultDirName={autopf}\%APP_NAME%
-echo OutputDir=%OUTPUT_DIR%
-echo OutputBaseFilename=%APP_NAME%_v%VERSION%_Setup
+echo AppId={{88888888-4444-4444-4444-1234567890AB}
+echo AppName="%APP_NAME%"
+echo AppVersion="%VERSION%"
+echo AppPublisher="%PUBLISHER%"
+echo DefaultDirName="{autopf}\%APP_NAME%"
+echo OutputDir="%OUTPUT_DIR%"
+echo OutputBaseFilename="%APP_NAME%_v%VERSION%_Setup"
 echo Compression=lzma
 echo SolidCompression=yes
 echo WizardStyle=modern
 
 echo.
 echo [Languages]
-echo Name: "default"; MessagesFile: "compiler:Default.isl"
+echo Name: "chinesesimplified"; MessagesFile: "compiler:Default.isl"
 
 echo.
 echo [Files]
@@ -69,7 +68,8 @@ echo Description: "运行 %APP_NAME%"; Filename: "{app}\%EXE_NAME%"; Flags: nowa
 
 :: 4. 打包
 echo [*] 正在执行 ISCC 打包...
-iscc "%ISS_FILE%"
+:: 注意：这里显式指定 /UTF-8 参数，确保中文不乱码
+iscc /UTF-8 "%ISS_FILE%"
 
 if %errorlevel% equ 0 (
     if exist "%ISS_FILE%" del "%ISS_FILE%"
