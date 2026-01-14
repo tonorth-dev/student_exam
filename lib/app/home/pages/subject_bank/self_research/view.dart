@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../common/app_providers.dart';
 import '../../../../../component/star_rating.dart';
+import '../../common/app_bar.dart';
+import '../../../head/logic.dart';
 import 'logic.dart';
 
 /// 专业题库学习页面（带TabBar和评分功能）
@@ -12,11 +14,15 @@ class SelfResearchPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final logic = Get.put(SelfResearchLogic());
     final screenAdapter = AppProviders.instance.screenAdapter;
+    // 确保HeadLogic已初始化
+    Get.put(HeadLogic());
 
-    return Obx(() {
-      if (logic.isCategoriesLoading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
+    return Scaffold(
+      appBar: CommonAppBar.buildExamAppBar(),
+      body: Obx(() {
+        if (logic.isCategoriesLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
       if (logic.categories.isEmpty) {
         return Center(
@@ -71,7 +77,8 @@ class SelfResearchPage extends StatelessWidget {
           ],
         ),
       );
-    });
+    }),
+    );
   }
 
   /// 构建顶部标题栏
@@ -103,13 +110,28 @@ class SelfResearchPage extends StatelessWidget {
               ),
             ],
           ),
-          Obx(() => Text(
-                '共 ${logic.currentTotal} 题',
-                style: TextStyle(
-                  fontSize: screenAdapter.getAdaptiveFontSize(14),
-                  color: Colors.grey[600],
+          Row(
+            children: [
+              // 刷新按钮
+              IconButton(
+                onPressed: () => logic.refresh(),
+                icon: Icon(
+                  Icons.refresh,
+                  size: screenAdapter.getAdaptiveIconSize(24),
+                  color: Colors.blue[700],
                 ),
-              )),
+                tooltip: '刷新题目',
+              ),
+              SizedBox(width: screenAdapter.getAdaptiveWidth(8)),
+              Obx(() => Text(
+                    '共 ${logic.currentTotal} 题',
+                    style: TextStyle(
+                      fontSize: screenAdapter.getAdaptiveFontSize(14),
+                      color: Colors.grey[600],
+                    ),
+                  )),
+            ],
+          ),
         ],
       ),
     );
@@ -282,13 +304,39 @@ class SelfResearchPage extends StatelessWidget {
                       _buildTag(screenAdapter, _getCateLabel(subject.cate), Colors.orange),
                       SizedBox(width: screenAdapter.getAdaptiveWidth(20)),
                       // 星级评分
-                      StarRating(
-                        rating: subject.avgRating,
-                        size: screenAdapter.getAdaptiveIconSize(20),
-                        onRatingChanged: (rating) {
-                          logic.rateSubject(subject.id, rating);
-                        },
-                      ),
+                      Obx(() {
+                        // 优先使用本地记忆的评分，否则使用服务端返回的userRating
+                        final userRating = logic.localRatings[subject.id] ?? subject.userRating;
+                        final hasRated = userRating > 0;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 始终显示题目的平均评分
+                            StarRating(
+                              rating: subject.avgRating,
+                              size: screenAdapter.getAdaptiveIconSize(20),
+                              onRatingChanged: hasRated
+                                  ? null // 已评分则禁用
+                                  : (rating) {
+                                      logic.rateSubject(subject.id, rating);
+                                    },
+                            ),
+                            if (hasRated)
+                              Padding(
+                                padding: EdgeInsets.only(top: screenAdapter.getAdaptivePadding(2)),
+                                child: Text(
+                                  '已评分 (我的评分: $userRating星)',
+                                  style: TextStyle(
+                                    fontSize: screenAdapter.getAdaptiveFontSize(9),
+                                    color: Colors.green[600],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      }),
                     ],
                   ),
 

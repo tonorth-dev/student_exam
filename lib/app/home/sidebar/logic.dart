@@ -3,14 +3,13 @@ import 'package:student_exam/app/home/pages/note/view.dart';
 import 'package:student_exam/ex/ex_int.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../pages/note/view.dart';
 import '../pages/psyc/view.dart';
 import '../pages/lecture/view.dart';
-import '../pages/subject_bank/view.dart';
 import '../pages/subject_bank/self_research/view.dart';
 import '../pages/subject_bank/ai_subject/view.dart';
 import '../pages/settings/view.dart';
 import '../pages/exam/view.dart';
+import '../pages/user_guide/view.dart';
 
 class SidebarLogic extends GetxController {
   static var selectName = "".obs;
@@ -62,6 +61,12 @@ class SidebarLogic extends GetxController {
       icon: Icons.settings_outlined,
       color: Colors.grey[600],
       page: SettingsPage(),
+    ),
+    SidebarTree(
+      name: "用户手册",
+      icon: Icons.menu_book,
+      color: Colors.blue[600],
+      page: UserGuidePage(),
     )
   ];
 

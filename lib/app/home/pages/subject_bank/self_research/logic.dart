@@ -24,6 +24,9 @@ class SelfResearchLogic extends GetxController with GetSingleTickerProviderState
   // 每个category的当前页码 (key: category, value: page)
   final RxMap<int, int> categoryPages = <int, int>{}.obs;
 
+  // 本地记忆的用户评分 (key: subjectId, value: rating)
+  final RxMap<int, int> localRatings = <int, int>{}.obs;
+
   // 每页数量
   final int pageSize = 20;
 
@@ -113,6 +116,11 @@ class SelfResearchLogic extends GetxController with GetSingleTickerProviderState
           for (var subject in rawSubjects) {
             final decrypted = await subject.decrypt();
             decryptedSubjects.add(decrypted);
+
+            // 保存服务端返回的用户评分到本地记忆
+            if (subject.userRating > 0) {
+              localRatings[subject.id] = subject.userRating;
+            }
           }
 
           categorySubjects[category] = decryptedSubjects;
@@ -201,10 +209,22 @@ class SelfResearchLogic extends GetxController with GetSingleTickerProviderState
       );
 
       '评分成功'.toHint();
-      
-      // 重新加载当前category的题目以获取最新的平均评分
+
+      // 本地记忆评分，不重新加载整个页面
+      localRatings[subjectId] = rating;
+
+      // 更新当前题目列表中的该题目状态（可选，用于立即反馈）
       final category = categories[currentCategoryIndex.value];
-      loadSubjects(category, page: currentPage);
+      final subjects = categorySubjects[category];
+      if (subjects != null) {
+        final index = subjects.indexWhere((s) => s.id == subjectId);
+        if (index != -1) {
+          // 更新题目的userRating字段以触发UI更新
+          final updatedSubject = subjects[index].copyWith(userRating: rating);
+          subjects[index] = updatedSubject;
+          categorySubjects[category] = List.from(subjects); // 触发响应式更新
+        }
+      }
     } catch (e) {
       debugPrint('评分失败: $e');
       '评分失败'.toHint();
@@ -243,6 +263,7 @@ class SubjectModel {
   final String belongYear;   // 所属年份
   final double avgRating;    // 平均评分 (0.0-5.0)
   final int ratingCount;     // 评分人数
+  final int userRating;      // 用户评分 (0表示未评分)
 
   SubjectModel({
     required this.id,
@@ -259,6 +280,7 @@ class SubjectModel {
     required this.belongYear,
     this.avgRating = 0.0,
     this.ratingCount = 0,
+    this.userRating = 0,
   });
 
   factory SubjectModel.fromJson(Map<String, dynamic> json) {
@@ -277,6 +299,7 @@ class SubjectModel {
       belongYear: json['belong_year'] ?? '',
       avgRating: (json['avg_rating'] ?? 0.0).toDouble(),
       ratingCount: json['rating_count'] ?? 0,
+      userRating: json['user_rating'] ?? 0,
     );
   }
 
@@ -296,6 +319,7 @@ class SubjectModel {
     String? belongYear,
     double? avgRating,
     int? ratingCount,
+    int? userRating,
   }) {
     return SubjectModel(
       id: id ?? this.id,
@@ -312,6 +336,7 @@ class SubjectModel {
       belongYear: belongYear ?? this.belongYear,
       avgRating: avgRating ?? this.avgRating,
       ratingCount: ratingCount ?? this.ratingCount,
+      userRating: userRating ?? this.userRating,
     );
   }
 
@@ -355,6 +380,7 @@ class SubjectModel {
       belongYear: belongYear,
       avgRating: avgRating,
       ratingCount: ratingCount,
+      userRating: userRating,
     );
   }
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../common/app_providers.dart';
 import '../../../../../component/star_rating.dart';
+import '../../common/app_bar.dart';
+import '../../../head/logic.dart';
 import 'logic.dart';
 
 /// 红师AI题库学习页面
@@ -12,22 +14,26 @@ class AISubjectPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final logic = Get.put(AISubjectLogic());
     final screenAdapter = AppProviders.instance.screenAdapter;
+    // 确保HeadLogic已初始化
+    Get.put(HeadLogic());
 
-    return Container(
-      padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16)),
-      child: Column(
-        children: [
-          // 顶部标题栏
-          _buildHeader(screenAdapter, logic),
-          SizedBox(height: screenAdapter.getAdaptiveHeight(16)),
+    return Scaffold(
+      appBar: CommonAppBar.buildExamAppBar(),
+      body: Container(
+        padding: EdgeInsets.all(screenAdapter.getAdaptivePadding(16)),
+        child: Column(
+          children: [
+            // 顶部标题栏
+            _buildHeader(screenAdapter, logic),
+            SizedBox(height: screenAdapter.getAdaptiveHeight(16)),
 
-          // Tab切换栏
-          _buildTabBar(screenAdapter, logic),
-          SizedBox(height: screenAdapter.getAdaptiveHeight(16)),
+            // Tab切换栏
+            _buildTabBar(screenAdapter, logic),
+            SizedBox(height: screenAdapter.getAdaptiveHeight(16)),
 
-          // 题目列表区域
-          Expanded(
-            child: Container(
+            // 题目列表区域
+            Expanded(
+              child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(
@@ -166,6 +172,7 @@ class AISubjectPage extends StatelessWidget {
           _buildPagination(screenAdapter, logic),
         ],
       ),
+    ),
     );
   }
 

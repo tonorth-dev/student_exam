@@ -37,4 +37,13 @@ class ConfigApi {
       rethrow; // 重新抛出异常以便调用者处理
     }
   }
+
+  static Future<dynamic> configUserGuide() async {
+    try {
+      return await HttpUtil.get("/admin/config/config/user_guide");
+    } catch (e) {
+      print('Error in configList: $e');
+      rethrow; // 重新抛出异常以便调用者处理
+    }
+  }
 }
