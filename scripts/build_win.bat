@@ -1,9 +1,10 @@
 @echo off
 :: 强制 CMD 使用 UTF-8 编码
 chcp 65001 >nul
-setlocal
+setlocal enabledelayedexpansion
 
 :: ================= 配置区域 =================
+:: 确保 EXE_NAME 和你 build 文件夹下生成的一致
 set "APP_NAME=红师学生端"
 set "EXE_NAME=hongshi_student_app.exe"
 set "PUBLISHER=红师教育"
@@ -19,24 +20,18 @@ set "ISS_FILE=%PROJECT_ROOT%\temp_installer.iss"
 echo [*] 项目根目录: %PROJECT_ROOT%
 cd /d "%PROJECT_ROOT%"
 
-:: 2. 构建逻辑 (强制检查文件)
+:: 2. 检查产物（如果不存在则构建）
 if not exist "%RELEASE_DIR%\%EXE_NAME%" (
-    echo [!] 未发现产物，开始构建...
-    call flutter pub get
+    echo [!] 未发现产物，开始全量构建...
     call flutter build windows --release
-
-    :: 关键修正：编译后不再检查 errorlevel，直接检查文件是否存在
     if not exist "%RELEASE_DIR%\%EXE_NAME%" (
-        echo [!] 错误：文件仍然不存在。请检查磁盘空间或权限。
+        echo [!] 错误：Flutter 编译未能生成 %EXE_NAME%
         pause
         exit /b 1
     )
-    echo [OK] 编译完成。
-) else (
-    echo [OK] 产物已存在，跳过编译。
 )
 
-:: 3. 准备输出目录
+:: 3. 准备输出目录并生成正确的 ISS 配置
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 
 echo [*] 正在生成 Inno Setup 配置...
@@ -52,17 +47,22 @@ echo OutputBaseFilename=%APP_NAME%_v%VERSION%_Setup
 echo Compression=lzma
 echo SolidCompression=yes
 echo WizardStyle=modern
-echo ; 使用 C:\Windows 下的语言文件
-echo DefaultLanguagesFile=compiler:Default.isl
 
+echo.
+echo [Languages]
+echo Name: "default"; MessagesFile: "compiler:Default.isl"
+
+echo.
 echo [Files]
 echo Source: "%RELEASE_DIR%\%EXE_NAME%"; DestDir: "{app}"; Flags: ignoreversion
 echo Source: "%RELEASE_DIR%\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
+echo.
 echo [Icons]
 echo Name: "{autoprograms}\%APP_NAME%"; Filename: "{app}\%EXE_NAME%"
 echo Name: "{autodesktop}\%APP_NAME%"; Filename: "{app}\%EXE_NAME%"
 
+echo.
 echo [Run]
 echo Description: "运行 %APP_NAME%"; Filename: "{app}\%EXE_NAME%"; Flags: nowait postinstall skipifsilent
 ) > "%ISS_FILE%"
@@ -71,16 +71,15 @@ echo Description: "运行 %APP_NAME%"; Filename: "{app}\%EXE_NAME%"; Flags: nowa
 echo [*] 正在执行 ISCC 打包...
 iscc "%ISS_FILE%"
 
-if exist "%ISS_FILE%" del "%ISS_FILE%"
-
-if exist "%OUTPUT_DIR%\%APP_NAME%_v%VERSION%_Setup.exe" (
+if %errorlevel% equ 0 (
+    if exist "%ISS_FILE%" del "%ISS_FILE%"
     echo.
     echo ========================================
     echo [OK] 安装包打包成功！
-    echo 位置: %OUTPUT_DIR%
+    echo 路径: %OUTPUT_DIR%
     echo ========================================
 ) else (
-    echo [!] 打包失败，请确保 C:\Windows 下有 iscc.exe 和 Default.isl
+    echo [!] 打包失败，请检查报错内容。
 )
 
 pause
