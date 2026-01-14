@@ -5,7 +5,7 @@ setlocal
 
 :: ================= 配置区域 =================
 set "APP_NAME=红师学生端"
-set "EXE_NAME=hongshi_student.exe"
+set "EXE_NAME=hongshi_student_app.exe"
 set "PUBLISHER=红师教育"
 set "VERSION=1.3.0"
 :: ============================================
