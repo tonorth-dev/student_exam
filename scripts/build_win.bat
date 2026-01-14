@@ -1,11 +1,13 @@
 @echo off
+:: 强制 CMD 使用 UTF-8 编码
+chcp 65001 >nul
 setlocal
 
 :: ================= 配置区域 =================
-set "APP_NAME=红师教育学生端"
-set "EXE_NAME=hongshi_student.exe"
-set "PUBLISHER=红师教育"
-set "VERSION=1.3.0"
+set "APP_NAME=我的应用"
+set "EXE_NAME=my_app.exe"
+set "PUBLISHER=我的公司"
+set "VERSION=1.0.0"
 :: ============================================
 
 echo [*] 正在清理旧构建...
