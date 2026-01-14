@@ -4,9 +4,9 @@ chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 :: ================= 配置区域 =================
-set "APP_NAME=红师学生端"
+set "APP_NAME=hongshi_student_app"
 set "EXE_NAME=hongshi_student_app.exe"
-set "PUBLISHER=红师教育"
+set "PUBLISHER=hongshi"
 set "VERSION=1.3.0"
 :: ============================================
 
