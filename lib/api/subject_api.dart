@@ -53,7 +53,7 @@ class SubjectApi {
     return await HttpUtil.get(
       "/student/subject/ai",
       params: params,
-      timeout: const Duration(seconds: 60),
+      timeout: const Duration(seconds: 180),
     );
   }
 }
