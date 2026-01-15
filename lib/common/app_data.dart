@@ -10,6 +10,7 @@ class LoginData {
   String code = "";
   String? workContent;
   int id = 0;
+  int classId = 0;
   DateTime? expiryDate;
 
   // toJson
@@ -18,6 +19,7 @@ class LoginData {
       "token": token,
       "user": user,
       "id": id,
+      "classId": classId,
       "themeName": themeName,
       "examCode": code,
       "workContent": workContent,
@@ -36,6 +38,7 @@ class LoginData {
     data.code = map["examCode"] ?? "";
     data.workContent = map["workContent"];
     data.id = map["id"] ?? 0;
+    data.classId = map["classId"] ?? 0;
     if (map["expiryDate"] != null) {
       data.expiryDate =
           DateFormat('yyyy-MM-dd HH:mm:ss').parse(map["expiryDate"]);

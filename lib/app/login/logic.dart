@@ -76,6 +76,7 @@ class LoginLogic extends GetxController {
           dg.user = data['user']['userName'];
           dg.code = data['user']['phone'];
           dg.id = int.parse(data['user']['email']);
+          dg.classId = data['user']['classId'] ?? 0;
         });
         // 登录成功后保存账号信息
         saveAccountInfo(accountText.text);

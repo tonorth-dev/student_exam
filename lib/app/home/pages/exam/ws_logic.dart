@@ -47,7 +47,12 @@ class WSLogic extends GetxController {
     try {
       isConnecting = true;
       connStatusName.value = "正在连接..."; // 连接中状态
-      await webSocketService.connect(code, "").catchError((error) {
+
+      // 读取本地存储的学生数据
+      final loginData = await LoginData.read();
+      final classId = loginData.classId.toString();
+
+      await webSocketService.connect(code, classId).catchError((error) {
         print('WebSocket 连接错误: $error');
         if (!isConnectionFailed) {
           showErrorDialog('错误', 'WebSocket 连接失败，请重试。');
