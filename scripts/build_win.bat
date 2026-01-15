@@ -11,6 +11,7 @@ set "VERSION=1.3.0"
 :: 图标路径 (注意：必须是 .ico 格式)
 set "ICON_PATH=assets\images\logo.ico"
 :: ============================================
+:: 还有下面的APP_ID也需要改
 
 :: 1. 路径推导
 for %%i in ("%~dp0..") do set "PROJECT_ROOT=%%~fi"
