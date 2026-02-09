@@ -759,6 +759,7 @@ class _PdfFullScreenPageState extends State<_PdfFullScreenPage> {
     Navigator.of(context).pop();
   }
 
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
