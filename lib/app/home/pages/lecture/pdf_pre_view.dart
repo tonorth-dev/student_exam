@@ -21,7 +21,6 @@ class _PdfPreViewState extends State<PdfPreView> {
     return CommonPdfViewer(
       config: PdfViewerConfig(
         pdfUrlStream: _lectureLogic.selectedPdfUrl,
-        backgroundImage: 'assets/images/note_page_bg.png',
         enableChapterNavigation: true,
         getNextNode: () => _lectureLogic.getNextNode(),
         getPreviousNode: () => _lectureLogic.getPreviousNode(),
