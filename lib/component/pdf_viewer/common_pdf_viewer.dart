@@ -17,8 +17,8 @@ class PdfViewerConfig {
   /// PDF URL 流（监听 URL 变化）
   final Rx<String?> pdfUrlStream;
 
-  /// 背景图片路径
-  final String backgroundImage;
+  /// 护眼背景色
+  final Color backgroundColor;
 
   /// 是否启用章节切换功能
   final bool enableChapterNavigation;
@@ -40,7 +40,7 @@ class PdfViewerConfig {
 
   const PdfViewerConfig({
     required this.pdfUrlStream,
-    this.backgroundImage = 'assets/images/note_page_bg.png',
+    this.backgroundColor = const Color(0xFF2F4F4F),
     this.enableChapterNavigation = false,
     this.getNextNode,
     this.getPreviousNode,
@@ -433,7 +433,7 @@ class _CommonPdfViewerState extends State<CommonPdfViewer> {
           filePath: _decryptedFilePath!,
           initialPage: currentPage,
           initialZoom: currentZoom,
-          backgroundImage: widget.config.backgroundImage,
+          backgroundColor: widget.config.backgroundColor,
           onPageChanged: (page) {
             if (mounted) {
               _lastPageNumber = page;
@@ -554,14 +554,9 @@ class _CommonPdfViewerState extends State<CommonPdfViewer> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // 背景图片（底层）
+        // 护眼背景色（底层）
         Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage(widget.config.backgroundImage),
-              fit: BoxFit.fill,
-            ),
-          ),
+          color: widget.config.backgroundColor,
         ),
 
         // 添加内边距，确保背景始终可见
@@ -750,7 +745,7 @@ class _PdfFullScreenPage extends StatefulWidget {
   final String filePath;
   final int initialPage;
   final double initialZoom;
-  final String backgroundImage;
+  final Color backgroundColor;
   final Function(int page) onPageChanged;
   final Function(int exitPage, double exitZoom) onExit;
 
@@ -758,7 +753,7 @@ class _PdfFullScreenPage extends StatefulWidget {
     required this.filePath,
     required this.initialPage,
     required this.initialZoom,
-    required this.backgroundImage,
+    required this.backgroundColor,
     required this.onPageChanged,
     required this.onExit,
   });
@@ -863,12 +858,7 @@ class _PdfFullScreenPageState extends State<_PdfFullScreenPage> {
                   maxWidth: MediaQuery.of(context).size.width * 0.98,
                   maxHeight: MediaQuery.of(context).size.height * 0.98,
                 ),
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(widget.backgroundImage),
-                    fit: BoxFit.fill,
-                  ),
-                ),
+                color: widget.backgroundColor,
                 child: Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: MediaQuery.of(context).size.width * 0.15,
