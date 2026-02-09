@@ -103,6 +103,7 @@ class _CommonPdfViewerState extends State<CommonPdfViewer> {
         }
         // 重置缩放为100%
         _zoomLevel.value = 1.0;
+        _pdfController.zoomLevel = 1.0;
         await _loadPdf(url);
       }
     });
@@ -347,11 +348,11 @@ class _CommonPdfViewerState extends State<CommonPdfViewer> {
 
   // ========== 缩放控制 ==========
 
-  /// 处理缩放（使用 Transform.scale 自动从中心缩放）
+  /// 处理缩放（使用 PdfViewerController.zoomLevel）
   void _handleZoom(bool zoomIn) {
     if (!mounted || !_isPdfLoaded) return;
 
-    double newZoom = _zoomLevel.value;
+    double newZoom = _pdfController.zoomLevel;
 
     if (zoomIn) {
       newZoom = (newZoom + 0.1).clamp(_minZoom, _maxZoom);
@@ -359,12 +360,14 @@ class _CommonPdfViewerState extends State<CommonPdfViewer> {
       newZoom = (newZoom - 0.1).clamp(_minZoom, _maxZoom);
     }
 
+    _pdfController.zoomLevel = newZoom;
     _zoomLevel.value = newZoom;
   }
 
   /// 重置缩放
   void _resetZoom() {
     if (!mounted || !_isPdfLoaded) return;
+    _pdfController.zoomLevel = 1.0;
     _zoomLevel.value = 1.0;
   }
 
@@ -397,14 +400,17 @@ class _CommonPdfViewerState extends State<CommonPdfViewer> {
           },
           onExit: (exitPage, exitZoom) {
             _isFullScreen.value = false;
-            if (mounted && exitPage != currentPage) {
+            if (mounted) {
               Future.delayed(const Duration(milliseconds: 100), () {
                 if (mounted) {
-                  _pdfController.jumpToPage(exitPage);
+                  if (exitPage != currentPage) {
+                    _pdfController.jumpToPage(exitPage);
+                  }
+                  _pdfController.zoomLevel = exitZoom;
+                  _zoomLevel.value = exitZoom;
                 }
               });
             }
-            _zoomLevel.value = exitZoom;
           },
         ),
         fullscreenDialog: true,
@@ -524,29 +530,26 @@ class _CommonPdfViewerState extends State<CommonPdfViewer> {
             vertical: _screenAdapter.getAdaptivePadding(8),
           ),
           child: ClipRect(
-            child: Obx(() => Transform.scale(
-              scale: _zoomLevel.value,
-              alignment: Alignment.center,
-              child: SfPdfViewer.file(
-                key: ValueKey('pdf_$_currentUrl'),
-                File(_decryptedFilePath!),
-                controller: _pdfController,
-                enableTextSelection: false,
-                enableDocumentLinkAnnotation: false,
-                pageLayoutMode: PdfPageLayoutMode.single,
-                scrollDirection: PdfScrollDirection.vertical,
-                pageSpacing: 0,
-                enableDoubleTapZooming: false,
-                canShowScrollHead: true,
-                onDocumentLoadFailed: (details) {
-                  debugPrint('PDF 加载失败: ${details.error}');
-                  final url = widget.config.pdfUrlStream.value;
-                  if (url != null) _loadPdf(url);
-                },
-                onPageChanged: _onPageChanged,
-                onDocumentLoaded: _onDocumentLoaded,
-              ),
-            )),
+            child: SfPdfViewer.file(
+              key: ValueKey('pdf_$_currentUrl'),
+              File(_decryptedFilePath!),
+              controller: _pdfController,
+              enableTextSelection: false,
+              enableDocumentLinkAnnotation: false,
+              pageLayoutMode: PdfPageLayoutMode.continuous,
+              scrollDirection: PdfScrollDirection.vertical,
+              enableDoubleTapZooming: false,
+              canShowScrollHead: true,
+              interactionMode: PdfInteractionMode.pan,
+              maxZoomLevel: _maxZoom,
+              onDocumentLoadFailed: (details) {
+                debugPrint('PDF 加载失败: ${details.error}');
+                final url = widget.config.pdfUrlStream.value;
+                if (url != null) _loadPdf(url);
+              },
+              onPageChanged: _onPageChanged,
+              onDocumentLoaded: _onDocumentLoaded,
+            ),
           ),
         ),
 
@@ -741,13 +744,14 @@ class _PdfFullScreenPageState extends State<_PdfFullScreenPage> {
   }
 
   void _onDocumentLoaded(PdfDocumentLoadedDetails details) {
-    if (widget.initialPage > 1) {
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (mounted) {
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        if (widget.initialPage > 1) {
           _controller.jumpToPage(widget.initialPage);
         }
-      });
-    }
+        _zoomLevel.value = 1.0;
+      }
+    });
   }
 
   void _onPageChanged(PdfPageChangedDetails details) {
@@ -756,7 +760,7 @@ class _PdfFullScreenPageState extends State<_PdfFullScreenPage> {
   }
 
   void _exitFullScreen() {
-    widget.onExit(_currentPage, _zoomLevel.value);
+    widget.onExit(_currentPage, _controller.zoomLevel);
     Navigator.of(context).pop();
   }
 
@@ -786,25 +790,25 @@ class _PdfFullScreenPageState extends State<_PdfFullScreenPage> {
                   ),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.all(_screenAdapter.getAdaptivePadding(16)),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: MediaQuery.of(context).size.width * 0.15,
+                    vertical: MediaQuery.of(context).size.height * 0.15,
+                  ),
                   child: ClipRect(
-                    child: Obx(() => Transform.scale(
-                      scale: _zoomLevel.value,
-                      alignment: Alignment.center,
-                      child: SfPdfViewer.file(
-                        File(widget.filePath),
-                        controller: _controller,
-                        enableTextSelection: false,
-                        enableDocumentLinkAnnotation: false,
-                        pageLayoutMode: PdfPageLayoutMode.single,
-                        scrollDirection: PdfScrollDirection.vertical,
-                        pageSpacing: 0,
-                        enableDoubleTapZooming: false,
-                        canShowScrollHead: true,
-                        onPageChanged: _onPageChanged,
-                        onDocumentLoaded: _onDocumentLoaded,
-                      ),
-                    )),
+                    child: SfPdfViewer.file(
+                      File(widget.filePath),
+                      controller: _controller,
+                      enableTextSelection: false,
+                      enableDocumentLinkAnnotation: false,
+                      pageLayoutMode: PdfPageLayoutMode.continuous,
+                      scrollDirection: PdfScrollDirection.vertical,
+                      enableDoubleTapZooming: false,
+                      canShowScrollHead: true,
+                      interactionMode: PdfInteractionMode.pan,
+                      maxZoomLevel: 2.0,
+                      onPageChanged: _onPageChanged,
+                      onDocumentLoaded: _onDocumentLoaded,
+                    ),
                   ),
                 ),
               ),
@@ -836,7 +840,11 @@ class _PdfFullScreenPageState extends State<_PdfFullScreenPage> {
                     Obx(() => IconButton(
                       icon: Icon(Icons.add, size: 28),
                       onPressed: _zoomLevel.value < 2.0
-                          ? () => _zoomLevel.value = (_zoomLevel.value + 0.1).clamp(1.0, 2.0)
+                          ? () {
+                              final newZoom = (_controller.zoomLevel + 0.1).clamp(1.0, 2.0);
+                              _controller.zoomLevel = newZoom;
+                              _zoomLevel.value = newZoom;
+                            }
                           : null,
                       tooltip: '放大',
                     )),
@@ -847,14 +855,21 @@ class _PdfFullScreenPageState extends State<_PdfFullScreenPage> {
                     Obx(() => IconButton(
                       icon: Icon(Icons.remove, size: 28),
                       onPressed: _zoomLevel.value > 1.0
-                          ? () => _zoomLevel.value = (_zoomLevel.value - 0.1).clamp(1.0, 2.0)
+                          ? () {
+                              final newZoom = (_controller.zoomLevel - 0.1).clamp(1.0, 2.0);
+                              _controller.zoomLevel = newZoom;
+                              _zoomLevel.value = newZoom;
+                            }
                           : null,
                       tooltip: '缩小',
                     )),
                     Divider(height: 1),
                     IconButton(
                       icon: Icon(Icons.refresh, size: 28),
-                      onPressed: () => _zoomLevel.value = 1.0,
+                      onPressed: () {
+                        _controller.zoomLevel = 1.0;
+                        _zoomLevel.value = 1.0;
+                      },
                       tooltip: '重置缩放',
                     ),
                   ],
