@@ -789,28 +789,20 @@ class _PdfFullScreenPageState extends State<_PdfFullScreenPage> {
                     fit: BoxFit.fill,
                   ),
                 ),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: MediaQuery.of(context).size.width * 0.15,
-                    vertical: MediaQuery.of(context).size.height * 0.15,
+                  child: SfPdfViewer.file(
+                    File(widget.filePath),
+                    controller: _controller,
+                    enableTextSelection: false,
+                    enableDocumentLinkAnnotation: false,
+                    pageLayoutMode: PdfPageLayoutMode.continuous,
+                    scrollDirection: PdfScrollDirection.vertical,
+                    enableDoubleTapZooming: false,
+                    canShowScrollHead: true,
+                    interactionMode: PdfInteractionMode.pan,
+                    maxZoomLevel: 2.0,
+                    onPageChanged: _onPageChanged,
+                    onDocumentLoaded: _onDocumentLoaded,
                   ),
-                  child: ClipRect(
-                    child: SfPdfViewer.file(
-                      File(widget.filePath),
-                      controller: _controller,
-                      enableTextSelection: false,
-                      enableDocumentLinkAnnotation: false,
-                      pageLayoutMode: PdfPageLayoutMode.continuous,
-                      scrollDirection: PdfScrollDirection.vertical,
-                      enableDoubleTapZooming: false,
-                      canShowScrollHead: true,
-                      interactionMode: PdfInteractionMode.pan,
-                      maxZoomLevel: 2.0,
-                      onPageChanged: _onPageChanged,
-                      onDocumentLoaded: _onDocumentLoaded,
-                    ),
-                  ),
-                ),
               ),
             ),
             Positioned(
@@ -839,9 +831,9 @@ class _PdfFullScreenPageState extends State<_PdfFullScreenPage> {
                     Divider(height: 1),
                     Obx(() => IconButton(
                       icon: Icon(Icons.add, size: 28),
-                      onPressed: _zoomLevel.value < 2.0
+                      onPressed: _zoomLevel.value < 3.0
                           ? () {
-                              final newZoom = (_controller.zoomLevel + 0.1).clamp(1.0, 2.0);
+                              final newZoom = (_controller.zoomLevel + 0.1).clamp(1.0, 3.0);
                               _controller.zoomLevel = newZoom;
                               _zoomLevel.value = newZoom;
                             }
@@ -856,7 +848,7 @@ class _PdfFullScreenPageState extends State<_PdfFullScreenPage> {
                       icon: Icon(Icons.remove, size: 28),
                       onPressed: _zoomLevel.value > 1.0
                           ? () {
-                              final newZoom = (_controller.zoomLevel - 0.1).clamp(1.0, 2.0);
+                              final newZoom = (_controller.zoomLevel - 0.1).clamp(1.0, 3.0);
                               _controller.zoomLevel = newZoom;
                               _zoomLevel.value = newZoom;
                             }
