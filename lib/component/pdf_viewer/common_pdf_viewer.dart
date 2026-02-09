@@ -74,6 +74,10 @@ class _CommonPdfViewerState extends State<CommonPdfViewer> {
   int _lastPageNumber = 1;
   bool _isChangingPage = false;
 
+  // 鼠标拖动状态（Windows平台）
+  bool _isDragging = false;
+  Offset _lastDragPosition = Offset.zero;
+
   // 缩放状态
   final RxDouble _zoomLevel = 1.0.obs;
   static const double _minZoom = 1.0;
@@ -346,6 +350,43 @@ class _CommonPdfViewerState extends State<CommonPdfViewer> {
     }
   }
 
+  // ========== 鼠标拖动支持（Windows平台） ==========
+
+  /// 构建可拖动的PDF查看器（Windows平台用Listener手动处理鼠标拖动）
+  Widget _buildDraggablePdfViewer({
+    required Widget child,
+    required PdfViewerController controller,
+  }) {
+    if (!Platform.isWindows) return child;
+    return MouseRegion(
+      cursor: SystemMouseCursors.grab,
+      child: Listener(
+        onPointerDown: (event) {
+          _isDragging = true;
+          _lastDragPosition = event.position;
+        },
+        onPointerMove: (event) {
+          if (_isDragging) {
+            final delta = event.position - _lastDragPosition;
+            _lastDragPosition = event.position;
+            final currentOffset = controller.scrollOffset;
+            controller.jumpTo(
+              xOffset: currentOffset.dx - delta.dx,
+              yOffset: currentOffset.dy - delta.dy,
+            );
+          }
+        },
+        onPointerUp: (_) {
+          _isDragging = false;
+        },
+        onPointerCancel: (_) {
+          _isDragging = false;
+        },
+        child: child,
+      ),
+    );
+  }
+
   // ========== 缩放控制 ==========
 
   /// 处理缩放（使用 PdfViewerController.zoomLevel）
@@ -530,25 +571,28 @@ class _CommonPdfViewerState extends State<CommonPdfViewer> {
             vertical: _screenAdapter.getAdaptivePadding(8),
           ),
           child: ClipRect(
-            child: SfPdfViewer.file(
-              key: ValueKey('pdf_$_currentUrl'),
-              File(_decryptedFilePath!),
+            child: _buildDraggablePdfViewer(
+              child: SfPdfViewer.file(
+                key: ValueKey('pdf_$_currentUrl'),
+                File(_decryptedFilePath!),
+                controller: _pdfController,
+                enableTextSelection: false,
+                enableDocumentLinkAnnotation: false,
+                pageLayoutMode: PdfPageLayoutMode.continuous,
+                scrollDirection: PdfScrollDirection.vertical,
+                enableDoubleTapZooming: false,
+                canShowScrollHead: true,
+                interactionMode: PdfInteractionMode.pan,
+                maxZoomLevel: _maxZoom,
+                onDocumentLoadFailed: (details) {
+                  debugPrint('PDF 加载失败: ${details.error}');
+                  final url = widget.config.pdfUrlStream.value;
+                  if (url != null) _loadPdf(url);
+                },
+                onPageChanged: _onPageChanged,
+                onDocumentLoaded: _onDocumentLoaded,
+              ),
               controller: _pdfController,
-              enableTextSelection: false,
-              enableDocumentLinkAnnotation: false,
-              pageLayoutMode: PdfPageLayoutMode.continuous,
-              scrollDirection: PdfScrollDirection.vertical,
-              enableDoubleTapZooming: false,
-              canShowScrollHead: true,
-              interactionMode: PdfInteractionMode.pan,
-              maxZoomLevel: _maxZoom,
-              onDocumentLoadFailed: (details) {
-                debugPrint('PDF 加载失败: ${details.error}');
-                final url = widget.config.pdfUrlStream.value;
-                if (url != null) _loadPdf(url);
-              },
-              onPageChanged: _onPageChanged,
-              onDocumentLoaded: _onDocumentLoaded,
             ),
           ),
         ),
@@ -729,6 +773,10 @@ class _PdfFullScreenPageState extends State<_PdfFullScreenPage> {
   final RxDouble _zoomLevel = 1.0.obs;
   int _currentPage = 1;
 
+  // 鼠标拖动状态（Windows平台）
+  bool _isDragging = false;
+  Offset _lastDragPosition = Offset.zero;
+
   @override
   void initState() {
     super.initState();
@@ -757,6 +805,38 @@ class _PdfFullScreenPageState extends State<_PdfFullScreenPage> {
   void _onPageChanged(PdfPageChangedDetails details) {
     _currentPage = details.newPageNumber;
     widget.onPageChanged(_currentPage);
+  }
+
+  /// 构建可拖动的PDF查看器（Windows平台用Listener手动处理鼠标拖动）
+  Widget _buildDraggablePdfViewer({required Widget child}) {
+    if (!Platform.isWindows) return child;
+    return MouseRegion(
+      cursor: SystemMouseCursors.grab,
+      child: Listener(
+        onPointerDown: (event) {
+          _isDragging = true;
+          _lastDragPosition = event.position;
+        },
+        onPointerMove: (event) {
+          if (_isDragging) {
+            final delta = event.position - _lastDragPosition;
+            _lastDragPosition = event.position;
+            final currentOffset = _controller.scrollOffset;
+            _controller.jumpTo(
+              xOffset: currentOffset.dx - delta.dx,
+              yOffset: currentOffset.dy - delta.dy,
+            );
+          }
+        },
+        onPointerUp: (_) {
+          _isDragging = false;
+        },
+        onPointerCancel: (_) {
+          _isDragging = false;
+        },
+        child: child,
+      ),
+    );
   }
 
   void _exitFullScreen() {
@@ -789,20 +869,27 @@ class _PdfFullScreenPageState extends State<_PdfFullScreenPage> {
                     fit: BoxFit.fill,
                   ),
                 ),
-                  child: SfPdfViewer.file(
-                    File(widget.filePath),
-                    controller: _controller,
-                    enableTextSelection: false,
-                    enableDocumentLinkAnnotation: false,
-                    pageLayoutMode: PdfPageLayoutMode.continuous,
-                    scrollDirection: PdfScrollDirection.vertical,
-                    enableDoubleTapZooming: false,
-                    canShowScrollHead: true,
-                    interactionMode: PdfInteractionMode.pan,
-                    maxZoomLevel: 2.0,
-                    onPageChanged: _onPageChanged,
-                    onDocumentLoaded: _onDocumentLoaded,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: MediaQuery.of(context).size.width * 0.15,
                   ),
+                  child: _buildDraggablePdfViewer(
+                    child: SfPdfViewer.file(
+                      File(widget.filePath),
+                      controller: _controller,
+                      enableTextSelection: false,
+                      enableDocumentLinkAnnotation: false,
+                      pageLayoutMode: PdfPageLayoutMode.continuous,
+                      scrollDirection: PdfScrollDirection.vertical,
+                      enableDoubleTapZooming: false,
+                      canShowScrollHead: true,
+                      interactionMode: PdfInteractionMode.pan,
+                      maxZoomLevel: 3.0,
+                      onPageChanged: _onPageChanged,
+                      onDocumentLoaded: _onDocumentLoaded,
+                    ),
+                  ),
+                ),
               ),
             ),
             Positioned(
