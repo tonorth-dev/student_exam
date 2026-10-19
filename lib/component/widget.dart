@@ -454,9 +454,12 @@ class CascadingDropdownFieldState extends State<CascadingDropdownField> {
       width: widget.width,
       height: widget.height,
       child: TypeAheadField<Map<String, dynamic>>(
-        textFieldConfiguration: TextFieldConfiguration(
-          controller: controller,
-          focusNode: focusNode,
+        controller: controller,
+        focusNode: focusNode,
+        builder: (context, fieldController, fieldFocusNode) {
+          return TextField(
+          controller: fieldController,
+          focusNode: fieldFocusNode,
           style: const TextStyle(
             color: Color(0xFF505050),
             fontSize: 14,
@@ -494,7 +497,8 @@ class CascadingDropdownFieldState extends State<CascadingDropdownField> {
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           ),
-        ),
+          );
+        },
         suggestionsCallback: (pattern) {
           if (pattern.isEmpty) return items;
           return items
@@ -515,8 +519,8 @@ class CascadingDropdownFieldState extends State<CascadingDropdownField> {
             ),
           );
         },
-        onSuggestionSelected: onSuggestionSelected,
-        noItemsFoundBuilder: (context) => const Center(
+        onSelected: onSuggestionSelected,
+        emptyBuilder: (context) => const Center(
           child: Text(
             'No items found',
             style: TextStyle(
