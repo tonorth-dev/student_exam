@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class HeadLogic extends GetxController {
-  final loginLogic = Get.put(LoginLogic());
+  final loginLogic = Get.put(LoginLogic(), permanent: true);
 
   // 修改这里：声明一个私有变量来存储用户数据
   LoginData? _loginData;

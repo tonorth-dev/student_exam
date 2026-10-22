@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../common/app_data.dart';
+import '../common/biz_path.dart';
 import '../common/config_util.dart';
 
 class WebSocketService {
@@ -27,7 +29,11 @@ class WebSocketService {
       return; // 如果已连接，则直接返回
     }
 
-    final url = "${ConfigUtil.wsUrl}:${ConfigUtil.wsPort}/ws/dialogue?type=student&code=$code&class_id=$classId";
+    final loginData = await LoginData.read();
+    final path = await BizPath.socketPath();
+    final token = Uri.encodeQueryComponent(loginData.token);
+    final url =
+        "${ConfigUtil.wsUrl}:${ConfigUtil.wsPort}$path?type=student&code=$code&class_id=$classId&token=$token";
     try {
       _channel = WebSocketChannel.connect(Uri.parse(url));
       isConnected.value = true;

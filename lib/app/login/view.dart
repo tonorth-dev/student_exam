@@ -12,106 +12,98 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final logic = Get.put(LoginLogic());
+  final logic = Get.put(LoginLogic(), permanent: true);
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // 使用 addPostFrameCallback 确保在构建完成后执行
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      logic.fetchCaptcha();
-    });
+  void initState() {
+    super.initState();
+    logic.resetLoginFormKeepPhone();
+    logic.loadPhoneInfo();
   }
 
   @override
   Widget build(BuildContext context) {
     final screenAdapter = AppProviders.instance.screenAdapter;
-    
+
     return Scaffold(
       body: Center(
-        child: SizedBox(
-          width: screenAdapter.getAdaptiveWidth(300),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '红师教育学生端',
-                style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(32)),
-              ),
-              SizedBox(height: screenAdapter.getAdaptiveHeight(18)),
-              textInput(logic.passwordText,
-                  hintText: '请输入密码', labelText: '输入密码', password: true),
-              SizedBox(height: screenAdapter.getAdaptiveHeight(10)),
-              Row(
-                children: [
-                  Expanded(
-                    child: textInput(logic.captchaText,
-                        hintText: '请输入验证码', labelText: '验证码'),
-                  ),
-                  SizedBox(width: screenAdapter.getAdaptiveWidth(10)),
-                  InkWell(
-                    onTap: logic.fetchCaptcha,
-                    child: Obx(() {
-                      if (logic.captchaImageUrl.value.isNotEmpty) {
-                        // 如果是 Base64 编码的图片，使用 Image.memory 解析
-                        if (logic.captchaImageUrl.value.startsWith('data:image/png;base64,')) {
-                          return Image.memory(
-                            logic.base64ToImage(logic.captchaImageUrl.value),
-                            width: screenAdapter.getAdaptiveWidth(100),
-                            height: screenAdapter.getAdaptiveHeight(40),
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.error,
-                                size: screenAdapter.getAdaptiveIconSize(24),
-                              );
-                            },
-                          );
-                        } else {
-                          // 否则，尝试使用 Image.network 加载图片
-                          return Image.network(
-                            logic.captchaImageUrl.value,
-                            width: screenAdapter.getAdaptiveWidth(100),
-                            height: screenAdapter.getAdaptiveHeight(40),
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.error,
-                                size: screenAdapter.getAdaptiveIconSize(24),
-                              );
-                            },
-                          );
-                        }
-                      } else {
-                        return Icon(
-                          Icons.error,
-                          size: screenAdapter.getAdaptiveIconSize(24),
-                        );
-                      }
-                    }),
-                  )
-                ],
-              ),
-              SizedBox(height: screenAdapter.getAdaptiveHeight(20)),
-              InkWell(
-                onTap: () {
-                  logic.login();
-                },
-                child: Container(
-                  width: double.infinity,
-                  height: screenAdapter.getAdaptiveHeight(50),
-                  decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(8))),
-                  child: Center(
-                      child: Text(
-                        '登入',
-                        style: TextStyle(
-                          color: Colors.white, 
-                          fontSize: screenAdapter.getAdaptiveFontSize(16)
-                        ),
-                      )),
+        child: SingleChildScrollView(
+          child: SizedBox(
+            width: screenAdapter.getAdaptiveWidth(320),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '红师教育学生端',
+                  style: TextStyle(
+                      fontSize: screenAdapter.getAdaptiveFontSize(32)),
                 ),
-              )
-            ],
+                SizedBox(height: screenAdapter.getAdaptiveHeight(18)),
+                textInput(logic.phoneText,
+                    hintText: '请输入手机号',
+                    labelText: '手机号',
+                    keyboardType: TextInputType.phone),
+                SizedBox(height: screenAdapter.getAdaptiveHeight(12)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: textInput(logic.codeText,
+                          hintText: '请输入短信验证码', labelText: '验证码'),
+                    ),
+                    SizedBox(width: screenAdapter.getAdaptiveWidth(10)),
+                    Obx(() {
+                      final canTap = logic.countdown.value == 0 &&
+                          !logic.sendingSms.value;
+                      final label = logic.countdown.value > 0
+                          ? '${logic.countdown.value}s'
+                          : (logic.sendingSms.value ? '发送中' : '获取验证码');
+                      return SizedBox(
+                        width: screenAdapter.getAdaptiveWidth(110),
+                        height: screenAdapter.getAdaptiveHeight(48),
+                        child: ElevatedButton(
+                          onPressed: canTap
+                              ? () => logic.onGetSmsCode(context)
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            backgroundColor: Theme.of(context).primaryColor,
+                            disabledBackgroundColor: Colors.grey.shade300,
+                          ),
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: screenAdapter.getAdaptiveFontSize(13),
+                              color: canTap ? Colors.white : Colors.grey,
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+                SizedBox(height: screenAdapter.getAdaptiveHeight(20)),
+                InkWell(
+                  onTap: () {
+                    logic.login();
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    height: screenAdapter.getAdaptiveHeight(50),
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: BorderRadius.circular(
+                            screenAdapter.getAdaptivePadding(8))),
+                    child: Center(
+                        child: Text(
+                      '登入',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: screenAdapter.getAdaptiveFontSize(16)),
+                    )),
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -119,16 +111,21 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget textInput(TextEditingController text,
-      {String? hintText, String? labelText, bool password = false}) {
+      {String? hintText,
+      String? labelText,
+      bool password = false,
+      TextInputType? keyboardType}) {
     final screenAdapter = AppProviders.instance.screenAdapter;
-    
+
     return TextField(
       controller: text,
       obscureText: password,
+      keyboardType: keyboardType,
       style: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
       decoration: InputDecoration(
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(4)),
+          borderRadius:
+              BorderRadius.circular(screenAdapter.getAdaptivePadding(4)),
         ),
         labelText: labelText,
         labelStyle: TextStyle(fontSize: screenAdapter.getAdaptiveFontSize(14)),
@@ -143,7 +140,8 @@ class _LoginPageState extends State<LoginPage> {
             width: screenAdapter.getAdaptiveWidth(2),
             color: UiTheme.primary(),
           ),
-          borderRadius: BorderRadius.circular(screenAdapter.getAdaptivePadding(4)),
+          borderRadius:
+              BorderRadius.circular(screenAdapter.getAdaptivePadding(4)),
         ),
       ),
     );

@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
+import 'biz_type.dart';
+
 class LoginData {
   String token = "";
   String themeName = "";
@@ -11,6 +13,7 @@ class LoginData {
   String? workContent;
   int id = 0;
   int classId = 0;
+  int bizType = BizType.militaryCivilian;
   DateTime? expiryDate;
 
   // toJson
@@ -20,6 +23,7 @@ class LoginData {
       "user": user,
       "id": id,
       "classId": classId,
+      "bizType": bizType,
       "themeName": themeName,
       "examCode": code,
       "workContent": workContent,
@@ -39,6 +43,7 @@ class LoginData {
     data.workContent = map["workContent"];
     data.id = map["id"] ?? 0;
     data.classId = map["classId"] ?? 0;
+    data.bizType = BizType.normalize(map["bizType"]);
     if (map["expiryDate"] != null) {
       data.expiryDate =
           DateFormat('yyyy-MM-dd HH:mm:ss').parse(map["expiryDate"]);

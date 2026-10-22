@@ -75,6 +75,7 @@ dependencies:
   package_info_plus: ^9.0.1
   freezed_annotation: ^3.0.0
   json_annotation: ^4.9.0
+  slider_captcha: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -90,6 +91,7 @@ flutter:
   # 资源目录
   assets:
     - assets/images/
+    - assets/images/slider/
     - assets/messages/
     - assets/images/home_exam_pg.png
     - assets/images/home_lecture_pg.png

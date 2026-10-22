@@ -1642,6 +1642,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  slider_captcha:
+    dependency: "direct main"
+    description:
+      name: slider_captcha
+      sha256: "148416934e96718cfd938c3f5a97817da6696d25a1d91f6a580fedb1e75ea462"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.1.0"
   sliver_tools:
     dependency: transitive
     description:

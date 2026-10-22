@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:student_exam/app/home/pages/note/view.dart';
 import 'package:student_exam/app/home/pages/psyc/view.dart';
+import 'package:student_exam/common/app_providers.dart';
 import 'package:student_exam/ex/ex_list.dart';
 import '../../../../theme/theme_util.dart';
+import '../../head/logic.dart';
 import '../../pages/exam/view.dart';
 import '../../pages/lecture/view.dart';
 import '../../sidebar/logic.dart';
@@ -12,13 +14,41 @@ import 'logic.dart';
 
 class AnalysisPage extends StatelessWidget {
   final logic = Get.put(AnalysisLogic());
+  final headerLogic = Get.put(HeadLogic());
 
   @override
   Widget build(BuildContext context) {
+    final screenAdapter = AppProviders.instance.screenAdapter;
+
     return Scaffold(
       body: Column(
         children: [
           ThemeUtil.height(),
+          Container(
+            padding: EdgeInsets.only(
+              bottom: screenAdapter.getAdaptivePadding(10),
+              right: screenAdapter.getAdaptivePadding(20),
+            ),
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: EdgeInsets.only(
+                  right: screenAdapter.getAdaptivePadding(16.0)),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(
+                    screenAdapter.getAdaptiveWidth(32)),
+                onTap: () {
+                  headerLogic.clickHeadImage();
+                },
+                child: ClipOval(
+                  child: Image.asset(
+                    "assets/images/cat.jpeg",
+                    height: screenAdapter.getAdaptiveHeight(42),
+                    width: screenAdapter.getAdaptiveWidth(42),
+                  ),
+                ),
+              ),
+            ),
+          ),
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
