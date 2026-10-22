@@ -53,16 +53,23 @@ class _HeadViewState extends State<HeadView> {
               top: screenAdapter.getAdaptivePadding(20.0),
               right: screenAdapter.getAdaptivePadding(20.0),
               bottom: screenAdapter.getAdaptivePadding(10.0)),
-          child:
-              InkWell(
+          child: Builder(
+            builder: (anchor) {
+              return InkWell(
                 borderRadius: BorderRadius.circular(32),
                 onTap: () {
-                  controller.clickHeadImage();
+                  controller.clickHeadImage(anchor);
                 },
                 child: ClipOval(
-                  // 圆形头像
-                    child: Image.asset("assets/images/cat.jpeg",height: 42,width: 42,)),
-              ),
+                  child: Image.asset(
+                    "assets/images/cat.jpeg",
+                    height: 42,
+                    width: 42,
+                  ),
+                ),
+              );
+            },
+          ),
         ),
               ThemeUtil.width(),
             ],

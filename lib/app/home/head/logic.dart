@@ -1,11 +1,7 @@
 import 'package:student_exam/app/login/logic.dart';
 import 'package:student_exam/app/login/view.dart';
 import 'package:student_exam/common/app_data.dart';
-import 'package:student_exam/ex/ex_anim.dart';
-import 'package:student_exam/ex/ex_btn.dart';
-import 'package:student_exam/ex/ex_hint.dart';
-import 'package:student_exam/ex/ex_url.dart';
-import 'package:student_exam/theme/theme_util.dart';
+import 'package:student_exam/common/biz_type.dart';
 import 'package:student_exam/theme/ui_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -43,59 +39,178 @@ class HeadLogic extends GetxController {
 
   void logout() {
     loginLogic.logout();
-    Get.off(() => LoginPage());
+    Get.offAll(() => LoginPage());
   }
 
-  void clickHeadImage() {
+  void clickHeadImage(BuildContext anchor) async {
+    final box = anchor.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) {
+      return;
+    }
+    final origin = box.localToGlobal(Offset.zero);
+    final anchorSize = box.size;
+    await _loadUserData();
+    if (!anchor.mounted) {
+      return;
+    }
+    const menuWidth = 228.0;
+    final screen = MediaQuery.sizeOf(anchor);
+    var left = origin.dx + anchorSize.width - menuWidth;
+    if (left < 8) {
+      left = 8;
+    }
+    if (left + menuWidth > screen.width - 8) {
+      left = screen.width - 8 - menuWidth;
+    }
+    final top = origin.dy + anchorSize.height + 6;
     showDialog(
-        context: Get.context!,
-        barrierColor: Colors.transparent,
-        builder: (context) {
-          return Stack(
+      context: anchor,
+      useSafeArea: false,
+      barrierColor: Colors.transparent,
+      builder: (dialogContext) {
+        return GestureDetector(
+          onTap: () => Navigator.of(dialogContext).pop(),
+          behavior: HitTestBehavior.opaque,
+          child: Stack(
             children: [
               Positioned(
-                right: 10,
-                top: 55,
+                left: left,
+                top: top,
                 child: head(),
               ),
             ],
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   Widget head() {
-    if (_loginData == null) {
-      return CircularProgressIndicator(); // 加载中或无数据时显示进度条
+    final data = _loginData;
+    if (data == null) {
+      return const SizedBox(
+        width: 28,
+        height: 28,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
     }
+    return _accountCard(
+      name: data.user.isEmpty ? "学生" : data.user,
+      role: "学生",
+      bizType: data.bizType,
+    );
+  }
 
-    final userName = _loginData!.user;
-    return Container(
-      width: 200,
-      decoration: BoxDecoration(
-        color: Colors.white, // 设置背景色为白色
-        // borderRadius:  BorderRadius.all(Radius.circular(2)),
+  Widget _accountCard({
+    required String name,
+    required String role,
+    required int bizType,
+  }) {
+    final primary = UiTheme.primary();
+    return Material(
+      color: Colors.white,
+      elevation: 3,
+      shadowColor: const Color(0x330F172A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: const BorderSide(color: Color(0xFFE6E8EE)),
       ),
-      child: Column(
+      child: SizedBox(
+        width: 228,
+        child: DefaultTextStyle(
+          style: const TextStyle(
+            decoration: TextDecoration.none,
+            color: Color(0xFF1F2430),
+            height: 1.2,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _nameRow(name, role, primary),
+              _bizRow(bizType, primary),
+              const Divider(height: 1, thickness: 1, color: Color(0xFFEEF0F5)),
+              _logoutRow(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _nameRow(String name, String role, Color primary) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+      child: Row(
         children: [
-          // 这里显示用户名
-          ThemeUtil.height(),
-          Text(
-            "你好，$userName",
-            style: TextStyle(
-              color: Colors.black, // 设置字体颜色为黑色
-              fontSize: 14.0,
-              fontWeight: FontWeight.bold,
-              decoration: TextDecoration.none,
+          Expanded(
+            child: Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
           ),
-          ThemeUtil.height(),
-          "退出登录".toBtn(onTap: () {
-            logout();
-          }),
-          ThemeUtil.height(),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              role,
+              style: TextStyle(
+                fontSize: 11,
+                color: primary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
         ],
       ),
-    ).toFadeInWithMoveX(true);
+    );
+  }
+
+  Widget _bizRow(int bizType, Color primary) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+      child: Row(
+        children: [
+          const Text(
+            "所属业务系统",
+            style: TextStyle(fontSize: 12, color: Color(0xFF8B90A0)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              BizType.label(bizType),
+              textAlign: TextAlign.right,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: primary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _logoutRow() {
+    return InkWell(
+      onTap: logout,
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Text(
+          "退出登录",
+          style: TextStyle(fontSize: 13, color: Color(0xFF3A4150)),
+        ),
+      ),
+    );
   }
 
   Widget itemBtn(Icon icon, String text, Function() onTap) {

@@ -24,18 +24,23 @@ class CommonAppBar {
           Center(
             child: Padding(
               padding: EdgeInsets.only(right: screenAdapter.getAdaptivePadding(16.0)),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(screenAdapter.getAdaptiveWidth(32)),
-                onTap: () {
-                  headerLogic.clickHeadImage();
+              child: Builder(
+                builder: (anchor) {
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(
+                        screenAdapter.getAdaptiveWidth(32)),
+                    onTap: () {
+                      headerLogic.clickHeadImage(anchor);
+                    },
+                    child: ClipOval(
+                      child: Image.asset(
+                        "assets/images/cat.jpeg",
+                        height: screenAdapter.getAdaptiveHeight(42),
+                        width: screenAdapter.getAdaptiveWidth(42),
+                      ),
+                    ),
+                  );
                 },
-                child: ClipOval(
-                  child: Image.asset(
-                    "assets/images/cat.jpeg",
-                    height: screenAdapter.getAdaptiveHeight(42),
-                    width: screenAdapter.getAdaptiveWidth(42),
-                  ),
-                ),
               ),
             ),
           ),

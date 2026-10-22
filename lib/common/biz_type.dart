@@ -9,4 +9,11 @@ class BizType {
     }
     return militaryCivilian;
   }
+
+  static String label(int bizType) {
+    if (bizType == directOfficer) {
+      return "直招军官";
+    }
+    return "军队文职";
+  }
 }
